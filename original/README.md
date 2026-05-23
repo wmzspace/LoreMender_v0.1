@@ -40,71 +40,58 @@
 ## 📁 项目结构
 
 ```
-LoreMender_v0.1/
-├── index.html                  ← Vite 入口 HTML (引入 Google Fonts)
-├── package.json                ← npm 依赖与脚本
-├── vite.config.ts              ← Vite 配置
-├── tsconfig.json               ← TypeScript 配置
-├── src/
-│   ├── main.tsx                ← React 入口,挂载 #root
-│   ├── App.tsx                 ← 主路由 (PageKey 状态机)
-│   ├── data/                   ← 剧情/角色/线索/结局数据 (TS)
-│   │   ├── types.ts            ← GameState / Beat / Choice 等共享类型
-│   │   ├── chapters.ts         ← CHAPTERS
-│   │   ├── characters.ts       ← CHARACTERS + TRUST_OPTIONS
-│   │   ├── clues.ts            ← CLUES
-│   │   ├── endings.ts          ← ENDINGS + resolveEnding()
-│   │   ├── story.ts            ← STORY (各章 beats)
-│   │   └── index.ts
-│   ├── components/             ← 通用 UI 组件 (.tsx)
-│   │   │   Toast / Topbar / BottomNav / PaperPanel / SealTag
-│   │   │   GoldDivider / DialogueBox / ChoiceList / CharacterCard
-│   │   │   BottomSheet / ProgressDots / SceneFrame / LockedDungeon
-│   │   └── art/                ← SVG 场景插图 / 角色剪影 / 线索/世界观图标
-│   ├── pages/                  ← 9 个页面组件 (.tsx)
-│   │   │   CoverPage / WorldPage / ChapterSelectPage / StoryPage
-│   │   │   CluePage / TrustRoutePage / ProgressPage / EndingPage / GalleryPage
-│   ├── lib/
-│   │   ├── storage.ts          ← loadState / saveState / defaultState
-│   │   └── routes.ts           ← PageKey 联合类型
-│   └── styles/global.css       ← 古风 UI 样式系统 (CSS 变量)
-├── original/                   ← v0 单文件原型 (HTML + 5 个 jsx,仅作存档参考)
-├── README.md
-└── LICENSE
+LoreMender/
+├── 典故修补者 · 青囊残卷.html  ← 主入口 (打开即玩)
+├── styles.css                  ← 古风 UI 样式系统
+├── data.jsx                    ← 剧情/角色/线索/结局数据
+├── art.jsx                     ← SVG 场景插图 + 角色剪影 + 图标
+├── components.jsx              ← 通用组件 (DialogueBox/ChoiceCard/PaperPanel/BottomNav/...)
+├── pages.jsx                   ← 各个页面 (Cover/World/ChapterSelect/Story/Clue/Trust/Map/Ending/Gallery)
+├── app.jsx                     ← 主路由
+├── README.md                   ← 项目文档
+└── .gitignore
 ```
 
-**技术栈**：Vite 8 · React 19 · TypeScript · CSS Variables · localStorage
-
-> v0 原型采用 Babel Standalone 在浏览器内编译 JSX,完整源码保留在 [`original/`](./original/) 目录下。
+**技术栈**：React 18 + Babel Standalone (inline JSX) + CSS Variables + localStorage
 
 ---
 
 ## 🚀 快速开始
 
-> 需要 Node.js ≥ 18
+### 本地运行
 
+**方式 1：直接打开**（桌面预览）
 ```bash
-# 1. 安装依赖
-npm install
-
-# 2. 启动开发服务器 (默认 http://localhost:5173)
-npm run dev
-
-# 3. 类型检查 + 生产构建
-npm run build
-
-# 4. 本地预览构建产物
-npm run preview
+# 双击 `典故修补者 · 青囊残卷.html` 即可
+# 桌面会显示居中的手机壳预览 (390×844)
 ```
 
-桌面浏览器会显示居中的手机壳预览 (390×844);移动端访问时占满全屏。
+**方式 2：本地服务器**（推荐，支持手机访问）
+```bash
+# Python
+python3 -m http.server 5173
+
+# Node.js
+npx serve .
+
+# 或使用任意静态服务器
+```
+
+然后访问：
+- **桌面**：http://localhost:5173/典故修补者%20·%20青囊残卷.html
+- **手机**：在同一局域网内访问电脑 IP（如 http://192.168.1.100:5173/...）
+
+> ⚠️ 由于使用 `type="text/babel"` 加载 JSX，建议通过 http 协议访问（`file://` 在某些浏览器有限制）
 
 ### 部署
 
-构建产物在 `dist/`,纯静态,可直接部署到 Vercel / Netlify / GitHub Pages。
+**零配置部署到 Vercel / Netlify / GitHub Pages**：
 
-- Vercel / Netlify:自动识别 Vite,Build Command `npm run build`,Output `dist`
-- GitHub Pages:推送 `dist/` 到 `gh-pages` 分支(或用 GitHub Actions)
+1. Fork 本仓库
+2. 连接到 Vercel / Netlify
+3. 部署（无需构建步骤，纯静态）
+
+**访问路径**：`/典故修补者%20·%20青囊残卷.html`
 
 ---
 
@@ -137,10 +124,43 @@ npm run preview
 
 ### 项目架构
 
-- 路由:`App.tsx` 维护 `PageKey` 状态机,根据当前页渲染对应组件
-- 状态:`useState<GameState>` + 自动 `saveState()` 同步到 `localStorage`
-- 类型:`src/data/types.ts` 集中定义 `GameState` / `Beat` / `Choice` 等,各页面通过 `in` 类型守卫窄化 `Beat`
-- 资源:全部 SVG 内联,无图片依赖;字体来自 Google Fonts
+当前使用 **React + Babel Standalone** 实现，等价于 Vite + TypeScript 项目（便于快速原型 + 零构建部署）。
+
+文件结构与标准 React 项目对应：
+
+| 当前文件 | 对应 Vite 项目路径 |
+|---------|------------------|
+| `data.jsx` | `src/data/story.ts` + `characters.ts` + `clues.ts` + `endings.ts` |
+| `art.jsx` | `src/components/art/*.tsx` (SVG 组件) |
+| `components.jsx` | `src/components/*.tsx` |
+| `pages.jsx` | `src/pages/*.tsx` |
+| `app.jsx` | `src/App.tsx` |
+| `styles.css` | `src/styles/` (或 Tailwind) |
+
+### 迁移到 Vite + TypeScript
+
+```bash
+# 1. 初始化 Vite 项目
+npm create vite@latest loremender -- --template react-ts
+
+# 2. 安装依赖
+cd loremender && npm install
+
+# 3. 复制文件
+# - 把 data.jsx → src/data/*.ts (拆分数据)
+# - 把 art.jsx → src/components/art/*.tsx
+# - 把 components.jsx → src/components/*.tsx
+# - 把 pages.jsx → src/pages/*.tsx
+# - 把 app.jsx → src/App.tsx
+# - 把 styles.css → src/styles/global.css
+
+# 4. 调整导入
+# - window.XXX → import { XXX } from './data'
+# - useState_ → useState (去掉下划线)
+
+# 5. 运行
+npm run dev
+```
 
 ### 迁移到微信小程序
 
@@ -208,42 +228,44 @@ npm run preview
 
 ### 新增副本
 
-1. 在 `src/data/story.ts` 中新增章节 `STORY.newDungeon_ch1` 等
-2. 在 `src/data/characters.ts` / `clues.ts` / `endings.ts` 中追加相应数据,并在 `src/data/types.ts` 补充类型(如新的 `EndingId`)
-3. 在 `src/components/art/` 下新增 `Scene*.tsx` 并在 `art/index.ts` 导出
-4. 在 `src/pages/ChapterSelectPage.tsx` 解锁新副本卡片
+1. 在 `data.jsx` 中添加新的 `STORY.newDungeon`
+2. 添加对应的 `CHARACTERS` / `CLUES` / `ENDINGS`
+3. 在 `art.jsx` 中添加新的 `Scene*` SVG 组件
+4. 在 `ChapterSelectPage` 中解锁新副本卡片
 
-**示例**:`src/data/story.ts`
-```ts
-export const STORY: Record<string, StoryChapter> = {
-  // ...
+**示例**：添加「李白·谪仙遗恨」副本
+```javascript
+// data.jsx
+const STORY = {
+  ...
   libai_ch1: {
     scene: "palace_night",
     title: "第一章 · 长安月夜",
     beats: [
       { narration: true, line: "天宝三载，长安城..." },
-      // ...
-    ],
-  },
-};
+      ...
+    ]
+  }
+}
 ```
 
 ### 替换美术资源
 
-所有视觉当前用 SVG 绘制,可直接替换为真实图片(放入 `src/assets/` 后通过 ESM import):
+所有视觉当前用 SVG 绘制，可直接替换为真实图片：
 
-```tsx
-// src/components/art/SceneClinic.tsx
-import clinicUrl from "../../assets/scenes/clinic.png";
+```jsx
+// art.jsx - Before
+function SceneClinic() { return <svg>...</svg>; }
 
-export function SceneClinic() {
-  return <img src={clinicUrl} style={{width:"100%", height:"100%", objectFit:"cover"}}/>;
+// After
+function SceneClinic() {
+  return <img src="assets/scenes/clinic.png" style={{width:"100%", height:"100%", objectFit:"cover"}}/>;
 }
 ```
 
-**推荐资源目录**:
+**推荐资源目录**：
 ```
-src/assets/
+assets/
   cover/          # 封面插图
   scenes/         # 场景背景
   characters/     # 角色立绘
@@ -254,7 +276,7 @@ src/assets/
 
 ### 自定义样式
 
-所有颜色/字体/间距在 `src/styles/global.css` 中通过 CSS 变量定义:
+所有颜色/字体/间距在 `styles.css` 中通过 CSS 变量定义：
 
 ```css
 :root {
@@ -316,7 +338,6 @@ git push origin feature/your-feature
 ## 📝 开发路线图
 
 - [x] MVP 原型（华佗·青囊残卷）
-- [x] 迁移至 Vite + TypeScript
 - [ ] 第二个副本（李白·谪仙遗恨 / 岳飞·风波未平）
 - [ ] AI 生成美术资源替换 SVG 占位
 - [ ] 音效 + BGM

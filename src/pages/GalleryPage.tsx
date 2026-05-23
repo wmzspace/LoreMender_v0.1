@@ -1,0 +1,123 @@
+import { BottomNav, SealTag } from "../components";
+import {
+  SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
+} from "../components/art";
+import { ENDINGS } from "../data";
+import type { GameState } from "../data/types";
+import type { PageKey } from "../lib/routes";
+
+interface GalleryPageProps {
+  state: GameState;
+  gotoPage: (p: PageKey) => void;
+}
+
+export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
+  const unlocked = state.unlockedEndings || [];
+  return (
+    <div className="page night-deep-bg">
+      <div className="topbar" style={{paddingBottom: 4}}>
+        <button className="icon-btn press" onClick={() => gotoPage("story")}>
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M9 1 L3 7 L9 13" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round"/></svg>
+        </button>
+        <div className="topbar-title">结 局 图 鉴</div>
+        <div style={{width:38}}/>
+      </div>
+
+      <div className="page-scroll" style={{top: 56, bottom: 64, padding: "0 16px"}}>
+        <div className="fade-in" style={{textAlign:"center", marginBottom: 14}}>
+          <div className="en-small" style={{fontSize: 10, opacity: 0.6, color:"var(--gold-pale)"}}>
+            ENDINGS · CODEX
+          </div>
+          <div style={{
+            fontSize: 12.5, opacity: 0.78, marginTop: 6,
+            color:"rgba(231,217,179,0.85)", letterSpacing:"0.05em",
+          }}>
+            已解锁 <span style={{color:"var(--gold-pale)"}}>{unlocked.length}</span> / {Object.keys(ENDINGS).length}
+          </div>
+        </div>
+
+        {Object.values(ENDINGS).map((e, i) => {
+          const has = unlocked.includes(e.id);
+          return (
+            <div key={e.id} className="fade-up"
+              style={{
+                marginBottom: 14,
+                animationDelay: `${i*90}ms`,
+              }}>
+              <div style={{
+                position:"relative", overflow:"hidden",
+                border: "1px solid " + (has ? "rgba(201,161,74,0.6)" : "rgba(78,58,20,0.5)"),
+                borderRadius: 2,
+                boxShadow: has ? "0 0 0 1px rgba(231,199,115,0.12), 0 8px 24px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.5)",
+              }}>
+                <div style={{position:"relative", height: 130}}>
+                  {has ? (
+                    e.id === "ash" ? <SceneEndingAsh/> :
+                    e.id === "sealed" ? <SceneEndingSealed/> :
+                    <SceneEndingLiving/>
+                  ) : (
+                    <div style={{
+                      width:"100%", height:"100%",
+                      background:"radial-gradient(circle at 50% 50%, rgba(60,45,25,0.6), rgba(8,5,3,0.95))",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                    }}>
+                      <div className="title-han" style={{
+                        fontSize: 64, color:"rgba(201,161,74,0.18)",
+                        letterSpacing:"0.4em",
+                      }}>？ ？</div>
+                    </div>
+                  )}
+                  <div className="grain"/>
+                  <div className="vignette"/>
+                  {has && (
+                    <div style={{
+                      position:"absolute", top: 10, right: 10,
+                      animation: "sealStamp 600ms ease both",
+                    }}>
+                      <SealTag size="sm" style={{
+                        background: e.rankColor,
+                        transform:"rotate(-6deg)",
+                        width: 38, height: 38, fontSize: 10,
+                      }}>{e.rank.slice(0,2)}</SealTag>
+                    </div>
+                  )}
+                </div>
+                <div style={{
+                  padding: "12px 14px",
+                  background:"linear-gradient(180deg, rgba(15,10,6,0.95), rgba(8,5,3,0.95))",
+                  borderTop:"1px solid " + (has ? "rgba(201,161,74,0.3)" : "rgba(78,58,20,0.5)"),
+                }}>
+                  <div className="title-han" style={{
+                    fontSize: 16,
+                    color: has ? "var(--gold-pale)" : "rgba(140,107,41,0.6)",
+                    letterSpacing:"0.2em", textIndent:"0.2em",
+                  }}>{has ? e.name : "？ ？ ？"}</div>
+                  <div style={{
+                    fontSize: 12, marginTop: 6,
+                    opacity: has ? 0.8 : 0.45,
+                    fontStyle:"italic",
+                    color:"rgba(231,217,179,0.85)",
+                    letterSpacing:"0.04em",
+                  }}>
+                    {has ? `「${e.epitaph}」` : "尚未解锁此结局。"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        <div style={{
+          textAlign:"center", padding: "12px 0 20px",
+          fontFamily:"ZCOOL XiaoWei, serif",
+          fontSize: 11, opacity: 0.45,
+          letterSpacing:"0.4em",
+        }}>· 收 卷 ·</div>
+      </div>
+
+      <div style={{position:"absolute", bottom: 0, left: 0, right: 0}}>
+        <BottomNav active="gallery" onNav={gotoPage}/>
+      </div>
+    </div>
+  );
+}
