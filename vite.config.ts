@@ -5,6 +5,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: ['4090.kongfei.life']
+    allowedHosts: ['4090.kongfei.life'],
+    // /editor 路由回退到 index.html
+    historyApiFallback: true,
   }
 })

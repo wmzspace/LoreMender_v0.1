@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>典故修补者 · 青囊残卷</title>
+</head>
+<body>
+<tw-storydata name="{{STORY_NAME}}" startnode="1" creator="LoreMender" creator-version="0.1.0" ifid="1779696892430-WG983LI74" zoom="1" format="SugarCube" format-version="2.36.1" options="" hidden>
+<style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">
+/* 古风样式 */
+body {
+  background: linear-gradient(135deg, #0d0905 0%, #1a1410 100%);
+  color: #ebd9b3;
+  font-family: "ZCOOL XiaoWei", "Ma Shan Zheng", serif;
+}
+
+#passages {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  border: 2px solid #c9a14a;
+  background: rgba(13, 9, 5, 0.9);
+  box-shadow: 0 8px 32px rgba(201, 161, 74, 0.3);
+}
+
+.passage {
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+a {
+  color: #ffb968;
+  border-bottom: 1px solid #c9a14a;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+a:hover {
+  color: #c9a14a;
+  border-bottom: 2px solid #ffb968;
+}
+
+h1, h2, h3 {
+  color: #c9a14a;
+  text-align: center;
+  margin: 30px 0 20px;
+  text-shadow: 0 2px 8px rgba(201, 161, 74, 0.5);
+}
+
+/* 选择项样式 */
+ul {
+  list-style: none;
+  padding: 20px 0;
+}
+
+li {
+  margin: 15px 0;
+  padding: 15px 20px;
+  background: linear-gradient(90deg, rgba(201, 161, 74, 0.1), transparent);
+  border-left: 3px solid #c9a14a;
+  transition: all 0.3s;
+}
+
+li:hover {
+  background: rgba(201, 161, 74, 0.2);
+  border-left-width: 5px;
+  transform: translateX(5px);
+}
+</style>
+
+<script role="script" id="twine-user-script" type="text/twine-javascript">
+/* 初始化游戏状态 */
+State.variables.firstChoice = null;
+State.variables.ch2 = null;
+State.variables.searchedClues = [];
+State.variables.trustedPerson = null;
+State.variables.finalDecision = null;
+State.variables.currentChapter = 1;
+State.variables.unlockedEndings = [];
+State.variables.lastEnding = null;
+State.variables.lastToast = null;
+
+/* 保存到 localStorage */
+$(document).on(':passageend', function (ev) {
+  if (State.variables.lastToast) {
+    new Wikifier(null, '<<notify>>' + State.variables.lastToast + '<</notify>>');
+    State.variables.lastToast = null;
+  }
+});
+</script>
+
+:: Start [100,100] tags="start"
+# 典故修补者 · 青囊残卷
+
+你是一名典故修补者，穿越到建安年间。
+华佗即将被处死，《青囊经》面临失传。
+
+你醒来时，成了华佗身边最不起眼的小徒弟。
+
+//你不能救他，但你还有一夜，可以决定医道是否断绝。//
+
+[[开始游戏 →|ch1]]
+
+:: ch1 [100,300] tags="chapter"
+# 第一章 · 医馆夜谈
+
+//旁白//
+夜雨初停。建安二十年，许都狱外的一间小医馆。
+烛火三盏，药柜七格。残卷一页。
+
+**[华佗]**
+你来了。
+替我把那卷东西收一收——别让灯油溅上去。
+
+**[徒弟]**
+（这是……《青囊经》？)
+
+**[华佗]**
+若医术落入恶人之手，救人之法，也会变成杀人之术。
+你说，这书该留吗？
+
+你的选择：
+
+* [[医术无罪。该留给值得信任的人。|ch1_choice_4_0]]
+* [[若会害人，不如毁掉。|ch1_choice_4_1]]
+* [[不能现在决定，先弄清真相。|ch1_choice_4_2]]
+**[华佗]**
+也好。
+你去翻翻药柜后面那只木匣，再过来与我说话。
+——我怕，今夜没有明天。
+
+
+[[继续 →|ch2]]
+
+:: ch1_choice_4_0 [800,700] tags="choice"
+//你选择了：医术无罪。该留给值得信任的人。//
+
+<<set $lastToast = "你触碰到了这段典故真正的遗憾。">>
+提示：你触碰到了这段典故真正的遗憾。
+
+<<set $firstChoice = "trust">>
+
+
+
+:: ch1_choice_4_1 [1100,700] tags="choice"
+//你选择了：若会害人，不如毁掉。//
+
+<<set $lastToast = "华佗看了你一眼，没有说话。">>
+提示：华佗看了你一眼，没有说话。
+
+<<set $firstChoice = "burn">>
+
+
+
+:: ch1_choice_4_2 [1400,700] tags="choice"
+//你选择了：不能现在决定，先弄清真相。//
+
+<<set $lastToast = "你获得了关键线索：青囊残页">>
+提示：你获得了关键线索：青囊残页
+
+<<set $firstChoice = "investigate">>
+
+
+
+:: ch2 [100,700] tags="chapter"
+# 第二章 · 搜查将至
+
+//旁白//
+三更。
+远处巷口，铁靴踏过石板，由远及近。
+
+**[徒弟]**
+（不能再等了。）
+
+**[华佗]**
+他们若搜到这本书，便要再砍我一次。
+你说，怎么办？
+
+你的选择：
+
+* [[藏起残卷。|ch2_choice_3_0]]
+* [[追问华佗徒弟，他记得多少。|ch2_choice_3_1]]
+* [[去市井寻找传闻。|ch2_choice_3_2]]
+//旁白//
+门外脚步声越来越近。
+你忽然意识到——能带走的，从来不只是这一本书。
+
+
+[[继续 →|clue]]
+
+:: ch2_choice_3_0 [800,600] tags="choice"
+//你选择了：藏起残卷。//
+
+<<set $lastToast = "你把残卷塞进药柜暗格。">>
+提示：你把残卷塞进药柜暗格。
+
+<<set $ch2 = "hide">>
+
+
+
+:: ch2_choice_3_1 [1100,600] tags="choice"
+//你选择了：追问华佗徒弟，他记得多少。//
+
+<<set $lastToast = "你触碰到了这段典故真正的遗憾。">>
+提示：你触碰到了这段典故真正的遗憾。
+
+<<set $ch2 = "ask">>
+
+
+
+:: ch2_choice_3_2 [1400,600] tags="choice"
+//你选择了：去市井寻找传闻。//
+
+<<set $lastToast = "你听见巷口孩童在唱奇怪的歌谣。">>
+提示：你听见巷口孩童在唱奇怪的歌谣。
+
+<<set $ch2 = "street">>
+
+
+
+:: ch3 [100,1100] tags="chapter"
+# 第三章 · 寻找可信之人
+
+//旁白//
+四更。雨又下了起来。
+华佗指了指门外。
+
+**[华佗]**
+若有一夜，只能托付一人——
+你想把它，交给谁？
+
+
+[[选择托付对象 →|trust_page]]
+
+:: ch4 [100,1500] tags="chapter"
+# 第四章 · 青囊抉择
+
+//旁白//
+五更将至。
+你把那卷书捧在手里。它比想象中轻。
+
+**[华佗]**
+做吧。
+我已经太老，做不了这件事了。
+
+你的选择：
+
+* [[毁去原卷，以绝后患。|ch4_choice_2_0]]
+* [[藏于民间，散于有缘。|ch4_choice_2_1]]
+* [[暂且封存，待后来人。|ch4_choice_2_2]]
+
+[[查看结局 →|ending_resolver]]
+
+:: ch4_choice_2_0 [800,500] tags="choice"
+//你选择了：毁去原卷，以绝后患。//
+
+<<set $lastToast = "你点燃了烛芯。">>
+提示：你点燃了烛芯。
+
+<<set $finalDecision = "burn">>
+
+[[查看结局：ash →|ending_ash]]
+
+:: ch4_choice_2_1 [1100,500] tags="choice"
+//你选择了：藏于民间，散于有缘。//
+
+<<set $lastToast = "你把方子撕成几份，分别塞进衣襟。">>
+提示：你把方子撕成几份，分别塞进衣襟。
+
+<<set $finalDecision = "scatter">>
+
+[[查看结局：living →|ending_living]]
+
+:: ch4_choice_2_2 [1400,500] tags="choice"
+//你选择了：暂且封存，待后来人。//
+
+<<set $lastToast = "你将残卷裹紧，塞进药柜夹墙。">>
+提示：你将残卷裹紧，塞进药柜夹墙。
+
+<<set $finalDecision = "seal">>
+
+[[查看结局：sealed →|ending_sealed]]
+
+:: clue [500,1500] tags="clue-page"
+# 线索调查
+
+你在医馆中仔细搜寻...
+
+可查看的线索：
+* [[青囊残页|clue_fragment]]
+* [[药方抄本|clue_prescription]]
+* [[徒弟口述|clue_speak]]
+* [[民谣片段|clue_ballad]]
+* [[施针图|clue_needle]]
+
+[[调查完毕，继续 →|ch3]]
+
+:: trust_page [500,2000] tags="trust-page"
+# 寻找可信之人
+
+若有一夜，只能托付一人——
+
+* [[大徒儿·吴普|trust_disciple]]
+* [[隐村接骨匠·老栾|trust_bonesetter]]
+* [[民间歌者·阿瑶|trust_singer]]
+* [[兽医·老周|trust_vet]]
+
+
+
+:: trust_disciple [800,2000] tags="trust-choice"
+**你选择托付给：大徒儿·吴普**
+
+最懂华佗，但可能被牵连。
+
+<<set $trustedPerson = "disciple">>
+
+[[继续 →|ch4]]
+
+:: trust_bonesetter [1100,2000] tags="trust-choice"
+**你选择托付给：隐村接骨匠·老栾**
+
+手艺高超，沉默可靠。
+
+<<set $trustedPerson = "bonesetter">>
+
+[[继续 →|ch4]]
+
+:: trust_singer [1400,2000] tags="trust-choice"
+**你选择托付给：民间歌者·阿瑶**
+
+可用歌谣把医理传下去。
+
+<<set $trustedPerson = "singer">>
+
+[[继续 →|ch4]]
+
+:: trust_vet [1700,2000] tags="trust-choice"
+**你选择托付给：兽医·老周**
+
+懂生命之理，可把方法用于民间。
+
+<<set $trustedPerson = "vet">>
+
+[[继续 →|ch4]]
+
+:: ending_resolver [500,2500] tags="ending-resolver"
+<<if $finalDecision == "burn">>
+  [[查看结局 →|ending_ash]]
+<<elseif $finalDecision == "scatter" and ($trustedPerson == "singer" or $trustedPerson == "bonesetter" or $trustedPerson == "vet")>>
+  [[查看结局 →|ending_living]]
+<<else>>
+  [[查看结局 →|ending_sealed]]
+<</if>>
+
+:: ending_ash [800,2500] tags="ending"
+# 原卷成灰
+## 遗憾未竟
+
+火光吞没了残卷。
+
+华佗没有阻止你。他只是很久没有说话。
+
+后来，世人只记得他医术通神，却再也不知道他究竟如何救人。
+
+[[重新开始|Start]]
+[[查看结局图鉴|gallery]]
+
+:: ending_sealed [1200,2500] tags="ending"
+# 密室封存
+## 遗憾半修
+
+残卷被藏在无人知晓的夹墙里。
+
+它躲过了搜查，也躲过了后世。
+
+很多年后，墙体坍塌，纸页已碎成尘。
+
+[[重新开始|Start]]
+[[查看结局图鉴|gallery]]
+
+:: ending_living [1600,2500] tags="ending"
+# 医道未断
+## 医道未断
+
+没有人再见过完整的《青囊经》。
+
+可许多年后，乡野间有接骨匠会唱奇怪的口诀，兽医懂得止血，老妇人知道按哪个穴位能救急。
+
+书没有留下，医道留下了。
+
+——华佗终究死了。可这一次，医道没有随他一起沉入青史。
+
+[[重新开始|Start]]
+[[查看结局图鉴|gallery]]
+
+
+
+</tw-storydata>
+
+<script>
+// Twine 2 格式检测
+(function() {
+  var el = document.querySelector('tw-storydata');
+  if (!el) return;
+  
+  // 在这里可以添加自定义的运行时逻辑
+  console.log('LoreMender Twine Story Loaded');
+  console.log('Story:', el.getAttribute('name'));
+  console.log('IFID:', el.getAttribute('ifid'));
+})();
+</script>
+
+<noscript>
+  <p>此故事需要启用 JavaScript 才能运行。</p>
+  <p>请在浏览器设置中启用 JavaScript，然后刷新页面。</p>
+</noscript>
+</body>
+</html>
