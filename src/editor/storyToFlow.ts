@@ -200,7 +200,7 @@ export function flowToStory(
 /** 序列化为 story.ts */
 export function storyToTypeScript(story: Record<string, StoryChapter>): string {
   const lines: string[] = [
-    `import type { StoryChapter } from "./types";`,
+    `import type { StoryChapter } from "../../types";`,
     ``,
     `export const STORY: Record<string, StoryChapter> = {`,
   ];

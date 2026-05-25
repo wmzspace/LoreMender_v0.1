@@ -6,9 +6,9 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { STORY } from '../data/story';
-import { CHAPTERS } from '../data/chapters';
-import { ENDINGS } from '../data/endings';
+import { STORY } from '../data/dungeons/huatuo/story';
+import { CHAPTERS } from '../data/dungeons/huatuo/chapters';
+import { ENDINGS } from '../data/dungeons/huatuo/endings';
 import { storyToFlow, flowToStory, storyToTypeScript } from './storyToFlow';
 import type { StoryNodeData, EndingNodeData } from './storyToFlow';
 import {
@@ -61,11 +61,12 @@ function highlight(code: string): string {
 const DUNGEONS = [
   {
     id: 'huatuo',
-    name: '青囊残卷',
+    name: '华佗 · 青囊残卷',
     chapters: CHAPTERS.map(ch => ({ id: ch.id, name: ch.name })),
   },
-  // 未来副本占位
-  // { id: 'libai', name: '谪仙遗恨', chapters: [] },
+  // 未来副本占位（添加新副本时在这里注册）
+  // { id: 'libai', name: '李白 · 谪仙遗恨', chapters: [] },
+  // { id: 'yuefi', name: '岳飞 · 风波未平', chapters: [] },
 ];
 
 export default function StoryFlowEditor() {
@@ -76,7 +77,7 @@ export default function StoryFlowEditor() {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<StoryNodeData>>([
     ...initNodes, ...endingNodes,
   ] as any);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initEdges);
+  const [edges, , onEdgesChange] = useEdgesState(initEdges);
 
   // ── 视图状态 ─────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<ViewMode>('flow');
