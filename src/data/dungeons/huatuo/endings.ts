@@ -1,6 +1,9 @@
 import type { Ending, EndingId, GameState } from "../../types";
 
-export const ENDINGS: Record<EndingId, Ending> = {
+// Keyed by string rather than Record<EndingId, …>: EndingId keeps the legacy
+// ash/sealed/living ids for save-compat, but only the 4 active endings are
+// defined here, so an exhaustive Record would (incorrectly) demand all 7 keys.
+export const ENDINGS: Record<string, Ending> = {
   chenbo_true: {
     id: "chenbo_true", name: "医者人间", rank: "典故修补", rankColor: "#3a6b58",
     epitaph: "书没有留下，医道留下了。",
