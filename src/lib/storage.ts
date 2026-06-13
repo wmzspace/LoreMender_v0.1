@@ -1,17 +1,27 @@
 import type { GameState } from "../data/types";
 
-export const STORAGE_KEY = "loremender:huatuo:v1";
+export const STORAGE_KEY = "loremender:huatuo:v2";
 
 export function defaultState(): GameState {
   return {
-    firstChoice: null,
-    ch2: null,
+    // 华佗副本字段
+    firstImpression: null,
+    trust_huatuo: null,
+    found_clue: null,
+    suspect: null,
+    cao_suspicion: null,
+    caoCunning: null,
+    finalChoice: null,
+    // 通用字段
     searchedClues: [],
     trustedPerson: null,
-    finalDecision: null,
     currentChapter: 1,
     unlockedEndings: [],
     lastEnding: null,
+    // 旧版兼容
+    firstChoice: null,
+    ch2: null,
+    finalDecision: null,
   };
 }
 

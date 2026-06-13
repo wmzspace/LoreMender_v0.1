@@ -27,6 +27,28 @@
 
 ---
 
+## 🎨 可视化剧情编辑器
+
+**全新功能**：使用 Twine 可视化编辑剧情！
+
+```bash
+# 导出现有剧情到 Twine
+npm run story:export
+
+# 在 Twine 中可视化编辑后，导入回项目
+npm run story:import <twine-html-file>
+```
+
+**优势**：
+- ✅ 可视化查看所有分支关系
+- ✅ 拖拽节点编辑剧情
+- ✅ 实时预览剧情流程
+- ✅ 防止遗漏分支
+
+详细指南：[Twine 快速开始](./TWINE_GUIDE.md) | [剧情结构文档](./STORY_STRUCTURE.md)
+
+---
+
 ## 🎮 核心玩法
 
 - **剧情选择**：每个关键节点都有 2-3 个选择，影响后续剧情与结局

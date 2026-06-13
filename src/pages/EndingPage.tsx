@@ -50,10 +50,13 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   const replay = () => {
     const ns: GameState = {
       ...state,
-      firstChoice: null, ch2: null,
+      firstImpression: null, trust_huatuo: null,
+      found_clue: null, suspect: null,
+      cao_suspicion: null, caoCunning: null,
+      finalChoice: null,
       searchedClues: [],
-      trustedPerson: null, finalDecision: null,
-      currentChapter: 1, lastEnding: null,
+      trustedPerson: null, currentChapter: 1, lastEnding: null,
+      firstChoice: null, ch2: null, finalDecision: null,
     };
     setState(ns);
     saveState(ns);

@@ -1,3 +1,5 @@
+// ── 通用基础类型 ────────────────────────────────────────────────
+
 export interface Chapter {
   id: string;
   num: number;
@@ -30,6 +32,19 @@ export interface Clue {
 
 export type ClueIconType = "scroll" | "ledger" | "lips" | "music" | "needle";
 
+// ── 结局类型 ────────────────────────────────────────────────────
+
+/** 华佗副本结局 ID */
+export type EndingId =
+  | "chenbo_true"
+  | "xuanyin_fallback"
+  | "wangji_trap"
+  | "burn_ending"
+  // 旧版兼容
+  | "ash"
+  | "sealed"
+  | "living";
+
 export interface Ending {
   id: EndingId;
   name: string;
@@ -40,13 +55,16 @@ export interface Ending {
   glyph: string;
 }
 
-export type EndingId = "ash" | "sealed" | "living";
+// ── 选项 / Beat 类型 ────────────────────────────────────────────
 
 export interface Choice {
   label: string;
   toast?: string;
-  set?: Partial<GameState>;
+  /** 状态变更，值统一为字符串（序列化友好） */
+  set?: Record<string, string>;
   ending?: EndingId;
+  /** 显示条件（仅运行时使用，编辑器可忽略） */
+  condition?: Record<string, unknown>;
 }
 
 export type Beat =
@@ -55,7 +73,26 @@ export type Beat =
   | { choices: Choice[] }
   | { gotoChapter: string }
   | { gotoTrust: true }
-  | { gotoEnding: true };
+  | { gotoEnding: true }
+  | { unlockEnding: string; generatePoster?: boolean };
+
+// ── 场景 / 章节 ─────────────────────────────────────────────────
+
+export type SceneKind =
+  // 华佗副本场景
+  | "xuchang_prison"
+  | "three_places"
+  | "cao_mansion"
+  | "huatuo_cell"
+  | "ending_true"
+  | "ending_fallback"
+  | "ending_trap"
+  | "ending_ash"
+  // 旧版兼容
+  | "clinic_night"
+  | "raid_coming"
+  | "find_trust"
+  | "final_choice";
 
 export interface StoryChapter {
   scene: SceneKind;
@@ -63,19 +100,27 @@ export interface StoryChapter {
   beats: Beat[];
 }
 
-export type SceneKind =
-  | "clinic_night"
-  | "raid_coming"
-  | "find_trust"
-  | "final_choice";
+// ── 游戏状态 ────────────────────────────────────────────────────
 
 export interface GameState {
-  firstChoice: string | null;
-  ch2: string | null;
+  // 华佗副本新字段
+  firstImpression: string | null;
+  trust_huatuo: string | null;
+  found_clue: string | null;
+  suspect: string | null;
+  cao_suspicion: string | null;
+  caoCunning: string | null;
+  finalChoice: string | null;
+
+  // 通用字段
   searchedClues: string[];
   trustedPerson: string | null;
-  finalDecision: string | null;
   currentChapter: number;
   unlockedEndings: EndingId[];
   lastEnding: EndingId | null;
+
+  // 旧版兼容字段（保留避免 localStorage 读取报错）
+  firstChoice?: string | null;
+  ch2?: string | null;
+  finalDecision?: string | null;
 }

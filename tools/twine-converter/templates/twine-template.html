@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>{{STORY_NAME}}</title>
+</head>
+<body>
+<tw-storydata name="{{STORY_NAME}}" startnode="1" creator="LoreMender" creator-version="0.1.0" ifid="{{IFID}}" zoom="1" format="SugarCube" format-version="2.36.1" options="" hidden>
+<style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">
+/* 古风样式 */
+body {
+  background: linear-gradient(135deg, #0d0905 0%, #1a1410 100%);
+  color: #ebd9b3;
+  font-family: "ZCOOL XiaoWei", "Ma Shan Zheng", serif;
+}
+
+#passages {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  border: 2px solid #c9a14a;
+  background: rgba(13, 9, 5, 0.9);
+  box-shadow: 0 8px 32px rgba(201, 161, 74, 0.3);
+}
+
+.passage {
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+a {
+  color: #ffb968;
+  border-bottom: 1px solid #c9a14a;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+a:hover {
+  color: #c9a14a;
+  border-bottom: 2px solid #ffb968;
+}
+
+h1, h2, h3 {
+  color: #c9a14a;
+  text-align: center;
+  margin: 30px 0 20px;
+  text-shadow: 0 2px 8px rgba(201, 161, 74, 0.5);
+}
+
+/* 选择项样式 */
+ul {
+  list-style: none;
+  padding: 20px 0;
+}
+
+li {
+  margin: 15px 0;
+  padding: 15px 20px;
+  background: linear-gradient(90deg, rgba(201, 161, 74, 0.1), transparent);
+  border-left: 3px solid #c9a14a;
+  transition: all 0.3s;
+}
+
+li:hover {
+  background: rgba(201, 161, 74, 0.2);
+  border-left-width: 5px;
+  transform: translateX(5px);
+}
+</style>
+
+<script role="script" id="twine-user-script" type="text/twine-javascript">
+/* 初始化游戏状态 */
+State.variables.firstChoice = null;
+State.variables.ch2 = null;
+State.variables.searchedClues = [];
+State.variables.trustedPerson = null;
+State.variables.finalDecision = null;
+State.variables.currentChapter = 1;
+State.variables.unlockedEndings = [];
+State.variables.lastEnding = null;
+State.variables.lastToast = null;
+
+/* 保存到 localStorage */
+$(document).on(':passageend', function (ev) {
+  if (State.variables.lastToast) {
+    new Wikifier(null, '<<notify>>' + State.variables.lastToast + '<</notify>>');
+    State.variables.lastToast = null;
+  }
+});
+</script>
+
+{{STORY_DATA}}
+
+</tw-storydata>
+
+<script>
+// Twine 2 格式检测
+(function() {
+  var el = document.querySelector('tw-storydata');
+  if (!el) return;
+  
+  // 在这里可以添加自定义的运行时逻辑
+  console.log('LoreMender Twine Story Loaded');
+  console.log('Story:', el.getAttribute('name'));
+  console.log('IFID:', el.getAttribute('ifid'));
+})();
+</script>
+
+<noscript>
+  <p>此故事需要启用 JavaScript 才能运行。</p>
+  <p>请在浏览器设置中启用 JavaScript，然后刷新页面。</p>
+</noscript>
+</body>
+</html>

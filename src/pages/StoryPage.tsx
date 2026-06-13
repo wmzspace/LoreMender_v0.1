@@ -90,10 +90,10 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
 
   const sceneEl = useMemo(() => {
     const s = chapter?.scene;
-    if (s === "clinic_night") return <SceneClinic/>;
-    if (s === "raid_coming") return <SceneRaid/>;
+    if (s === "clinic_night" || s === "xuchang_prison") return <SceneClinic/>;
+    if (s === "raid_coming" || s === "three_places" || s === "cao_mansion") return <SceneRaid/>;
     if (s === "find_trust") return <SceneTrust/>;
-    if (s === "final_choice") return <SceneFinal/>;
+    if (s === "final_choice" || s === "huatuo_cell") return <SceneFinal/>;
     return <SceneClinic/>;
   }, [chapter]);
 
