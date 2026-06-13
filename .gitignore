@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# 项目以 npm/package-lock.json 为准;pnpm-lock 仅用于本地绕过 npm bug 装依赖,不入库
+pnpm-lock.yaml
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
