@@ -1,4 +1,4 @@
-import { BottomNav, SealTag } from "../components";
+import { BottomNav, SealTag, Topbar } from "../components";
 import { CHAPTERS } from "../data";
 import type { GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
@@ -12,13 +12,7 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
   const cur = state.currentChapter || 1;
   return (
     <div className="page night-deep-bg">
-      <div className="topbar" style={{paddingBottom: 4}}>
-        <button className="icon-btn press" onClick={() => gotoPage("story")}>
-          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M9 1 L3 7 L9 13" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round"/></svg>
-        </button>
-        <div className="topbar-title">副 本 进 程</div>
-        <div style={{width:38}}/>
-      </div>
+      <Topbar title="副 本 进 程" onBack={() => gotoPage("story")}/>
 
       <div className="page-scroll" style={{top: 56, bottom: 64, padding: "8px 16px 28px"}}>
         <div className="fade-in" style={{textAlign:"center", marginBottom: 14}}>

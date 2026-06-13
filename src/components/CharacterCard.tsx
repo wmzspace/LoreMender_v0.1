@@ -11,7 +11,8 @@ interface CharacterCardProps {
 export function CharacterCard({ char, selected, onSelect }: CharacterCardProps) {
   return (
     <button onClick={onSelect}
-      className="press"
+      className="press lift"
+      aria-pressed={selected}
       style={{
         position: "relative",
         textAlign: "left", cursor: "pointer",

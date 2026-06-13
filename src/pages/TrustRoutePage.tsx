@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CharacterCard, PaperPanel, SealTag } from "../components";
+import { CharacterCard, PaperPanel, SealTag, Topbar } from "../components";
 import { TRUST_OPTIONS } from "../data";
 import type { GameState } from "../data/types";
 import { saveState } from "../lib/storage";
@@ -26,13 +26,7 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
 
   return (
     <div className="page night-deep-bg">
-      <div className="topbar" style={{paddingBottom: 4}}>
-        <button className="icon-btn press" onClick={() => gotoPage("story")}>
-          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M9 1 L3 7 L9 13" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round"/></svg>
-        </button>
-        <div className="topbar-title">寻 可 托 之 人</div>
-        <div style={{width:38}}/>
-      </div>
+      <Topbar title="寻 可 托 之 人" onBack={() => gotoPage("story")}/>
 
       <div className="page-scroll" style={{top: 56, bottom: 96, padding:"0 14px"}}>
         <div className="fade-in" style={{textAlign:"center", margin: "4px 0 14px"}}>

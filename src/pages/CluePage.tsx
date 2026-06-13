@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BottomNav, BottomSheet, GoldDivider } from "../components";
+import { BottomNav, BottomSheet, GoldDivider, Topbar } from "../components";
 import { ClueIcon } from "../components/art";
 import { CLUES } from "../data";
 import type { GameState } from "../data/types";
@@ -31,13 +31,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
 
   return (
     <div className="page night-deep-bg">
-      <div className="topbar" style={{paddingBottom: 4}}>
-        <button className="icon-btn press" onClick={() => gotoPage("story")}>
-          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M9 1 L3 7 L9 13" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round"/></svg>
-        </button>
-        <div className="topbar-title">线 索 板</div>
-        <div style={{width:38}}/>
-      </div>
+      <Topbar title="线 索 板" onBack={() => gotoPage("story")}/>
 
       <div className="page-scroll" style={{top: 56, bottom: 64, padding: "0 14px"}}>
         <div className="fade-in" style={{textAlign:"center", marginBottom: 12}}>

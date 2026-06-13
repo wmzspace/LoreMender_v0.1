@@ -16,7 +16,7 @@ export function BottomSheet({ open, onClose, children }: BottomSheetProps) {
           margin: 0,
           borderRadius: "12px 12px 0 0",
           padding: "14px 18px 20px",
-          maxHeight: "70vh",
+          maxHeight: "70dvh",
           overflowY: "auto",
         }}>
           <div style={{

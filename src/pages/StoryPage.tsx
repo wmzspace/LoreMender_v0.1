@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  BottomNav, ChoiceList, DialogueBox, ProgressDots, SceneFrame, Toast,
+  BottomNav, ChoiceList, DialogueBox, ProgressDots, SceneFrame, Toast, Topbar,
 } from "../components";
 import {
   SceneClinic, SceneRaid, SceneTrust, SceneFinal,
@@ -32,10 +32,10 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const beats = chapter?.beats || [];
   const beat = beats[beatIdx];
 
-  // Beats that only redirect (no speaker/line/choices) carry no visible text.
-  const isTransition = !!beat && (
-    "gotoChapter" in beat || "gotoTrust" in beat || "gotoEnding" in beat
-  );
+  // Redirect beats (no speaker/line/choices) carry no visible text.
+  const isTransitionBeat = (b: typeof beat): boolean =>
+    !!b && ("gotoChapter" in b || "gotoTrust" in b || "gotoEnding" in b);
+  const isTransition = isTransitionBeat(beat);
 
   const runTransition = (b: typeof beat): boolean => {
     if (!b) return false;
@@ -62,17 +62,22 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
     return false;
   };
 
-  // Fire redirect beats automatically rather than rendering an empty dialogue
-  // box the player would have to tap through.
-  useEffect(() => {
-    if (isTransition) runTransition(beat);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [beat]);
+  // Advance to an index, auto-resolving redirect beats so the player never
+  // lands on an empty (text-less) transition beat and has to tap through it.
+  const goToIndex = (idx: number) => {
+    const clamped = Math.min(beats.length - 1, idx);
+    const target = beats[clamped];
+    if (isTransitionBeat(target)) {
+      runTransition(target);
+      return;
+    }
+    setBeatIdx(clamped);
+  };
 
   const next = () => {
     if (!beat) return;
     if (runTransition(beat)) return;
-    setBeatIdx(i => Math.min(beats.length - 1, i + 1));
+    goToIndex(beatIdx + 1);
   };
 
   const choose = (c: Choice) => {
@@ -80,7 +85,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
     const ns: GameState = { ...state, ...(c.set || {}) };
     setState(ns);
     saveState(ns);
-    setTimeout(() => setBeatIdx(i => Math.min(beats.length - 1, i + 1)), 300);
+    setTimeout(() => goToIndex(beatIdx + 1), 300);
   };
 
   const sceneEl = useMemo(() => {
@@ -101,15 +106,17 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
 
   return (
     <div className="page night-deep-bg" style={{paddingBottom: 0}}>
-      <div className="topbar" style={{paddingBottom: 4}}>
-        <button className="icon-btn press" onClick={() => gotoPage("dungeon")}>
-          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M9 1 L3 7 L9 13" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round"/></svg>
-        </button>
-        <div className="topbar-title">华佗 · 青囊残卷</div>
-        <button className="icon-btn press" onClick={() => gotoPage("map")}>
-          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 3 H12 M2 7 H12 M2 11 H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
-        </button>
-      </div>
+      <Topbar
+        title="华佗 · 青囊残卷"
+        onBack={() => gotoPage("dungeon")}
+        right={
+          <button className="icon-btn press" onClick={() => gotoPage("map")} aria-label="副本进程">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 3 H12 M2 7 H12 M2 11 H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+          </button>
+        }
+      />
       <ProgressDots total={5} current={ch}/>
 
       <div className="fade-in" style={{

@@ -698,3 +698,82 @@ button { font-family: inherit; }
 
 /* Helpers */
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ============================================================
+   Interaction, focus & motion layer (UI/UX/UE pass)
+   - hover affordances for the desktop phone-preview
+   - keyboard focus rings (a11y)
+   - unified disabled state
+   - reduced-motion honoring
+   ============================================================ */
+:root {
+  --topbar-h: 56px;
+  --bottomnav-h: 64px;
+}
+
+/* Keyboard focus ring only — pointer clicks shouldn't show it. */
+:focus:not(:focus-visible) { outline: none; }
+:focus-visible {
+  outline: 2px solid rgba(231,199,115,0.85);
+  outline-offset: 2px;
+}
+
+/* Smoother shared transitions */
+.btn-primary, .btn-ghost, .icon-btn, .choice, .navitem {
+  transition: transform 140ms ease, box-shadow 200ms ease,
+              filter 200ms ease, color 160ms ease, background 200ms ease,
+              border-color 200ms ease;
+}
+
+/* Hover affordances — gated so touch devices don't get stuck states. */
+@media (hover: hover) {
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow:
+      inset 0 1px 0 rgba(255,235,180,0.6),
+      inset 0 -2px 0 rgba(78,58,20,0.3),
+      0 0 0 1px rgba(255,220,140,0.55),
+      0 0 32px rgba(231,199,115,0.42),
+      0 10px 26px rgba(0,0,0,0.55);
+  }
+  .btn-ghost:hover {
+    background: rgba(201,161,74,0.12);
+    border-color: var(--gold-pale);
+    color: var(--gold-pale);
+  }
+  .icon-btn:hover {
+    background: rgba(201,161,74,0.2);
+    border-color: var(--gold-pale);
+    color: var(--gold-pale);
+  }
+  .choice:hover {
+    transform: translateY(-1px);
+    border-color: var(--gold-pale);
+    box-shadow: 0 0 0 1px rgba(231,199,115,0.25), 0 8px 20px rgba(0,0,0,0.45);
+  }
+  .navitem:hover { color: rgba(235,217,179,0.85); }
+  .lift:hover { transform: translateY(-3px); }
+}
+
+/* Cards opt into a gentle hover lift via .lift */
+.lift { transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease; }
+
+/* Unified disabled state */
+button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
+  opacity: 0.42;
+  filter: grayscale(0.5);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Respect users who reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
