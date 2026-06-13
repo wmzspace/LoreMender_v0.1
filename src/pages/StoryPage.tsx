@@ -65,7 +65,17 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   // Advance to an index, auto-resolving redirect beats so the player never
   // lands on an empty (text-less) transition beat and has to tap through it.
   const goToIndex = (idx: number) => {
-    const clamped = Math.min(beats.length - 1, idx);
+    let clamped = Math.min(beats.length - 1, idx);
+    // Skip a `gotoTrust` detour that's already been satisfied. ch4 routes
+    // through the trust screen mid-chapter; confirming it remounts StoryPage at
+    // beat 0, so without this guard we'd replay up to `gotoTrust` and reopen
+    // the trust screen forever. Once trustedPerson is set, walk past it.
+    while (
+      clamped < beats.length - 1 &&
+      (() => { const t = beats[clamped]; return !!t && "gotoTrust" in t && !!t.gotoTrust && !!state.trustedPerson; })()
+    ) {
+      clamped++;
+    }
     const target = beats[clamped];
     if (isTransitionBeat(target)) {
       runTransition(target);
