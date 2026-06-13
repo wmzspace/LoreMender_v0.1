@@ -32,28 +32,46 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const beats = chapter?.beats || [];
   const beat = beats[beatIdx];
 
-  const next = () => {
-    if (!beat) return;
-    if ("gotoChapter" in beat && beat.gotoChapter === "clue") {
+  // Beats that only redirect (no speaker/line/choices) carry no visible text.
+  const isTransition = !!beat && (
+    "gotoChapter" in beat || "gotoTrust" in beat || "gotoEnding" in beat
+  );
+
+  const runTransition = (b: typeof beat): boolean => {
+    if (!b) return false;
+    if ("gotoChapter" in b && b.gotoChapter === "clue") {
       gotoPage("clue");
-      return;
+      return true;
     }
-    if ("gotoChapter" in beat && beat.gotoChapter) {
-      const nextCh = parseInt(beat.gotoChapter.replace("ch", ""), 10);
+    if ("gotoChapter" in b && b.gotoChapter) {
+      const nextCh = parseInt(b.gotoChapter.replace("ch", ""), 10);
       const ns = { ...state, currentChapter: nextCh };
       setState(ns);
       saveState(ns);
       setBeatIdx(0);
-      return;
+      return true;
     }
-    if ("gotoTrust" in beat && beat.gotoTrust) {
+    if ("gotoTrust" in b && b.gotoTrust) {
       gotoPage("trust");
-      return;
+      return true;
     }
-    if ("gotoEnding" in beat && beat.gotoEnding) {
+    if ("gotoEnding" in b && b.gotoEnding) {
       gotoEnding();
-      return;
+      return true;
     }
+    return false;
+  };
+
+  // Fire redirect beats automatically rather than rendering an empty dialogue
+  // box the player would have to tap through.
+  useEffect(() => {
+    if (isTransition) runTransition(beat);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [beat]);
+
+  const next = () => {
+    if (!beat) return;
+    if (runTransition(beat)) return;
     setBeatIdx(i => Math.min(beats.length - 1, i + 1));
   };
 
@@ -108,9 +126,10 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
 
       <div style={{
         flex: 1, overflowY:"auto",
+        display:"flex", flexDirection:"column",
         paddingBottom: `calc(20px + var(--safe-bottom) + 64px)`,
       }} className="no-scrollbar">
-        <div style={{padding: "16px 0 0"}}>
+        <div style={{margin: "auto 0", padding: "16px 0"}}>
           {hasChoices && beat && "choices" in beat ? (
             <div className="fade-up">
               <div style={{
@@ -122,7 +141,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
               }}>· 抉 择 ·</div>
               <ChoiceList choices={beat.choices} onChoose={choose}/>
             </div>
-          ) : (
+          ) : isTransition ? null : (
             <div className="fade-in">
               <DialogueBox
                 speaker={speakerName}

@@ -40,12 +40,13 @@
 
 /* ---------- Reset / base ---------- */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; padding: 0; overscroll-behavior: none; }
+html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; }
 body {
   font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
   color: var(--paper);
   background: #060403;
   min-height: 100vh;
+  min-height: 100dvh; /* dynamic viewport: tracks mobile URL-bar collapse */
   -webkit-font-smoothing: antialiased;
   font-feature-settings: "palt";
 }
@@ -57,6 +58,7 @@ button { font-family: inherit; }
    ============================================================ */
 .stage {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,6 +87,7 @@ button { font-family: inherit; }
   width: 100%;
   max-width: var(--phone-w);
   height: min(844px, calc(100vh - 32px));
+  height: min(844px, calc(100dvh - 32px));
   background: var(--ink-deepest);
   border-radius: 44px;
   overflow: hidden;
@@ -95,7 +98,17 @@ button { font-family: inherit; }
     0 0 120px rgba(201,161,74,0.08);
 }
 @media (max-width: 480px) {
-  .stage { padding: 0; background: #060403; }
+  /* Lock the outer document so the whole UI can't be dragged/overflow when the
+     mobile URL bar shows or hides — only inner .page-scroll regions scroll. */
+  html, body { height: 100dvh; overflow: hidden; }
+  .stage {
+    padding: 0;
+    background: #060403;
+    min-height: 0;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
   .phone {
     max-width: 100%;
     height: 100vh;
@@ -470,13 +483,14 @@ button { font-family: inherit; }
   margin: 0 14px;
   padding: 16px 18px 18px;
   background:
-    linear-gradient(180deg, rgba(15,10,6,0.92), rgba(20,14,8,0.95));
-  border: 1px solid rgba(201,161,74,0.45);
+    linear-gradient(180deg, rgba(34,24,14,0.96), rgba(20,14,8,0.98));
+  border: 1px solid rgba(201,161,74,0.6);
   border-radius: 2px;
   color: var(--paper);
   box-shadow:
-    inset 0 1px 0 rgba(231,199,115,0.15),
-    0 -4px 20px rgba(0,0,0,0.6);
+    inset 0 0 24px rgba(231,199,115,0.06),
+    inset 0 1px 0 rgba(231,199,115,0.22),
+    0 8px 28px rgba(0,0,0,0.7);
 }
 .dialogue::before {
   content: ""; position: absolute;
@@ -584,7 +598,7 @@ button { font-family: inherit; }
    Toast / micro-feedback
    ============================================================ */
 .toast {
-  position: fixed;
+  position: absolute;
   left: 50%;
   top: 90px;
   transform: translateX(-50%);
@@ -596,10 +610,20 @@ button { font-family: inherit; }
   letter-spacing: 0.18em;
   padding: 10px 18px;
   z-index: 200;
-  white-space: nowrap;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.5;
+  width: max-content;
   max-width: calc(100% - 40px);
   box-shadow: 0 0 24px rgba(231,199,115,0.3), 0 8px 24px rgba(0,0,0,0.6);
-  animation: fadeInDown 300ms ease both;
+  animation: toastIn 300ms ease both;
+}
+/* Keep the centering translateX through the whole animation — a plain
+   fadeInDown ends on `transform: none`, which would drop the -50% and shove
+   the toast off the right edge. */
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, -14px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
 }
 .toast::before, .toast::after {
   content: "";
