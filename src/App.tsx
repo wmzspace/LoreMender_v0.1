@@ -24,10 +24,14 @@ export default function App() {
   };
 
   const gotoEnding = () => {
-    const endId = resolveEnding(state);
-    const ns: GameState = { ...state, lastEnding: endId };
-    setState(ns);
-    saveState(ns);
+    // Resolve from the freshest state via the functional updater: the ch4 choice
+    // commits `finalChoice` just before this fires, and a stale `state` closure
+    // would otherwise always fall back to the default ending.
+    setState(prev => {
+      const ns: GameState = { ...prev, lastEnding: resolveEnding(prev) };
+      saveState(ns);
+      return ns;
+    });
     gotoPage("ending");
   };
 

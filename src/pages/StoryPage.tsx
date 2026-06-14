@@ -7,7 +7,7 @@ import {
 } from "../components/art";
 import { CHARACTERS, STORY } from "../data";
 import type { Choice, GameState } from "../data/types";
-import { saveState } from "../lib/storage";
+import { loadBeat, saveBeat, saveState } from "../lib/storage";
 import type { PageKey } from "../lib/routes";
 
 interface StoryPageProps {
@@ -22,12 +22,16 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const chKey = "ch" + ch;
   const chapter = STORY[chKey];
 
-  const [beatIdx, setBeatIdx] = useState(0);
+  // Resume at the saved beat for this chapter (set when re-mounting after a
+  // tab switch); a new chapter / new game returns 0 via the chapter tag.
+  const [beatIdx, setBeatIdx] = useState(() => loadBeat(ch));
   const [toast, setToast] = useState("");
 
+  // Persist reading position so leaving the story tab (线索/进程/图鉴) and
+  // returning resumes here instead of replaying the chapter from the top.
   useEffect(() => {
-    setBeatIdx(0);
-  }, [ch]);
+    saveBeat(ch, beatIdx);
+  }, [ch, beatIdx]);
 
   const beats = chapter?.beats || [];
   const beat = beats[beatIdx];
