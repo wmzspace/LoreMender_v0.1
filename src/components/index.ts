@@ -7,7 +7,6 @@ export { SealTag } from "./SealTag";
 export { GoldDivider } from "./GoldDivider";
 export { DialogueBox } from "./DialogueBox";
 export { ChoiceList } from "./ChoiceList";
-export { CharacterCard } from "./CharacterCard";
 export { BottomSheet } from "./BottomSheet";
 export { ProgressDots } from "./ProgressDots";
 export { SceneFrame } from "./SceneFrame";

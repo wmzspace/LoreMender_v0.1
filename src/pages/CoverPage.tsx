@@ -21,6 +21,18 @@ export function CoverPage({ onStart, onWorld }: CoverPageProps) {
         background:"linear-gradient(180deg, transparent 42%, rgba(5,8,11,0.45) 64%, rgba(6,4,3,0.86) 82%, rgba(5,3,2,0.99) 100%)",
       }}/>
 
+      {/* texture layer — ties the poster into the same filmic grain/vignette language as the in-game screens */}
+      <div className="grain"/>
+      <div className="vignette"/>
+
+      {/* eyebrow — first beat of the THE PROLOGUE / THE ENTRUSTING / THE EPILOGUE triad */}
+      <div className="en-small fade-in" style={{
+        position:"absolute", top:"calc(20px + env(safe-area-inset-top,0px))", left: 26,
+        zIndex: 3, fontSize: 10, letterSpacing:"0.34em",
+        color:"var(--gold-pale)", opacity: 0.55,
+        textShadow:"0 1px 6px rgba(0,0,0,0.8)",
+      }}>THE PROLOGUE</div>
+
       {/* classical book-cover frame (题封) */}
       <div style={{
         position:"absolute", inset:"calc(14px + env(safe-area-inset-top,0px)) 14px calc(14px + var(--safe-bottom))",

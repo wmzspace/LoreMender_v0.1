@@ -1,11 +1,24 @@
 import { useState } from "react";
 import type { GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
+import { Topbar } from "../components";
+import { Particles } from "../components/art";
 
 interface ProgressPageProps {
   state: GameState;
   gotoPage: (p: PageKey) => void;
 }
+
+// ── 墨·青·金 配色（与 global.css 变量对齐） ──────────────────────
+const GOLD_PALE = "#ecdca6";
+const GOLD = "#cdb277";
+const GOLD_DEEP = "#8f7846";
+const GOLD_SHADOW = "#463c22";
+const JADE = "#5fa892";
+const JADE_PALE = "#a6dccb";
+const INK = "#0c1218";
+const INK_DEEP = "#0a1014";
+const PAPER = "rgba(228,224,208,";
 
 // ── 全部五章数据 ───────────────────────────────────────────────
 const ALL_CHAPTERS = [
@@ -46,183 +59,176 @@ const ALL_CHAPTERS = [
   },
 ];
 
-// ── 圆形插画占位 ───────────────────────────────────────────────
-function CircleIllust({
-  size = 90, opacity = 1, glow = false,
+// ── 章节节点圆（冷墨底 · 烛光 · 金/青描边） ─────────────────────
+function NodeMedallion({
+  size = 64, dim = false, accent,
 }: {
-  size?: number; opacity?: number; glow?: boolean;
+  size?: number;
+  dim?: boolean;
+  /** 高亮色：jade=当前章，gold=已完成首饰，undefined=普通描边 */
+  accent?: "jade" | "gold";
 }) {
   const r = size / 2;
-  const uid = `${size}-${glow ? "g" : "n"}`;
+  const uid = `${size}-${accent ?? "n"}`;
+  const ring = accent === "jade" ? JADE : accent === "gold" ? GOLD : GOLD_SHADOW;
+  const glow = !!accent;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
-      style={{ flexShrink: 0, opacity, transition: "opacity 0.3s" }}>
+      style={{ flexShrink: 0, opacity: dim ? 0.78 : 1, transition: "opacity 0.3s" }}>
       <defs>
-        <radialGradient id={`cg-${uid}`} cx="50%" cy="45%" r="50%">
-          <stop offset="0%" stopColor="#cdb277" stopOpacity="0.6" />
-          <stop offset="55%" stopColor="#2b2517" stopOpacity="0.3" />
+        <radialGradient id={`cg-${uid}`} cx="50%" cy="44%" r="52%">
+          <stop offset="0%" stopColor="#ffcf8a" stopOpacity="0.42" />
+          <stop offset="52%" stopColor={GOLD_SHADOW} stopOpacity="0.3" />
           <stop offset="100%" stopColor="#06100e" stopOpacity="0" />
         </radialGradient>
         <clipPath id={`cc-${uid}`}><circle cx={r} cy={r} r={r - 3} /></clipPath>
       </defs>
-      {/* 外发光 */}
+      {/* 外发光（高亮章节） */}
       {glow && (
         <circle cx={r} cy={r} r={r}
-          fill="none" stroke="rgba(205,178,119,0.25)" strokeWidth={6}
+          fill="none" stroke={ring} strokeOpacity={0.28} strokeWidth={6}
           style={{ filter: "blur(4px)" }}
         />
       )}
-      {/* 描边 */}
-      <circle cx={r} cy={r} r={r - 1.5}
-        fill="none"
-        stroke={glow ? "#cdb277" : "#423a22"}
-        strokeWidth={glow ? 2.5 : 1.5}
-        opacity={glow ? 1 : 0.6}
-      />
-      {/* 暗背景 */}
-      <circle cx={r} cy={r} r={r - 3} fill="#0c1218" />
+      {/* 暗墨底 */}
+      <circle cx={r} cy={r} r={r - 3} fill={INK} />
       {/* 烛光渐变 */}
       <circle cx={r} cy={r} r={r - 3} fill={`url(#cg-${uid})`} clipPath={`url(#cc-${uid})`} />
-      {/* 内容 */}
-      <g clipPath={`url(#cc-${uid})`} opacity={0.55}>
-        {[0.32, 0.48, 0.63, 0.78].map((x, i) => (
+      {/* 内容：竹简 + 烛火 */}
+      <g clipPath={`url(#cc-${uid})`} opacity={0.5}>
+        {[0.34, 0.5, 0.66, 0.82].map((x, i) => (
           <line key={i}
-            x1={r * x * 2} y1={r * 0.15} x2={r * x * 2} y2={r * 1.85}
-            stroke="#60563a" strokeWidth="0.7" opacity="0.4"
+            x1={r * x * 2} y1={r * 0.18} x2={r * x * 2} y2={r * 1.82}
+            stroke={GOLD_DEEP} strokeWidth="0.7" opacity="0.4"
           />
         ))}
-        <ellipse cx={r} cy={r * 0.52} rx="3" ry="5.5" fill="#ecdca6" opacity="0.9" />
-        <ellipse cx={r} cy={r * 0.62} rx="6" ry="3" fill="#bfa06a" opacity="0.4" />
-        <rect x={r - 2} y={r * 0.72} width="4" height={r * 0.52} fill="#3a3320" opacity="0.6" />
+        <ellipse cx={r} cy={r * 0.54} rx="2.6" ry="5" fill="#ffd79a" opacity="0.9" />
+        <ellipse cx={r} cy={r * 0.64} rx="5.5" ry="2.6" fill={GOLD} opacity="0.35" />
+        <rect x={r - 1.8} y={r * 0.74} width="3.6" height={r * 0.5} fill={GOLD_SHADOW} opacity="0.6" />
       </g>
+      {/* 描边 */}
+      <circle cx={r} cy={r} r={r - 1.5}
+        fill="none" stroke={ring}
+        strokeWidth={glow ? 2 : 1.2}
+        opacity={glow ? 1 : 0.55}
+      />
     </svg>
   );
 }
 
 // ── 展开卡片内容 ───────────────────────────────────────────────
 function ExpandedCard({
-  ch, isCurrent, onEnter, onCollapse,
+  ch, isCurrent, isDone, onEnter, onCollapse,
 }: {
   ch: typeof ALL_CHAPTERS[0];
   isCurrent: boolean;
+  isDone: boolean;
   onEnter: () => void;
   onCollapse: () => void;
 }) {
+  const edge = isCurrent ? JADE : GOLD_DEEP;
   return (
     <div style={{
-      marginTop: 10, marginLeft: 20,
-      background: "linear-gradient(135deg, #161c22 0%, #10161c 50%, #12181e 100%)",
-      border: `1px solid ${isCurrent ? "#cdb277" : "#423a22"}`,
-      borderRadius: 4,
-      padding: "12px 14px",
+      marginTop: 12,
+      background: `linear-gradient(135deg, ${INK} 0%, ${INK_DEEP} 55%, #0b141a 100%)`,
+      border: `1px solid ${isCurrent ? "rgba(95,168,146,0.7)" : "rgba(143,120,70,0.55)"}`,
+      borderRadius: 3,
+      padding: "13px 15px 15px",
       boxShadow: isCurrent
-        ? "0 0 28px rgba(205,178,119,0.18), inset 0 0 30px rgba(0,0,0,0.5)"
-        : "0 4px 16px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.4)",
+        ? "0 0 26px rgba(95,168,146,0.16), inset 0 0 30px rgba(0,0,0,0.5)"
+        : "0 6px 20px rgba(0,0,0,0.5), inset 0 0 22px rgba(0,0,0,0.4)",
       position: "relative", overflow: "hidden" as const,
-      // 展开动画
       animation: "expandCard 0.28s cubic-bezier(0.2,0.8,0.3,1) both",
     }}>
-      {/* 章节标签行 + 收起按钮 */}
+      {/* 顶部高光线 */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: 1,
+        background: `linear-gradient(90deg, transparent, ${edge}, transparent)`,
+        opacity: 0.6,
+      }} />
+
+      {/* 章节标签行 + 收起 */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        marginBottom: 8, position: "relative", zIndex: 1,
+        marginBottom: 10, position: "relative", zIndex: 1,
       }}>
         <div style={{
-          fontSize: 10, color: "rgba(205,178,119,0.55)",
-          letterSpacing: "0.18em",
+          fontSize: 10, color: `${PAPER}0.45)`, letterSpacing: "0.3em",
         }}>{ch.numCn}</div>
         <button
           onClick={onCollapse}
           style={{
             background: "none", border: "none", cursor: "pointer",
-            color: "rgba(205,178,119,0.4)", fontSize: 10,
-            padding: "2px 0", letterSpacing: "0.1em",
-            fontFamily: "inherit",
+            color: `${PAPER}0.4)`, fontSize: 10,
+            padding: "2px 0", letterSpacing: "0.14em", fontFamily: "inherit",
           }}
-        >收起 ▲</button>
+        >收 起 ▲</button>
       </div>
-      {/* 纸张内阴影 */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none",
-        boxShadow: "inset 0 0 16px rgba(0,0,0,0.6), inset 0 0 4px rgba(0,0,0,0.2)",
-      }} />
 
-      <div style={{ display: "flex", gap: 12, position: "relative", zIndex: 1 }}>
-        {/* 左侧插画 */}
-        <CircleIllust size={100} glow={isCurrent} />
+      <div style={{ display: "flex", gap: 13, position: "relative", zIndex: 1 }}>
+        <NodeMedallion size={88} accent={isCurrent ? "jade" : isDone ? "gold" : undefined} />
 
-        {/* 右侧文字 */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <div style={{
-              fontSize: 20, color: isCurrent ? "#d8c48f" : "#b6a482",
+              fontSize: 20, fontFamily: "'ZCOOL XiaoWei', serif",
+              color: isCurrent ? JADE_PALE : GOLD_PALE,
               letterSpacing: "0.18em", textIndent: "0.18em",
-              textShadow: isCurrent ? "0 0 12px rgba(236,220,166,0.4)" : "none",
+              textShadow: isCurrent
+                ? "0 0 12px rgba(166,220,203,0.4)"
+                : "0 0 12px rgba(236,220,166,0.25)",
             }}>{ch.title}</div>
             {isCurrent && (
               <div style={{
-                fontSize: 9, color: "var(--jade-pale)",
-                border: "1px solid var(--jade)",
-                borderRadius: 2, padding: "1px 5px",
-                letterSpacing: "0.1em",
+                fontSize: 9, color: JADE_PALE,
+                border: `1px solid ${JADE}`, borderRadius: 2, padding: "1px 6px",
+                letterSpacing: "0.16em",
                 animation: "glowPulse 2s ease-in-out infinite",
-              }}>当前</div>
+              }}>进 行 中</div>
+            )}
+            {isDone && (
+              <div style={{
+                fontSize: 9, color: GOLD_PALE,
+                border: `1px solid ${GOLD_DEEP}`, borderRadius: 2, padding: "1px 6px",
+                letterSpacing: "0.16em", opacity: 0.8,
+              }}>已 通 览</div>
             )}
           </div>
 
           <div style={{
-            fontSize: 11, color: "rgba(222,224,210,0.65)",
-            marginTop: 5, lineHeight: 1.6, letterSpacing: "0.03em",
+            fontSize: 11.5, color: `${PAPER}0.7)`,
+            marginTop: 6, lineHeight: 1.65, letterSpacing: "0.03em",
           }}>{ch.desc}</div>
 
           {/* 分隔线 */}
-          <div style={{ display: "flex", alignItems: "center", gap: 5, margin: "8px 0 5px" }}>
-            <div style={{ width: 16, height: 1, background: "#60563a" }} />
-            <div style={{ width: 3, height: 3, background: "#cdb277", borderRadius: "50%", opacity: 0.7 }} />
-            <div style={{ flex: 1, height: 1, background: "#60563a", opacity: 0.4 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "10px 0 6px" }}>
+            <div style={{ width: 16, height: 1, background: GOLD_DEEP }} />
+            <div style={{ width: 3, height: 3, background: GOLD, borderRadius: "50%", opacity: 0.8 }} />
+            <div style={{ flex: 1, height: 1, background: GOLD_DEEP, opacity: 0.35 }} />
           </div>
 
           <div style={{
-            fontSize: 9.5, color: "rgba(205,178,119,0.55)",
-            letterSpacing: "0.14em", marginBottom: 3,
-          }}>剧情预览</div>
+            fontSize: 9.5, color: `rgba(236,220,166,0.55)`,
+            letterSpacing: "0.2em", marginBottom: 4,
+          }}>剧 情 预 览</div>
           <div style={{
-            fontSize: 10.5, color: "rgba(222,224,210,0.6)",
-            lineHeight: 1.7, letterSpacing: "0.02em",
+            fontSize: 11, color: `${PAPER}0.62)`,
+            lineHeight: 1.75, letterSpacing: "0.02em",
           }}>{ch.preview}</div>
         </div>
       </div>
 
       {/* 进入按钮 */}
-      <div style={{ marginTop: 12, display: "flex", justifyContent: "center", position: "relative", zIndex: 1 }}>
-        <button
-          onClick={onEnter}
-          className="press"
-          style={{
-            background: isCurrent
-              ? "linear-gradient(180deg, #161c22, #0c1218)"
-              : "linear-gradient(180deg, #141a20, #0a1016)",
-            border: `1.5px solid ${isCurrent ? "#cdb277" : "#60563a"}`,
-            borderRadius: 24,
-            padding: "8px 28px",
-            color: isCurrent ? "#d8c48f" : "#8f7846",
-            fontSize: 13,
-            letterSpacing: "0.28em",
-            textIndent: "0.28em",
-            cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 9,
-            boxShadow: isCurrent
-              ? "0 0 14px rgba(205,178,119,0.25), inset 0 0 6px rgba(205,178,119,0.05)"
-              : "none",
-            fontFamily: "'ZCOOL XiaoWei', serif",
-          }}
-        >
-          <span>进入剧情</span>
-          <svg width="14" height="9" viewBox="0 0 14 9" fill="none">
-            <path d="M0 4.5 L10 4.5" stroke="currentColor" strokeWidth="1.1" />
-            <path d="M7 1 L11.5 4.5 L7 8" stroke="currentColor" strokeWidth="1.1" fill="none" />
-          </svg>
-        </button>
+      <div style={{ marginTop: 14, position: "relative", zIndex: 1 }}>
+        {isCurrent ? (
+          <button className="btn-primary press" onClick={onEnter} style={{ width: "100%", minHeight: 46 }}>
+            进 入 此 卷
+          </button>
+        ) : (
+          <button className="btn-ghost press" onClick={onEnter} style={{ width: "100%", minHeight: 44 }}>
+            重 温 此 卷
+          </button>
+        )}
       </div>
     </div>
   );
@@ -231,211 +237,183 @@ function ExpandedCard({
 // ── 主组件 ──────────────────────────────────────────────────────
 export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
   const cur = state.currentChapter || 1;
-  // 终章(千年回响=结局演绎)只在"本周目"已抵达结局时解锁。用 lastEnding(重新
-  // 选择/重置都会清空),不用 unlockedEndings——后者是跨周目持久的图鉴记录,会
-  // 导致回到第一章时第五章仍显示解锁(而 2/3/4 章却是锁的)。
+  // 终章(千年回响)只在"本周目"已抵达结局时解锁。用 lastEnding(重选/重置都清空),
+  // 不用 unlockedEndings——后者跨周目持久,会导致回到第一章时第五章仍显示解锁。
   const hasEnding = !!state.lastEnding;
-  // 默认展开当前章节
   const [expanded, setExpanded] = useState<number>(cur);
 
-  const toggle = (num: number) => {
-    setExpanded(prev => (prev === num ? -1 : num));
-  };
+  const toggle = (num: number) => setExpanded(prev => (prev === num ? -1 : num));
+
+  // 节点列宽度：竖轴居中其内；ZIGZAG 为奇数章节的左右错位量
+  const NODE_COL = 64;
+  const ZIGZAG = 32;
 
   return (
-    <div style={{
-      position: "relative", width: "100%", height: "100%",
-      background: "#0a0704", overflow: "hidden",
-      fontFamily: "'ZCOOL XiaoWei', 'Ma Shan Zheng', serif",
-    }}>
-      {/* ── 背景 ── */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none",
-        background: `
-          radial-gradient(ellipse 70% 50% at 75% 15%, rgba(80,50,15,0.2) 0%, transparent 60%),
-          radial-gradient(ellipse 50% 60% at 15% 75%, rgba(30,20,5,0.35) 0%, transparent 70%)
-        `,
-      }} />
-
-      {/* 背景建筑（右侧） */}
-      <svg style={{ position: "absolute", right: 0, top: 0, opacity: 0.07, pointerEvents: "none" }}
-        width="130" height="300" viewBox="0 0 130 300">
-        <path d="M15 75 L65 38 L115 75 L120 75 L65 28 L10 75 Z" fill="#cdb277" />
-        <rect x="35" y="75" width="58" height="110" fill="#cdb277" opacity="0.5" />
-        <path d="M0 145 L65 98 L130 145 L130 148 L65 90 L0 148 Z" fill="#cdb277" />
-        <rect x="15" y="148" width="100" height="145" fill="#cdb277" opacity="0.3" />
-        {[0, 1, 2].map(i => (
-          <rect key={i} x={32 + i * 22} y="95" width="13" height="36" fill="none" stroke="#cdb277" strokeWidth="0.8" />
-        ))}
-        {[0, 1, 2, 3].map(i => (
-          <line key={i} x1={28 + i * 20} y1="168" x2={28 + i * 20} y2="280" stroke="#cdb277" strokeWidth="1.2" />
-        ))}
-        <line x1="18" y1="210" x2="112" y2="210" stroke="#cdb277" strokeWidth="0.8" />
-      </svg>
+    <div className="page night-bg">
+      <Topbar title="副 本 进 程" onBack={() => gotoPage("story")} />
+      <Particles count={7} />
 
       {/* 暗角 */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 88% 88% at 50% 50%, transparent 45%, rgba(0,0,0,0.65) 100%)",
-      }} />
+      <div className="vignette" />
 
-      {/* ── 滚动内容 ── */}
-      <div style={{ position: "absolute", inset: 0, overflowY: "auto", overflowX: "hidden" }}
-        className="no-scrollbar">
+      {/* 右上角阁楼剪影（金线·极淡） */}
+      <svg style={{ position: "absolute", right: 0, top: 40, opacity: 0.06, pointerEvents: "none" }}
+        width="124" height="280" viewBox="0 0 124 280">
+        <path d="M14 72 L62 36 L110 72 L114 72 L62 27 L10 72 Z" fill={GOLD_PALE} />
+        <rect x="34" y="72" width="56" height="104" fill={GOLD_PALE} opacity="0.5" />
+        <path d="M0 138 L62 94 L124 138 L124 141 L62 86 L0 141 Z" fill={GOLD_PALE} />
+        <rect x="15" y="141" width="94" height="139" fill={GOLD_PALE} opacity="0.3" />
+        {[0, 1, 2, 3].map(i => (
+          <line key={i} x1={26 + i * 20} y1="160" x2={26 + i * 20} y2="268" stroke={GOLD_PALE} strokeWidth="1.1" />
+        ))}
+      </svg>
 
+      <div className="page-scroll" style={{ top: 56, bottom: 0, padding: "0 16px calc(28px + var(--safe-bottom))" }}>
         {/* 顶部标题 */}
-        <div style={{ position: "relative", padding: "16px 20px 12px" }}>
-          <button
-            onClick={() => gotoPage("story")}
-            className="press"
-            style={{
-              position: "absolute", left: 16, top: 16,
-              width: 36, height: 36, borderRadius: "50%",
-              background: "transparent", border: "1.5px solid #cdb277",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", padding: 0,
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14">
-              <path d="M9 1 L3 7 L9 13" stroke="#cdb277" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-            </svg>
-          </button>
-
-          <div style={{ textAlign: "center", paddingTop: 4 }}>
-            <div style={{
-              fontSize: 22, color: "#d8c48f",
-              letterSpacing: "0.3em", textIndent: "0.3em",
-              textShadow: "0 0 16px rgba(236,220,166,0.35)",
-            }}>副本进程</div>
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "center",
-              gap: 8, marginTop: 6,
-            }}>
-              {[true, false].map((left, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 3,
-                  flexDirection: left ? "row" : "row-reverse" }}>
-                  <div style={{ width: 20, height: 1, background: "#60563a", opacity: 0.7 }} />
-                  <div style={{ width: 4, height: 4, background: "#cdb277", transform: "rotate(45deg)", opacity: 0.8 }} />
-                </div>
-              ))}
-              <div style={{
-                fontSize: 11, color: "rgba(205,178,119,0.7)",
-                letterSpacing: "0.1em", whiteSpace: "nowrap",
-              }}>典故修补者 · 华佗青囊残卷</div>
-            </div>
+        <div className="fade-in" style={{ textAlign: "center", margin: "4px 0 18px" }}>
+          <div className="en-small" style={{
+            fontSize: 10, letterSpacing: "0.36em", color: GOLD_PALE, opacity: 0.6,
+          }}>DUNGEON · PROGRESS</div>
+          <div className="title-han" style={{
+            fontSize: 22, color: GOLD_PALE, marginTop: 7,
+            letterSpacing: "0.3em", textIndent: "0.3em",
+            textShadow: "0 0 14px rgba(236,220,166,0.28)",
+          }}>华 佗 · 青 囊 残 卷</div>
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 9 }}>
+            <span style={{
+              width: 44, height: 1,
+              background: `linear-gradient(90deg, transparent, ${GOLD_PALE}, transparent)`,
+            }} />
           </div>
+          <div style={{
+            fontSize: 11.5, marginTop: 11, color: `${PAPER}0.7)`,
+            letterSpacing: "0.12em",
+          }}>典故修补者 · 一夜五章</div>
         </div>
 
-        {/* ── 章节列表 ── */}
-        <div style={{ position: "relative", padding: "0 16px 8px" }}>
-          {/* 竖线 */}
+        {/* 章节时间线 */}
+        <div style={{ position: "relative" }}>
+          {/* 竖轴 */}
           <div style={{
-            position: "absolute", left: 59, top: 10, bottom: 60,
-            width: 1.5,
-            background: "linear-gradient(180deg, transparent, #60563a 6%, #60563a 94%, transparent)",
+            position: "absolute", left: NODE_COL / 2, top: 24, bottom: 24,
+            width: 1.5, transform: "translateX(-50%)",
+            background: `linear-gradient(180deg, transparent, ${GOLD_DEEP} 7%, ${GOLD_DEEP} 93%, transparent)`,
             opacity: 0.5,
-            boxShadow: "0 0 6px rgba(205,178,119,0.3)",
+            boxShadow: `0 0 8px rgba(205,178,119,0.25)`,
           }} />
 
           {ALL_CHAPTERS.map((ch, i) => {
-            // 解锁规则:终章看是否已通关任一结局,其余看当前进度
             const unlocked = ch.isFinal ? hasEnding : ch.num <= cur;
             const locked = !unlocked;
-            const isExpanded = expanded === ch.num && !locked;
-            const isDone = unlocked && (ch.isFinal ? true : ch.num < cur);
             const isCurrent = !locked && !ch.isFinal && ch.num === cur;
-            const rowOpacity = locked ? 0.4 : 1;
-            // S 型错位：奇数章节靠左，偶数靠右
-            const xShift = i % 2 === 0 ? 0 : 36;
+            const isDone = unlocked && (ch.isFinal ? true : ch.num < cur);
+            const isExpanded = expanded === ch.num && !locked;
+            const accent = isCurrent ? "jade" : isDone ? "gold" : undefined;
+
+            const titleColor = locked
+              ? `${PAPER}0.38)`
+              : isCurrent ? JADE_PALE : GOLD_PALE;
+            // 左右交错：奇数章节整行右移 ZIGZAG，节点偏离烛芯，形成 S 形走向
+            const shift = i % 2 === 1 ? ZIGZAG : 0;
 
             return (
-              <div key={ch.id}
-                className="fade-up"
+              <div key={ch.id} className="fade-up"
                 style={{
                   animationDelay: `${i * 80}ms`,
-                  marginBottom: isExpanded ? 8 : 20,
-                  paddingLeft: xShift,
-                  opacity: rowOpacity,
-                  transition: "opacity 0.3s",
-                }}
-              >
-                {/* 折叠态：圆圈行（展开时完全隐藏） */}
-                {!isExpanded && (
-                  <div
-                    onClick={locked ? undefined : () => toggle(ch.num)}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 14,
-                      cursor: locked ? "default" : "pointer",
-                    }}
-                  >
-                    {/* 圆形节点 */}
-                    <div style={{ position: "relative", flexShrink: 0 }}>
-                      <div style={{
-                        position: "absolute", top: 4, right: "calc(100% + 6px)",
-                        fontSize: 9, color: "rgba(205,178,119,0.65)",
-                        letterSpacing: "0.08em", whiteSpace: "nowrap",
-                        lineHeight: 1.3, textAlign: "right",
-                      }}>
-                        {ch.numCn.slice(0, 1)}<br />{ch.numCn.slice(1)}
-                      </div>
-                      <CircleIllust
-                        size={72}
-                        opacity={isDone ? 0.8 : 1}
-                        glow={isCurrent}
-                      />
+                  marginBottom: i === ALL_CHAPTERS.length - 1 ? 4 : 14,
+                  opacity: locked ? 0.5 : 1, transition: "opacity 0.3s",
+                }}>
+                {/* 折叠行（左右交错） */}
+                <div
+                  onClick={locked ? undefined : () => toggle(ch.num)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    marginLeft: shift, position: "relative",
+                    cursor: locked ? "default" : "pointer",
+                  }}
+                >
+                  {/* 烛芯连接短线：仅错位章节绘制 */}
+                  {shift > 0 && (
+                    <div style={{
+                      position: "absolute", left: NODE_COL / 2 - shift, top: "50%",
+                      width: shift, height: 1.5, transform: "translateY(-50%)",
+                      background: GOLD_DEEP, opacity: 0.45,
+                    }} />
+                  )}
+
+                  {/* 节点列 */}
+                  <div style={{
+                    width: NODE_COL, flexShrink: 0,
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                  }}>
+                    <div style={{
+                      fontSize: 9, color: locked ? `${PAPER}0.4)` : "rgba(236,220,166,0.6)",
+                      letterSpacing: "0.1em",
+                    }}>{ch.numCn}</div>
+                    <div style={{ position: "relative" }}>
+                      <NodeMedallion size={isCurrent ? 64 : 58} dim={isDone} accent={accent} />
                       {isDone && (
                         <div style={{
-                          position: "absolute", bottom: 4, right: 4,
-                          width: 14, height: 14, borderRadius: "50%",
-                          background: "#0c1218", border: "1px solid #cdb277",
+                          position: "absolute", bottom: 0, right: 0,
+                          width: 16, height: 16, borderRadius: "50%",
+                          background: INK_DEEP, border: `1px solid ${GOLD}`,
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}>
-                          <svg width="7" height="6" viewBox="0 0 7 6" fill="none">
-                            <path d="M1 3 L3 5 L6 1" stroke="#cdb277" strokeWidth="1.2" strokeLinecap="round" />
+                          <svg width="8" height="7" viewBox="0 0 8 7" fill="none">
+                            <path d="M1 3.5 L3 5.5 L7 1" stroke={GOLD_PALE} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                      )}
+                      {locked && (
+                        <div style={{
+                          position: "absolute", inset: 0,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          <svg width="15" height="17" viewBox="0 0 15 17" fill="none">
+                            <rect x="2" y="7.5" width="11" height="8.5" rx="1.5" fill={INK_DEEP} stroke={`${PAPER}0.5)`} strokeWidth="1" />
+                            <path d="M4.5 7.5 V5 a3 3 0 0 1 6 0 V7.5" stroke={`${PAPER}0.5)`} strokeWidth="1" />
                           </svg>
                         </div>
                       )}
                     </div>
-
-                    {/* 标题区 */}
-                    <div style={{ flex: 1 }}>
-                      <div style={{
-                        fontSize: 17,
-                        color: isCurrent ? "#d8c48f" : (isDone ? "#b6a482" : "rgba(180,145,80,0.55)"),
-                        letterSpacing: "0.16em", textIndent: "0.16em",
-                        textShadow: isCurrent ? "0 0 10px rgba(236,220,166,0.3)" : "none",
-                      }}>{locked ? "？ ？ ？" : ch.title}</div>
-                      <div style={{
-                        width: 36, height: 1,
-                        background: "linear-gradient(90deg, #60563a, transparent)",
-                        margin: "4px 0 3px",
-                      }} />
-                      <div style={{
-                        fontSize: 10.5, color: "rgba(205,178,119,0.45)",
-                        lineHeight: 1.5, letterSpacing: "0.03em", maxWidth: 160,
-                      }}>{locked ? "尚 未 解 锁" : ch.desc}</div>
-                    </div>
-
-                    {/* 展开箭头 / 锁 */}
-                    <div style={{
-                      flexShrink: 0, color: "rgba(205,178,119,0.4)",
-                      fontSize: 11, paddingRight: 4,
-                      display: "flex", alignItems: "center",
-                    }}>
-                      {locked ? (
-                        <svg width="11" height="13" viewBox="0 0 11 13" fill="none">
-                          <rect x="1" y="5.5" width="9" height="7" rx="1" stroke="currentColor" strokeWidth="1"/>
-                          <path d="M3 5.5 V3.7 a2.5 2.5 0 0 1 5 0 V5.5" stroke="currentColor" strokeWidth="1"/>
-                        </svg>
-                      ) : "▶"}
-                    </div>
                   </div>
-                )}
+
+                  {/* 标题区 */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 17, fontFamily: "'ZCOOL XiaoWei', serif",
+                      color: titleColor,
+                      letterSpacing: "0.14em", textIndent: "0.14em",
+                      textShadow: isCurrent ? "0 0 10px rgba(166,220,203,0.35)" : "none",
+                    }}>{locked ? "？ ？ ？" : ch.title}</div>
+                    <div style={{
+                      width: 34, height: 1,
+                      background: `linear-gradient(90deg, ${isCurrent ? JADE : GOLD_DEEP}, transparent)`,
+                      margin: "5px 0 4px",
+                    }} />
+                    <div style={{
+                      fontSize: 11, color: locked ? `${PAPER}0.4)` : `${PAPER}0.55)`,
+                      lineHeight: 1.5, letterSpacing: "0.03em",
+                    }}>{locked ? "尚 未 解 锁" : ch.desc}</div>
+                  </div>
+
+                  {/* 状态箭头 */}
+                  {!locked && (
+                    <div style={{
+                      flexShrink: 0, paddingRight: 2,
+                      color: isCurrent ? JADE : "rgba(205,178,119,0.5)",
+                      fontSize: 11,
+                      transform: isExpanded ? "rotate(90deg)" : "none",
+                      transition: "transform 0.25s",
+                    }}>▶</div>
+                  )}
+                </div>
 
                 {isExpanded && (
                   <ExpandedCard
                     ch={ch}
                     isCurrent={isCurrent}
+                    isDone={isDone}
                     onEnter={() => gotoPage("story")}
                     onCollapse={() => setExpanded(-1)}
                   />
@@ -445,33 +423,32 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
           })}
         </div>
 
-        {/* ── 底部提示条 ── */}
-        <div style={{ padding: "4px 20px 28px" }}>
+        {/* 底部提示条 */}
+        <div style={{ marginTop: 18 }}>
           <div style={{
-            border: "1px solid rgba(122,90,40,0.45)",
-            borderRadius: 3, padding: "9px 14px",
+            border: "1px solid rgba(143,120,70,0.4)", borderRadius: 3,
+            padding: "10px 14px",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-            background: "rgba(0,0,0,0.18)",
+            background: "rgba(10,16,20,0.4)",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <div style={{ width: 4, height: 4, background: "#cdb277", transform: "rotate(45deg)", opacity: 0.55 }} />
-              <div style={{ width: 12, height: 1, background: "rgba(205,178,119,0.35)" }} />
+              <div style={{ width: 4, height: 4, background: JADE, transform: "rotate(45deg)", opacity: 0.7 }} />
+              <div style={{ width: 12, height: 1, background: "rgba(205,178,119,0.4)" }} />
             </div>
             <div style={{
-              fontSize: 10.5, color: "rgba(205,178,119,0.6)",
-              letterSpacing: "0.07em", textAlign: "center",
+              fontSize: 11, color: `${PAPER}0.62)`,
+              letterSpacing: "0.06em", textAlign: "center",
             }}>
               你的每一次选择，都会改变这段遗憾被记住的方式。
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <div style={{ width: 12, height: 1, background: "rgba(205,178,119,0.35)" }} />
-              <div style={{ width: 4, height: 4, background: "#cdb277", transform: "rotate(45deg)", opacity: 0.55 }} />
+              <div style={{ width: 12, height: 1, background: "rgba(205,178,119,0.4)" }} />
+              <div style={{ width: 4, height: 4, background: JADE, transform: "rotate(45deg)", opacity: 0.7 }} />
             </div>
           </div>
         </div>
       </div>
 
-      {/* expandCard keyframe */}
       <style>{`
         @keyframes expandCard {
           from { opacity: 0; transform: translateY(-8px) scaleY(0.92); }

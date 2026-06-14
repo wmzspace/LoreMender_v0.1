@@ -63,7 +63,9 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
                     padding: "10px 10px 12px",
                     transform: `rotate(${rot}deg)`,
                     cursor:"pointer",
-                    boxShadow:"0 6px 18px rgba(0,0,0,0.55)",
+                    boxShadow: has
+                      ? "0 0 0 1px var(--jade), 0 0 16px rgba(95,168,146,0.25), 0 6px 18px rgba(0,0,0,0.55)"
+                      : "0 6px 18px rgba(0,0,0,0.55)",
                     minHeight: 130,
                     display:"flex", flexDirection:"column", alignItems:"center",
                     gap: 6,
@@ -73,8 +75,10 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
                     position:"absolute", top: -6, left: "50%",
                     transform: "translateX(-50%)",
                     width: 12, height: 12, borderRadius:"50%",
-                    background:"radial-gradient(circle at 30% 30%, #ff7050, #6e1f18)",
-                    boxShadow:"0 2px 4px rgba(0,0,0,0.5)",
+                    background: has
+                      ? "radial-gradient(circle at 30% 30%, #d6f3e8, #2c6657)"
+                      : "radial-gradient(circle at 30% 30%, #c5a06a, #463c22)",
+                    boxShadow: has ? "0 0 8px var(--jade), 0 2px 4px rgba(0,0,0,0.5)" : "0 2px 4px rgba(0,0,0,0.5)",
                   }}/>
                   <div style={{
                     width: 56, height: 56,
@@ -89,7 +93,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
                   }}>{c.name}</div>
                   {has ? (
                     <div style={{
-                      fontSize: 10, color:"var(--vermillion)",
+                      fontSize: 10, color:"var(--jade-deep)",
                       letterSpacing:"0.18em", marginTop: 2,
                     }}>· 已 阅 ·</div>
                   ) : (

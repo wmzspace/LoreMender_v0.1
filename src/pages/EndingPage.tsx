@@ -36,8 +36,9 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   }, []);
 
   const sceneFor = (id: EndingId) => {
-    if (id === "ash") return <SceneEndingAsh/>;
-    if (id === "sealed") return <SceneEndingSealed/>;
+    const glyph = ENDINGS[id]?.glyph;
+    if (glyph === "wall") return <SceneEndingSealed/>;
+    if (glyph === "fire") return <SceneEndingAsh/>;
     return <SceneEndingLiving/>;
   };
 
@@ -73,6 +74,11 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             <div className="grain"/>
             <div className="vignette"/>
             <Particles count={16}/>
+            <div className="en-small fade-in" style={{
+              position:"absolute", top: 14, left: 18, zIndex: 2,
+              fontSize: 10, letterSpacing:"0.34em",
+              color:"var(--gold-pale)", opacity: 0.6,
+            }}>THE EPILOGUE</div>
             <div style={{
               position:"absolute", left:0, right:0, bottom: 0, height: 80,
               background:"linear-gradient(180deg, transparent, rgba(7,11,14,0.98))",
@@ -87,19 +93,26 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             <div style={{
               display:"inline-flex", flexDirection:"column", alignItems:"center", gap: 10,
             }}>
-              <div style={{
-                animation: "sealStamp 700ms ease-out both",
-              }}>
-                <SealTag size="lg" style={{
-                  background: e.rankColor,
-                  borderRadius: 4,
-                  width: 84, height: 84, fontSize: 13,
+              <div style={{position:"relative"}}>
+                <div style={{
+                  position:"absolute", inset: -16, borderRadius:"50%",
+                  background: e.rankColor, opacity: 0.5, filter:"blur(20px)",
+                  animation: "glowPulse 3s ease-in-out infinite",
+                }}/>
+                <div style={{
+                  position:"relative", animation: "sealStamp 700ms ease-out both",
                 }}>
-                  <div style={{lineHeight: 1.15, letterSpacing:"0.12em", textIndent:"0.12em"}}>
-                    <div style={{fontSize: 11, opacity: 0.85}}>结 局</div>
-                    <div style={{fontSize: 11, opacity: 0.85, marginTop: 2}}>{e.rank}</div>
-                  </div>
-                </SealTag>
+                  <SealTag size="lg" style={{
+                    background: e.rankColor,
+                    borderRadius: 4,
+                    width: 84, height: 84, fontSize: 13,
+                  }}>
+                    <div style={{lineHeight: 1.15, letterSpacing:"0.12em", textIndent:"0.12em"}}>
+                      <div style={{fontSize: 11, opacity: 0.85}}>结 局</div>
+                      <div style={{fontSize: 11, opacity: 0.85, marginTop: 2}}>{e.rank}</div>
+                    </div>
+                  </SealTag>
+                </div>
               </div>
               <div className="title-han" style={{
                 fontSize: 26, color:"var(--gold-pale)",

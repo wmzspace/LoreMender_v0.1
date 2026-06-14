@@ -161,6 +161,10 @@ button { font-family: inherit; }
 /* fade in */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes choiceIn {
+  from { opacity: 0; transform: translateY(14px) rotate(var(--tilt, 0deg)); }
+  to   { opacity: 1; transform: translateY(0) rotate(var(--tilt, 0deg)); }
+}
 @keyframes fadeInDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
 @keyframes scrollUnroll {
   from { opacity: 0; transform: scaleY(0.4); transform-origin: top; }
@@ -531,46 +535,69 @@ button { font-family: inherit; }
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
   width: 100%;
-  min-height: 56px;
-  padding: 12px 16px;
+  min-height: 60px;
+  padding: 16px 18px 14px 48px;
   background:
-    linear-gradient(180deg, rgba(20,28,32,0.85), rgba(11,17,20,0.85));
-  border: 1px solid rgba(205,178,119,0.4);
+    radial-gradient(ellipse at 102% -10%, rgba(95,168,146,0.14), transparent 55%),
+    linear-gradient(180deg, rgba(20,28,32,0.88), rgba(11,17,20,0.9));
+  border: 1px solid rgba(95,168,146,0.28);
   border-radius: 2px;
   color: var(--paper);
   font-family: "Noto Serif SC", serif;
   font-size: 14.5px;
-  line-height: 1.55;
+  line-height: 1.6;
   text-align: left;
   cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
   transition: all 180ms;
 }
-.choice::before {
-  content: "";
-  width: 6px; height: 6px;
-  background: var(--gold-pale);
-  transform: rotate(45deg);
-  flex-shrink: 0;
-  box-shadow: 0 0 8px var(--gold-pale);
-}
 .choice:active {
-  background: linear-gradient(180deg, rgba(26,38,42,0.95), rgba(30,20,12,0.95));
-  border-color: var(--gold-pale);
-  box-shadow: 0 0 0 1px rgba(236,220,166,0.3), 0 0 24px rgba(236,220,166,0.15);
+  background:
+    radial-gradient(ellipse at 102% -10%, rgba(95,168,146,0.22), transparent 55%),
+    linear-gradient(180deg, rgba(26,40,38,0.95), rgba(15,28,26,0.95));
+  border-color: var(--jade);
+  box-shadow: 0 0 0 1px rgba(166,220,203,0.32), 0 0 24px rgba(95,168,146,0.2), 0 8px 20px rgba(0,0,0,0.4);
 }
+.choice:active .choice-mark { opacity: 0.4; }
+
+/* 角印 — a small carved chop stamped onto the card's corner, like a scholar's
+   personal seal on a letter, in place of a generic A/B/C badge. */
 .choice-letter {
-  width: 22px; height: 22px;
+  position: absolute; top: -10px; left: 14px;
+  width: 28px; height: 28px;
   display: inline-flex; align-items: center; justify-content: center;
-  background: var(--gold-pale);
+  background: linear-gradient(150deg, var(--jade-pale), var(--jade) 75%);
   color: var(--ink-deep);
-  font-family: "Cormorant Garamond", serif;
-  font-size: 13px;
+  font-family: "ZCOOL XiaoWei", serif;
+  font-size: 14px;
   font-weight: 700;
-  border-radius: 50%;
-  flex-shrink: 0;
+  border-radius: 3px 8px 5px 8px;
+  box-shadow: inset 0 0 0 1px rgba(10,20,18,0.22), 0 3px 8px rgba(0,0,0,0.4);
+  z-index: 1;
 }
+.choice-letter::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background-image:
+    repeating-linear-gradient(25deg, rgba(0,0,0,0.12) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(115deg, rgba(0,0,0,0.08) 0 1px, transparent 1px 4px);
+}
+
+/* 暗纹 — a faint oversized outline of the same glyph, bled into the card's
+   corner like an ink rubbing pressed through from the page beneath. */
+.choice-mark {
+  position: absolute; right: -6px; bottom: -20px;
+  font-size: 78px; line-height: 1;
+  font-family: "ZCOOL XiaoWei", serif;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--jade);
+  opacity: 0.18;
+  pointer-events: none;
+  transition: opacity 180ms;
+}
+.choice-label { position: relative; z-index: 1; }
 
 /* ============================================================
    Progress dots (top of story)
@@ -753,8 +780,8 @@ button { font-family: inherit; }
   }
   .choice:hover {
     transform: translateY(-1px);
-    border-color: var(--gold-pale);
-    box-shadow: 0 0 0 1px rgba(236,220,166,0.25), 0 8px 20px rgba(0,0,0,0.45);
+    border-color: var(--jade);
+    box-shadow: 0 0 0 1px rgba(166,220,203,0.25), 0 8px 20px rgba(0,0,0,0.45);
   }
   .navitem:hover { color: rgba(228,224,208,0.85); }
   .lift:hover { transform: translateY(-3px); }
