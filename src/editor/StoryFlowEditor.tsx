@@ -34,17 +34,11 @@ const chapterAccent: Record<string, string> = {
 };
 
 function buildEndingNodes(): Node<StoryNodeData>[] {
-  return [
-    { id: 'ash', x: 900, y: 40 },
-    { id: 'sealed', x: 900, y: 200 },
-    { id: 'living', x: 900, y: 360 },
-  ].map(({ id, x, y }) => {
-    const e = ENDINGS[id as 'ash' | 'sealed' | 'living'];
-    return {
-      id: `ending_${id}`, type: 'endingNode', position: { x, y },
-      data: { kind: 'ending', endingId: id, name: e.name, rank: e.rank, body: e.body } as EndingNodeData,
-    };
-  });
+  // 遍历真实的 ENDINGS,避免写死已变更的结局 id(原为 ash/sealed/living)。
+  return Object.values(ENDINGS).map((e, idx) => ({
+    id: `ending_${e.id}`, type: 'endingNode', position: { x: 900, y: 40 + idx * 160 },
+    data: { kind: 'ending', endingId: e.id, name: e.name, rank: e.rank, body: e.body } as EndingNodeData,
+  }));
 }
 
 function highlight(code: string): string {
