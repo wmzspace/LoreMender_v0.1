@@ -5,7 +5,7 @@ import {
 import {
   SceneClinic, SceneRaid, SceneTrust, SceneFinal,
 } from "../components/art";
-import { CHARACTERS, STORY } from "../data";
+import { CHARACTERS, LEVEL_ASSET_PLANS, STORY } from "../data";
 import type { Choice, GameState } from "../data/types";
 import { loadBeat, saveBeat, saveState } from "../lib/storage";
 import type { PageKey } from "../lib/routes";
@@ -15,6 +15,38 @@ interface StoryPageProps {
   setState: (s: GameState) => void;
   gotoPage: (p: PageKey) => void;
   gotoEnding: () => void;
+}
+
+function AiSceneImage({ chapter }: { chapter: number }) {
+  const [loaded, setLoaded] = useState(false);
+  const asset = LEVEL_ASSET_PLANS.find(level => level.chapter === chapter);
+  const imagePath = asset?.imagePath;
+  useEffect(() => {
+    setLoaded(false);
+  }, [imagePath]);
+
+  if (!asset) return null;
+
+  return (
+    <img
+      key={asset.imagePath}
+      src={asset.imagePath}
+      alt={`${asset.title} AI 场景插图`}
+      onLoad={() => setLoaded(true)}
+      onError={() => setLoaded(false)}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        opacity: loaded ? 1 : 0,
+        transition: "opacity 360ms ease",
+        zIndex: 1,
+        pointerEvents: "none",
+      }}
+    />
+  );
 }
 
 export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPageProps) {
@@ -144,7 +176,10 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
         }}>{chapter?.title}</div>
       </div>
 
-      <SceneFrame height={220}>{sceneEl}</SceneFrame>
+      <SceneFrame height={220}>
+        {sceneEl}
+        <AiSceneImage chapter={ch} />
+      </SceneFrame>
 
       <div style={{
         flex: 1, overflowY:"auto",

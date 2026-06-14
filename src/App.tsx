@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   CoverPage, WorldPage, ChapterSelectPage,
+  ShowcasePage,
   StoryPage, CluePage, TrustRoutePage,
   ProgressPage, EndingPage, GalleryPage,
 } from "./pages";
@@ -41,6 +42,13 @@ export default function App() {
       pageEl = <CoverPage
         onStart={() => gotoPage("dungeon")}
         onWorld={() => gotoPage("world")}
+        onShowcase={() => gotoPage("showcase")}
+      />;
+      break;
+    case "showcase":
+      pageEl = <ShowcasePage
+        onBack={() => gotoPage("cover")}
+        onEnter={() => gotoPage("dungeon")}
       />;
       break;
     case "world":

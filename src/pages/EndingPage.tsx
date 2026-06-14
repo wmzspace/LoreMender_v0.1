@@ -36,8 +36,8 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   }, []);
 
   const sceneFor = (id: EndingId) => {
-    if (id === "ash") return <SceneEndingAsh/>;
-    if (id === "sealed") return <SceneEndingSealed/>;
+    if (id === "ash" || id === "burn_ending") return <SceneEndingAsh/>;
+    if (id === "sealed" || id === "wangji_trap" || id === "xuanyin_fallback") return <SceneEndingSealed/>;
     return <SceneEndingLiving/>;
   };
 

@@ -83,6 +83,29 @@ export const STORY: Record<string, StoryChapter> = {
       { narration: true, line: "你张了张嘴，却说出另一个判断……" },
       { gotoTrust: true },
       { speaker: "huatuo", line: "……是吗。\n你既已决意，我便随你。我已经太老了。" },
+      { narration: true, line: "他把最后一枚竹简推到你掌心。\n竹简很轻，像一截快要熄灭的火。" },
+      { speaker: "huatuo", line: "阿吉，记住。\n医书可以有归处，医道不能只有归处。" },
+      { gotoChapter: "ch5" },
+    ],
+  },
+
+  // 第五章 · 千年回响
+  ch5: {
+    scene: "final_choice",
+    title: "第五章 · 千年回响",
+    beats: [
+      { narration: true, line: "天将亮时，许昌大牢里响起第一声更鼓。\n你知道，这段青史不会因此改写。" },
+      { speaker: "aj", line: "师父……如果史书仍然写下你的死，那我这一夜，算修补了什么？" },
+      { speaker: "huatuo", line: "人会死，书会散，火会烧尽竹简。\n可若有人愿意记得，愿意再说一遍，遗憾就不会只剩遗憾。" },
+      { narration: true, line: "你低头看见掌心的竹简。墨痕一点点亮起，像从千年后的某处传来回应。" },
+      {
+        choices: [
+          { label: "记住医者救人的本心。", toast: "你听见街巷里有人念起药方。", set: { found_clue: "healer_heart" } },
+          { label: "记住知识传承的险路。", toast: "你看见残卷在战火与山门之间辗转。", set: { found_clue: "legacy_path" } },
+          { label: "记住每个选择背后的代价。", toast: "火光、秘库和人间，同时映在你眼中。", set: { found_clue: "choice_cost" } },
+        ],
+      },
+      { speaker: "huatuo", line: "去吧，典故修补者。\n让后人知道：这世上曾有人想把医道留给人间。" },
       { gotoEnding: true },
     ],
   },

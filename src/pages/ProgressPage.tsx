@@ -40,9 +40,9 @@ const ALL_CHAPTERS = [
   {
     num: 5, numCn: "第五章", id: "ch5",
     title: "千年回响",
-    desc: "结局演绎，知识卡解锁，海报生成。",
+    desc: "终章回响，理解修补的真正意义。",
     preview: "书烧了，他死了，可是——无论你做了哪个选择，历史的长河中总有一道涟漪。此后千年，那道涟漪会以何种方式被人记住？",
-    isFinal: true,
+    isFinal: false,
   },
 ];
 
@@ -231,10 +231,6 @@ function ExpandedCard({
 // ── 主组件 ──────────────────────────────────────────────────────
 export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
   const cur = state.currentChapter || 1;
-  // 终章(千年回响=结局演绎)只在"本周目"已抵达结局时解锁。用 lastEnding(重新
-  // 选择/重置都会清空),不用 unlockedEndings——后者是跨周目持久的图鉴记录,会
-  // 导致回到第一章时第五章仍显示解锁(而 2/3/4 章却是锁的)。
-  const hasEnding = !!state.lastEnding;
   // 默认展开当前章节
   const [expanded, setExpanded] = useState<number>(cur);
 
@@ -338,12 +334,11 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
           }} />
 
           {ALL_CHAPTERS.map((ch, i) => {
-            // 解锁规则:终章看是否已通关任一结局,其余看当前进度
-            const unlocked = ch.isFinal ? hasEnding : ch.num <= cur;
+            const unlocked = ch.num <= cur;
             const locked = !unlocked;
             const isExpanded = expanded === ch.num && !locked;
-            const isDone = unlocked && (ch.isFinal ? true : ch.num < cur);
-            const isCurrent = !locked && !ch.isFinal && ch.num === cur;
+            const isDone = unlocked && ch.num < cur;
+            const isCurrent = !locked && ch.num === cur;
             const rowOpacity = locked ? 0.4 : 1;
             // S 型错位：奇数章节靠左，偶数靠右
             const xShift = i % 2 === 0 ? 0 : 36;

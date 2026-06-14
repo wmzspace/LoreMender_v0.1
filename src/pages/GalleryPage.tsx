@@ -6,6 +6,12 @@ import { ENDINGS } from "../data";
 import type { GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
 
+function sceneForEnding(id: string) {
+  if (id === "ash" || id === "burn_ending") return <SceneEndingAsh/>;
+  if (id === "sealed" || id === "wangji_trap" || id === "xuanyin_fallback") return <SceneEndingSealed/>;
+  return <SceneEndingLiving/>;
+}
+
 interface GalleryPageProps {
   state: GameState;
   gotoPage: (p: PageKey) => void;
@@ -39,9 +45,7 @@ export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
               }}>
                 <div style={{position:"relative", height: 130}}>
                   {has ? (
-                    e.id === "ash" ? <SceneEndingAsh/> :
-                    e.id === "sealed" ? <SceneEndingSealed/> :
-                    <SceneEndingLiving/>
+                    sceneForEnding(e.id)
                   ) : (
                     <div style={{
                       width:"100%", height:"100%",

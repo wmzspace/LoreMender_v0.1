@@ -1,9 +1,10 @@
 interface CoverPageProps {
   onStart: () => void;
   onWorld: () => void;
+  onShowcase: () => void;
 }
 
-export function CoverPage({ onStart, onWorld }: CoverPageProps) {
+export function CoverPage({ onStart, onWorld, onShowcase }: CoverPageProps) {
   return (
     <div className="page night-deep-bg">
       {/* key-art poster background (public/images/cover.jpg) */}
@@ -45,6 +46,7 @@ export function CoverPage({ onStart, onWorld }: CoverPageProps) {
         }}>
           <button className="btn-primary press" onClick={onStart}>开 始 修 补</button>
           <button className="btn-ghost press" onClick={onWorld}>查 看 设 定</button>
+          <button className="btn-ghost press" onClick={onShowcase}>参 赛 档 案</button>
         </div>
       </div>
     </div>

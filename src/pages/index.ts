@@ -1,6 +1,7 @@
 export { CoverPage } from "./CoverPage";
 export { WorldPage } from "./WorldPage";
 export { ChapterSelectPage } from "./ChapterSelectPage";
+export { ShowcasePage } from "./ShowcasePage";
 export { StoryPage } from "./StoryPage";
 export { CluePage } from "./CluePage";
 export { TrustRoutePage } from "./TrustRoutePage";
