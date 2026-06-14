@@ -59,8 +59,8 @@ function CircleIllust({
       style={{ flexShrink: 0, opacity, transition: "opacity 0.3s" }}>
       <defs>
         <radialGradient id={`cg-${uid}`} cx="50%" cy="45%" r="50%">
-          <stop offset="0%" stopColor="#d4943a" stopOpacity="0.6" />
-          <stop offset="55%" stopColor="#5a3010" stopOpacity="0.3" />
+          <stop offset="0%" stopColor="#cdb277" stopOpacity="0.6" />
+          <stop offset="55%" stopColor="#2b2517" stopOpacity="0.3" />
           <stop offset="100%" stopColor="#06100e" stopOpacity="0" />
         </radialGradient>
         <clipPath id={`cc-${uid}`}><circle cx={r} cy={r} r={r - 3} /></clipPath>
@@ -80,7 +80,7 @@ function CircleIllust({
         opacity={glow ? 1 : 0.6}
       />
       {/* 暗背景 */}
-      <circle cx={r} cy={r} r={r - 3} fill="#0a1512" />
+      <circle cx={r} cy={r} r={r - 3} fill="#0c1218" />
       {/* 烛光渐变 */}
       <circle cx={r} cy={r} r={r - 3} fill={`url(#cg-${uid})`} clipPath={`url(#cc-${uid})`} />
       {/* 内容 */}
@@ -91,9 +91,9 @@ function CircleIllust({
             stroke="#60563a" strokeWidth="0.7" opacity="0.4"
           />
         ))}
-        <ellipse cx={r} cy={r * 0.52} rx="3" ry="5.5" fill="#ffb93a" opacity="0.9" />
-        <ellipse cx={r} cy={r * 0.62} rx="6" ry="3" fill="#d97a2b" opacity="0.4" />
-        <rect x={r - 2} y={r * 0.72} width="4" height={r * 0.52} fill="#5a3a10" opacity="0.6" />
+        <ellipse cx={r} cy={r * 0.52} rx="3" ry="5.5" fill="#ecdca6" opacity="0.9" />
+        <ellipse cx={r} cy={r * 0.62} rx="6" ry="3" fill="#bfa06a" opacity="0.4" />
+        <rect x={r - 2} y={r * 0.72} width="4" height={r * 0.52} fill="#3a3320" opacity="0.6" />
       </g>
     </svg>
   );
@@ -111,7 +111,7 @@ function ExpandedCard({
   return (
     <div style={{
       marginTop: 10, marginLeft: 20,
-      background: "linear-gradient(135deg, #12201f 0%, #0c1a18 50%, #0e1c1a 100%)",
+      background: "linear-gradient(135deg, #161c22 0%, #10161c 50%, #12181e 100%)",
       border: `1px solid ${isCurrent ? "#cdb277" : "#423a22"}`,
       borderRadius: 4,
       padding: "12px 14px",
@@ -144,7 +144,7 @@ function ExpandedCard({
       {/* 纸张内阴影 */}
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none",
-        boxShadow: "inset 0 0 16px rgba(0,0,0,0.6), inset 0 0 4px rgba(80,40,0,0.2)",
+        boxShadow: "inset 0 0 16px rgba(0,0,0,0.6), inset 0 0 4px rgba(0,0,0,0.2)",
       }} />
 
       <div style={{ display: "flex", gap: 12, position: "relative", zIndex: 1 }}>
@@ -157,12 +157,12 @@ function ExpandedCard({
             <div style={{
               fontSize: 20, color: isCurrent ? "#d8c48f" : "#b6a482",
               letterSpacing: "0.18em", textIndent: "0.18em",
-              textShadow: isCurrent ? "0 0 12px rgba(212,175,106,0.4)" : "none",
+              textShadow: isCurrent ? "0 0 12px rgba(236,220,166,0.4)" : "none",
             }}>{ch.title}</div>
             {isCurrent && (
               <div style={{
-                fontSize: 9, color: "#cdb277",
-                border: "1px solid #cdb277",
+                fontSize: 9, color: "var(--jade-pale)",
+                border: "1px solid var(--jade)",
                 borderRadius: 2, padding: "1px 5px",
                 letterSpacing: "0.1em",
                 animation: "glowPulse 2s ease-in-out infinite",
@@ -171,7 +171,7 @@ function ExpandedCard({
           </div>
 
           <div style={{
-            fontSize: 11, color: "rgba(219,195,145,0.65)",
+            fontSize: 11, color: "rgba(222,224,210,0.65)",
             marginTop: 5, lineHeight: 1.6, letterSpacing: "0.03em",
           }}>{ch.desc}</div>
 
@@ -187,7 +187,7 @@ function ExpandedCard({
             letterSpacing: "0.14em", marginBottom: 3,
           }}>剧情预览</div>
           <div style={{
-            fontSize: 10.5, color: "rgba(219,195,145,0.6)",
+            fontSize: 10.5, color: "rgba(222,224,210,0.6)",
             lineHeight: 1.7, letterSpacing: "0.02em",
           }}>{ch.preview}</div>
         </div>
@@ -200,8 +200,8 @@ function ExpandedCard({
           className="press"
           style={{
             background: isCurrent
-              ? "linear-gradient(180deg, #12201e, #0a1512)"
-              : "linear-gradient(180deg, #1e1608, #081210)",
+              ? "linear-gradient(180deg, #161c22, #0c1218)"
+              : "linear-gradient(180deg, #141a20, #0a1016)",
             border: `1.5px solid ${isCurrent ? "#cdb277" : "#60563a"}`,
             borderRadius: 24,
             padding: "8px 28px",
@@ -305,7 +305,7 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
             <div style={{
               fontSize: 22, color: "#d8c48f",
               letterSpacing: "0.3em", textIndent: "0.3em",
-              textShadow: "0 0 16px rgba(212,175,106,0.35)",
+              textShadow: "0 0 16px rgba(236,220,166,0.35)",
             }}>副本进程</div>
             <div style={{
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -387,7 +387,7 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                         <div style={{
                           position: "absolute", bottom: 4, right: 4,
                           width: 14, height: 14, borderRadius: "50%",
-                          background: "#0a1512", border: "1px solid #cdb277",
+                          background: "#0c1218", border: "1px solid #cdb277",
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}>
                           <svg width="7" height="6" viewBox="0 0 7 6" fill="none">
@@ -403,7 +403,7 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                         fontSize: 17,
                         color: isCurrent ? "#d8c48f" : (isDone ? "#b6a482" : "rgba(180,145,80,0.55)"),
                         letterSpacing: "0.16em", textIndent: "0.16em",
-                        textShadow: isCurrent ? "0 0 10px rgba(212,175,106,0.3)" : "none",
+                        textShadow: isCurrent ? "0 0 10px rgba(236,220,166,0.3)" : "none",
                       }}>{locked ? "？ ？ ？" : ch.title}</div>
                       <div style={{
                         width: 36, height: 1,
