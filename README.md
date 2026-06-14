@@ -22,40 +22,41 @@
 > 你醒来时，成了华佗身边最不起眼的小徒弟。  
 > **你不能救他，但你还有一夜，可以决定医道是否断绝。**
 
-**游戏时长**：8–12 分钟  
-**包含内容**：5 个章节 · 5 条线索 · 4 个可托付人物 · 3 种结局
+**游戏时长**：5–10 分钟  
+**包含内容**：4 个剧情章节（+ 结局演绎）· 5 条线索 · 3 个可托付人物（+ 毁去残卷）· 4 种结局
 
 ---
 
 ## 🎨 可视化剧情编辑器
 
-**全新功能**：使用 Twine 可视化编辑剧情！
+### 方式一：应用内编辑器（推荐）
+
+启动 `npm run dev` 后，浏览器访问 **`http://localhost:5173/editor`**：
+
+- **节点图**：以流程图查看/编辑全部剧情（章节 · 旁白 · 对话 · 选择 · 跳转 · 结局），点节点在右侧面板改文案/选项/跳转；可拖拽、缩放、看小地图。
+- **代码视图**：直接看/编辑生成的 TypeScript。
+- **导出落地**：点「导出」下载 `story.ts`（或「复制」），覆盖到 **`src/data/dungeons/huatuo/story.ts`** 即生效（浏览器不能直接写文件，故为「编辑→导出→替换」半自动流程；导出提示中的旧路径 `src/data/` 请改放到 `dungeons/huatuo/` 子目录）。
+
+### 方式二：Twine 工作流
 
 ```bash
-# 导出现有剧情到 Twine
-npm run story:export
-
-# 在 Twine 中可视化编辑后，导入回项目
-npm run story:import <twine-html-file>
+npm run story:export                       # 导出到 Twine HTML
+npm run story:import <twine-html-file>     # 编辑后导回
 ```
 
-**优势**：
-- ✅ 可视化查看所有分支关系
-- ✅ 拖拽节点编辑剧情
-- ✅ 实时预览剧情流程
-- ✅ 防止遗漏分支
+> ⚠️ 数据迁移到 `src/data/dungeons/huatuo/` 后，转换脚本仍指向旧的 `src/data/story.ts`（现为废弃转发），**该工作流暂不可用**，待脚本路径适配。优先使用应用内编辑器。
 
-详细指南：[Twine 快速开始](./TWINE_GUIDE.md) | [剧情结构文档](./STORY_STRUCTURE.md)
+参考：[Twine 快速开始](./TWINE_GUIDE.md) · [剧情结构文档](./STORY_STRUCTURE.md)
 
 ---
 
 ## 🎮 核心玩法
 
-- **剧情选择**：每个关键节点都有 2-3 个选择，影响后续剧情与结局
-- **线索调查**：在医馆中收集 5 条线索（残页、药方、口述、民谣、施针图），理解"医道未断"的真意
-- **人物托付**：在第三章选择一位可信之人托付《青囊经》（徒弟 / 接骨匠 / 歌者 / 兽医）
-- **多重结局**：根据你的抉择进入不同结局（原卷成灰 / 密室封存 / 医道未断）
-- **结局图鉴**：解锁的结局会保存在本地，可重复体验收集全结局
+- **剧情选择**：每章关键节点都有 2-3 个选择，塑造氛围并记录状态
+- **线索调查**：线索板（底部导航）可收集 5 条线索（青囊残页 / 药方抄本 / 师父口述 / 民谣片段 / 施针图），理解"医道未断"的真意；为可选侧栏，不阻塞主线
+- **唯一决策（青囊何归）**：终章决定《青囊经》的归宿——托付于 **王济 / 陈伯 / 玄音道人** 三人之一，或 **毁去残卷**。此选择直接决定结局
+- **多重结局**：医者人间（典故修补）/ 残卷余音（遗憾半修）/ 重锁深阁（遗憾未竟）/ 青囊焚尽（遗憾焚绝）
+- **结局图鉴**：解锁的结局保存在本地，可重复体验收集全结局
 
 ---
 
@@ -72,30 +73,35 @@ LoreMender_v0.1/
 │   ├── App.tsx                 ← 主路由 (PageKey 状态机)
 │   ├── data/                   ← 剧情/角色/线索/结局数据 (TS)
 │   │   ├── types.ts            ← GameState / Beat / Choice 等共享类型
-│   │   ├── chapters.ts         ← CHAPTERS
-│   │   ├── characters.ts       ← CHARACTERS + TRUST_OPTIONS
-│   │   ├── clues.ts            ← CLUES
-│   │   ├── endings.ts          ← ENDINGS + resolveEnding()
-│   │   ├── story.ts            ← STORY (各章 beats)
-│   │   └── index.ts
+│   │   ├── index.ts            ← 统一导出 (从副本 re-export)
+│   │   └── dungeons/huatuo/    ← 华佗·青囊残卷 副本数据
+│   │       ├── story.ts        ← STORY (各章 beats)
+│   │       ├── chapters.ts     ← CHAPTERS
+│   │       ├── characters.ts   ← CHARACTERS + TRUST_OPTIONS
+│   │       ├── clues.ts        ← CLUES
+│   │       ├── endings.ts      ← ENDINGS + resolveEnding()
+│   │       └── index.ts
 │   ├── components/             ← 通用 UI 组件 (.tsx)
-│   │   │   Toast / Topbar / BottomNav / PaperPanel / SealTag
+│   │   │   Toast / Topbar / PageHeader / BottomNav / PaperPanel / SealTag
 │   │   │   GoldDivider / DialogueBox / ChoiceList / CharacterCard
 │   │   │   BottomSheet / ProgressDots / SceneFrame / LockedDungeon
 │   │   └── art/                ← SVG 场景插图 / 角色剪影 / 线索/世界观图标
 │   ├── pages/                  ← 9 个页面组件 (.tsx)
 │   │   │   CoverPage / WorldPage / ChapterSelectPage / StoryPage
 │   │   │   CluePage / TrustRoutePage / ProgressPage / EndingPage / GalleryPage
+│   ├── editor/                 ← 可视化剧情编辑器 (/editor 路由,懒加载, @xyflow/react)
 │   ├── lib/
-│   │   ├── storage.ts          ← loadState / saveState / defaultState
+│   │   ├── storage.ts          ← loadState/saveState/defaultState + saveBeat/loadBeat
 │   │   └── routes.ts           ← PageKey 联合类型
-│   └── styles/global.css       ← 古风 UI 样式系统 (CSS 变量)
-├── original/                   ← v0 单文件原型 (HTML + 5 个 jsx,仅作存档参考)
+│   └── styles/global.css       ← 古风 UI 样式系统 (CSS 变量 + 交互/无障碍层)
+├── public/images/cover.jpg     ← 首页主视觉海报
+├── tools/twine-converter/      ← Twine 互转脚本 (story:export / story:import)
+├── original/                   ← v0 单文件原型 (仅作存档参考)
 ├── README.md
 └── LICENSE
 ```
 
-**技术栈**：Vite 8 · React 19 · TypeScript · CSS Variables · localStorage
+**技术栈**：Vite 8 · React 19 · TypeScript · @xyflow/react（编辑器）· CSS Variables · localStorage
 
 > v0 原型采用 Babel Standalone 在浏览器内编译 JSX,完整源码保留在 [`original/`](./original/) 目录下。
 
@@ -182,20 +188,22 @@ npm run preview
 
 ### localStorage 数据
 
-存储 key：`loremender:huatuo:v1`
+主存档 key：`loremender:huatuo:v2`（自动保存）
 
 ```typescript
 {
-  firstChoice: string | null,     // 第1章选择
-  ch2: string | null,             // 第2章选择
+  currentChapter: number,         // 进度 (1-4)
+  finalChoice: string | null,     // 青囊何归 的决定 (wangji/chenbo/xuanyin/burn) — 决定结局
+  trustedPerson: string | null,   // 托付对象 id (焚书时为空)
   searchedClues: string[],        // 已查看的线索 id
-  trustedPerson: string | null,   // 托付对象 id
-  finalDecision: string | null,   // 第4章最终决定
-  currentChapter: number,         // 进度 (1-5)
-  unlockedEndings: string[],      // 已解锁结局 id
-  lastEnding: string | null,      // 最近一次结局
+  unlockedEndings: string[],      // 已解锁结局 id (跨周目持久,供图鉴)
+  lastEnding: string | null,      // 本周目结局 (重新选择/重置会清空)
+  // 章内 flag (记录用,暂不参与结局判定):
+  firstImpression / suspect / caoCunning / cao_suspicion / trust_huatuo / found_clue ...
 }
 ```
+
+另有阅读位置键 `loremender:huatuo:beat`（`{c: 章节, i: beat 下标}`），用于离开剧情页后**续读**；换章 / 新开局按章节标记自动归零。
 
 ### 剧情数据结构
 
@@ -211,35 +219,34 @@ npm run preview
 // 选择分支
 {
   choices: [
-    { label: "医术无罪", toast: "提示文案", set: { key: value }, ending: "ash" },
+    { label: "交给陈伯", toast: "提示文案", set: { finalChoice: "chenbo" } },
     ...
   ]
 }
 
 // 跳转
 { gotoChapter: "ch2" }        // 跳转章节
-{ gotoTrust: true }           // 跳转人物托付页
+{ gotoTrust: true }           // 跳转「青囊何归」决策页
 { gotoEnding: true }          // 跳转结局
 ```
 
-结局由 `resolveEnding(state)` 根据 `finalDecision` + `trustedPerson` 推导。
+结局由 `resolveEnding(state)` 根据 `finalChoice` 推导：
+`chenbo→医者人间 · xuanyin→残卷余音 · wangji→重锁深阁 · burn→青囊焚尽`。
+`finalChoice` 由「青囊何归」决策页设置（终章唯一绑定决策）。
 
 ---
 
 ## 🔧 扩展指南
 
-### 新增副本
-
-1. 在 `src/data/story.ts` 中新增章节 `STORY.newDungeon_ch1` 等
-2. 在 `src/data/characters.ts` / `clues.ts` / `endings.ts` 中追加相应数据,并在 `src/data/types.ts` 补充类型(如新的 `EndingId`)
+1. 新建副本数据目录 `src/data/dungeons/<name>/`，参照 `huatuo/` 提供 `story.ts` / `chapters.ts` / `characters.ts` / `clues.ts` / `endings.ts` / `index.ts`
+2. 必要时在 `src/data/types.ts` 补充类型（如新的 `SceneKind`），并在 `src/data/index.ts` 接入新副本导出
 3. 在 `src/components/art/` 下新增 `Scene*.tsx` 并在 `art/index.ts` 导出
-4. 在 `src/pages/ChapterSelectPage.tsx` 解锁新副本卡片
+4. 在 `src/pages/ChapterSelectPage.tsx` 解锁新副本卡片；在 `src/editor/StoryFlowEditor.tsx` 的 `DUNGEONS` 注册可在编辑器中查看
 
-**示例**:`src/data/story.ts`
+**示例**:`src/data/dungeons/libai/story.ts`
 ```ts
 export const STORY: Record<string, StoryChapter> = {
-  // ...
-  libai_ch1: {
+  ch1: {
     scene: "palace_night",
     title: "第一章 · 长安月夜",
     beats: [
@@ -339,6 +346,9 @@ git push origin feature/your-feature
 
 - [x] MVP 原型（华佗·青囊残卷）
 - [x] 迁移至 Vite + TypeScript
+- [x] 主视觉海报封面
+- [x] 可视化剧情编辑器（应用内 `/editor` + Twine 互转）
+- [ ] 适配 Twine 互转脚本到 `dungeons/huatuo/` 新数据路径
 - [ ] 第二个副本（李白·谪仙遗恨 / 岳飞·风波未平）
 - [ ] AI 生成美术资源替换 SVG 占位
 - [ ] 音效 + BGM
