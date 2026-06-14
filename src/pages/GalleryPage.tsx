@@ -33,9 +33,9 @@ export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
               }}>
               <div style={{
                 position:"relative", overflow:"hidden",
-                border: "1px solid " + (has ? "rgba(201,161,74,0.6)" : "rgba(78,58,20,0.5)"),
+                border: "1px solid " + (has ? "rgba(205,178,119,0.6)" : "rgba(70,62,38,0.5)"),
                 borderRadius: 2,
-                boxShadow: has ? "0 0 0 1px rgba(231,199,115,0.12), 0 8px 24px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.5)",
+                boxShadow: has ? "0 0 0 1px rgba(236,220,166,0.12), 0 8px 24px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.5)",
               }}>
                 <div style={{position:"relative", height: 130}}>
                   {has ? (
@@ -45,11 +45,11 @@ export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
                   ) : (
                     <div style={{
                       width:"100%", height:"100%",
-                      background:"radial-gradient(circle at 50% 50%, rgba(60,45,25,0.6), rgba(8,5,3,0.95))",
+                      background:"radial-gradient(circle at 50% 50%, rgba(26,38,42,0.6), rgba(5,8,11,0.95))",
                       display:"flex", alignItems:"center", justifyContent:"center",
                     }}>
                       <div className="title-han" style={{
-                        fontSize: 64, color:"rgba(201,161,74,0.18)",
+                        fontSize: 64, color:"rgba(205,178,119,0.18)",
                         letterSpacing:"0.4em",
                       }}>？ ？</div>
                     </div>
@@ -71,8 +71,8 @@ export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
                 </div>
                 <div style={{
                   padding: "12px 14px",
-                  background:"linear-gradient(180deg, rgba(15,10,6,0.95), rgba(8,5,3,0.95))",
-                  borderTop:"1px solid " + (has ? "rgba(201,161,74,0.3)" : "rgba(78,58,20,0.5)"),
+                  background:"linear-gradient(180deg, rgba(9,14,17,0.95), rgba(5,8,11,0.95))",
+                  borderTop:"1px solid " + (has ? "rgba(205,178,119,0.3)" : "rgba(70,62,38,0.5)"),
                 }}>
                   <div className="title-han" style={{
                     fontSize: 16,
@@ -83,7 +83,7 @@ export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
                     fontSize: 12, marginTop: 6,
                     opacity: has ? 0.8 : 0.45,
                     fontStyle:"italic",
-                    color:"rgba(231,217,179,0.85)",
+                    color:"rgba(228,224,208,0.85)",
                     letterSpacing:"0.04em",
                   }}>
                     {has ? `「${e.epitaph}」` : "尚未解锁此结局。"}

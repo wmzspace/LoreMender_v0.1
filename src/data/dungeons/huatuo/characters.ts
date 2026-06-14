@@ -4,7 +4,7 @@ export const CHARACTERS: Record<string, Character> = {
   huatuo: {
     id: "huatuo", name: "华佗", role: "神医 · 将死之人",
     desc: "建安年间的名医。青史已写下他的死。",
-    accent: "#c9a14a",
+    accent: "#cdb277",
   },
   aj: {
     id: "aj", name: "阿吉", role: "你所附身之人",

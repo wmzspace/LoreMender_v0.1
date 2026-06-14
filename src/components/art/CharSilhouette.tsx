@@ -5,16 +5,16 @@ interface CharSilhouetteProps {
   accent?: string;
 }
 
-export function CharSilhouette({ kind, accent = "#c9a14a" }: CharSilhouetteProps) {
+export function CharSilhouette({ kind, accent = "#cdb277" }: CharSilhouetteProps) {
   const common = (
     <defs>
       <radialGradient id={`cs-${kind}`} cx="50%" cy="40%" r="60%">
         <stop offset="0" stopColor={accent} stopOpacity="0.35"/>
-        <stop offset="1" stopColor="#0a0604" stopOpacity="0"/>
+        <stop offset="1" stopColor="#06090b" stopOpacity="0"/>
       </radialGradient>
       <linearGradient id={`csb-${kind}`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#1a1208"/>
-        <stop offset="1" stopColor="#0a0604"/>
+        <stop offset="0" stopColor="#0a1014"/>
+        <stop offset="1" stopColor="#06090b"/>
       </linearGradient>
     </defs>
   );
@@ -22,7 +22,7 @@ export function CharSilhouette({ kind, accent = "#c9a14a" }: CharSilhouetteProps
   let figure: React.ReactNode;
   if (kind === "scholar") {
     figure = (
-      <g fill="#0a0604" stroke={accent} strokeWidth="0.6" opacity="0.95">
+      <g fill="#06090b" stroke={accent} strokeWidth="0.6" opacity="0.95">
         <path d="M65 30 Q65 18 80 18 Q95 18 95 30 L93 36 L67 36 Z"/>
         <ellipse cx="80" cy="46" rx="13" ry="14"/>
         <path d="M50 100 Q80 60 110 100 L100 160 L60 160 Z"/>
@@ -31,7 +31,7 @@ export function CharSilhouette({ kind, accent = "#c9a14a" }: CharSilhouetteProps
     );
   } else if (kind === "rugged") {
     figure = (
-      <g fill="#0a0604" stroke={accent} strokeWidth="0.6" opacity="0.95">
+      <g fill="#06090b" stroke={accent} strokeWidth="0.6" opacity="0.95">
         <path d="M64 30 Q64 18 80 18 Q96 18 96 30 L94 38 L66 38 Z"/>
         <ellipse cx="80" cy="48" rx="15" ry="14"/>
         <path d="M44 100 Q80 65 116 100 L108 160 L52 160 Z"/>
@@ -40,7 +40,7 @@ export function CharSilhouette({ kind, accent = "#c9a14a" }: CharSilhouetteProps
     );
   } else if (kind === "songbird") {
     figure = (
-      <g fill="#0a0604" stroke={accent} strokeWidth="0.6" opacity="0.95">
+      <g fill="#06090b" stroke={accent} strokeWidth="0.6" opacity="0.95">
         <path d="M58 50 Q60 22 80 22 Q100 22 102 50 Q102 70 80 60 Q58 70 58 50 Z"/>
         <ellipse cx="80" cy="50" rx="12" ry="14"/>
         <path d="M50 100 Q80 72 110 100 L116 160 L44 160 Z"/>
@@ -50,7 +50,7 @@ export function CharSilhouette({ kind, accent = "#c9a14a" }: CharSilhouetteProps
     );
   } else {
     figure = (
-      <g fill="#0a0604" stroke={accent} strokeWidth="0.6" opacity="0.95">
+      <g fill="#06090b" stroke={accent} strokeWidth="0.6" opacity="0.95">
         <ellipse cx="80" cy="44" rx="13" ry="14"/>
         <path d="M68 38 Q74 28 80 28 Q86 28 92 38 L92 32 Q86 24 80 24 Q74 24 68 32 Z"/>
         <path d="M72 56 L80 78 L88 56 Z" fill={accent} opacity="0.5"/>

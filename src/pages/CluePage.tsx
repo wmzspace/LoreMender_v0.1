@@ -41,8 +41,8 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
 
         <div style={{
           position:"relative", padding: "10px 0",
-          background: "linear-gradient(180deg, rgba(20,14,8,0.5), rgba(8,5,3,0.5))",
-          border: "1px dashed rgba(201,161,74,0.25)",
+          background: "linear-gradient(180deg, rgba(11,17,20,0.5), rgba(5,8,11,0.5))",
+          border: "1px dashed rgba(205,178,119,0.25)",
           borderRadius: 2,
         }}>
           <div style={{
@@ -57,9 +57,9 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
                   onClick={() => toggleCollect(c.id)}
                   style={{
                     position:"relative",
-                    background:"linear-gradient(180deg, #f0dcae, #d8be88)",
+                    background:"linear-gradient(180deg, #e9e2d0, #cabf9f)",
                     color:"var(--ink-deep)",
-                    border:"1px solid rgba(78,58,20,0.5)",
+                    border:"1px solid rgba(70,62,38,0.5)",
                     padding: "10px 10px 12px",
                     transform: `rotate(${rot}deg)`,
                     cursor:"pointer",
@@ -73,7 +73,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
                     position:"absolute", top: -6, left: "50%",
                     transform: "translateX(-50%)",
                     width: 12, height: 12, borderRadius:"50%",
-                    background:"radial-gradient(circle at 30% 30%, #ff7050, #6b1a10)",
+                    background:"radial-gradient(circle at 30% 30%, #ff7050, #6e1f18)",
                     boxShadow:"0 2px 4px rgba(0,0,0,0.5)",
                   }}/>
                   <div style={{
@@ -94,7 +94,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
                     }}>· 已 阅 ·</div>
                   ) : (
                     <div style={{
-                      fontSize: 10, color:"rgba(78,58,20,0.5)",
+                      fontSize: 10, color:"rgba(70,62,38,0.5)",
                       letterSpacing:"0.18em", marginTop: 2,
                     }}>· 未 阅 ·</div>
                   )}
@@ -109,9 +109,9 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
           padding: "14px 16px",
           textAlign: "center",
           background: enoughClues
-            ? "linear-gradient(180deg, rgba(231,199,115,0.18), rgba(40,30,18,0.6))"
-            : "linear-gradient(180deg, rgba(40,30,18,0.4), rgba(20,14,8,0.6))",
-          border: "1px solid " + (enoughClues ? "var(--gold-pale)" : "rgba(78,58,20,0.5)"),
+            ? "linear-gradient(180deg, rgba(236,220,166,0.18), rgba(20,28,32,0.6))"
+            : "linear-gradient(180deg, rgba(20,28,32,0.4), rgba(11,17,20,0.6))",
+          border: "1px solid " + (enoughClues ? "var(--gold-pale)" : "rgba(70,62,38,0.5)"),
           borderRadius: 2,
         }}>
           {enoughClues ? (
@@ -119,13 +119,13 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
               fontFamily:"ZCOOL XiaoWei, serif",
               fontSize: 14, color:"var(--gold-pale)",
               letterSpacing:"0.18em", lineHeight: 1.7,
-              textShadow:"0 0 12px rgba(231,199,115,0.3)",
+              textShadow:"0 0 12px rgba(236,220,166,0.3)",
             }}>
               也许真正该留下的，<br/>不是原卷，而是知识的活路。
             </div>
           ) : (
             <div style={{
-              fontSize: 12, color:"rgba(235,217,179,0.6)",
+              fontSize: 12, color:"rgba(228,224,208,0.6)",
               lineHeight: 1.7, letterSpacing:"0.06em",
             }}>
               已收集 {collected.length} / {CLUES.length}<br/>
@@ -150,8 +150,8 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
                 <div style={{
                   width: 48, height: 48,
                   display:"flex", alignItems:"center", justifyContent:"center",
-                  background:"rgba(168,49,31,0.1)",
-                  border:"1px solid rgba(78,58,20,0.4)",
+                  background:"rgba(178,58,44,0.1)",
+                  border:"1px solid rgba(70,62,38,0.4)",
                 }}>
                   <ClueIcon type={c.icon} size={40}/>
                 </div>
@@ -160,7 +160,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
                     fontSize: 17, color:"var(--ink-deep)",
                     letterSpacing:"0.16em",
                   }}>{c.title}</div>
-                  <div style={{fontSize: 11, color:"rgba(78,58,20,0.7)", marginTop: 2, letterSpacing:"0.12em"}}>
+                  <div style={{fontSize: 11, color:"rgba(70,62,38,0.7)", marginTop: 2, letterSpacing:"0.12em"}}>
                     · 线索 · {c.name}
                   </div>
                 </div>
@@ -176,7 +176,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
               }}>{c.body}</div>
               <div style={{
                 marginTop: 12, padding: "10px 12px",
-                background: "rgba(168,49,31,0.08)",
+                background: "rgba(178,58,44,0.08)",
                 borderLeft: "2px solid var(--vermillion)",
                 fontSize: 12.5, color:"var(--vermillion-deep)",
                 lineHeight: 1.7,

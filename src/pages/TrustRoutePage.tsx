@@ -77,12 +77,12 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
             width:"100%", display:"flex", alignItems:"center", gap:12,
             padding:"12px 14px", cursor:"pointer", textAlign:"left",
             background: isBurn
-              ? "linear-gradient(180deg, rgba(168,49,31,0.32), rgba(40,16,10,0.88))"
+              ? "linear-gradient(180deg, rgba(178,58,44,0.32), rgba(40,16,10,0.88))"
               : "linear-gradient(180deg, rgba(30,18,12,0.9), rgba(15,8,5,0.9))",
-            border: "1px solid " + (isBurn ? "var(--vermillion)" : "rgba(168,49,31,0.4)"),
+            border: "1px solid " + (isBurn ? "var(--vermillion)" : "rgba(178,58,44,0.4)"),
             borderRadius: 2, color:"var(--paper)",
             boxShadow: isBurn
-              ? "0 0 0 1px var(--vermillion), 0 0 28px rgba(168,49,31,0.3)"
+              ? "0 0 0 1px var(--vermillion), 0 0 28px rgba(178,58,44,0.3)"
               : "0 4px 14px rgba(0,0,0,0.5)",
           }}>
           <SealTag size="sm" style={{transform:"none", background:"var(--vermillion-deep)"}}>焚</SealTag>
@@ -91,7 +91,7 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
               fontSize:15, letterSpacing:"0.16em",
               color: isBurn ? "#ffd0c0" : "var(--paper)",
             }}>毁 去 残 卷</div>
-            <div style={{fontSize:11.5, opacity:0.78, marginTop:3, lineHeight:1.5, color:"rgba(231,217,179,0.82)"}}>
+            <div style={{fontSize:11.5, opacity:0.78, marginTop:3, lineHeight:1.5, color:"rgba(228,224,208,0.82)"}}>
               不托付于任何人，让《青囊经》随今夜一同湮灭。
             </div>
           </div>
@@ -117,7 +117,7 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
       <div style={{
         position:"absolute", left:0, right: 0, bottom: 0,
         padding:`12px 18px calc(16px + var(--safe-bottom))`,
-        background: "linear-gradient(180deg, transparent, rgba(10,6,4,0.95) 30%)",
+        background: "linear-gradient(180deg, transparent, rgba(7,11,14,0.95) 30%)",
       }}>
         <button
           className="btn-primary press"

@@ -23,8 +23,8 @@ export function ChapterSelectPage({ onBack, onEnter }: ChapterSelectPageProps) {
           <div style={{
             position:"relative", overflow:"hidden",
             borderRadius: 2,
-            border: "1px solid rgba(201,161,74,0.6)",
-            boxShadow: "0 0 0 1px rgba(231,199,115,0.18), 0 12px 32px rgba(0,0,0,0.6), inset 0 0 60px rgba(231,199,115,0.08)",
+            border: "1px solid rgba(205,178,119,0.6)",
+            boxShadow: "0 0 0 1px rgba(236,220,166,0.18), 0 12px 32px rgba(0,0,0,0.6), inset 0 0 60px rgba(236,220,166,0.08)",
           }}>
             <div style={{position:"relative", height: 200}}>
               <SceneClinic/>
@@ -43,19 +43,19 @@ export function ChapterSelectPage({ onBack, onEnter }: ChapterSelectPageProps) {
             </div>
             <div style={{
               padding: "14px 16px 16px",
-              background: "linear-gradient(180deg, rgba(15,10,6,0.95), rgba(8,5,3,0.98))",
-              borderTop: "1px solid rgba(201,161,74,0.3)",
+              background: "linear-gradient(180deg, rgba(9,14,17,0.95), rgba(5,8,11,0.98))",
+              borderTop: "1px solid rgba(205,178,119,0.3)",
             }}>
               <div className="title-han" style={{
                 fontSize: 22, color:"var(--gold-pale)",
                 letterSpacing:"0.22em", textIndent:"0.22em",
                 marginBottom: 8,
-                textShadow: "0 0 14px rgba(231,199,115,0.3)",
+                textShadow: "0 0 14px rgba(236,220,166,0.3)",
               }}>华佗 · 青囊残卷</div>
               <div style={{
                 fontSize: 12.5, lineHeight: 1.8,
                 opacity: 0.82,
-                color:"rgba(235,217,179,0.9)",
+                color:"rgba(228,224,208,0.9)",
                 marginBottom: 14,
                 letterSpacing:"0.04em",
               }}>
@@ -73,7 +73,7 @@ export function ChapterSelectPage({ onBack, onEnter }: ChapterSelectPageProps) {
         <div style={{
           textAlign:"center", marginBottom: 12,
           fontFamily:"ZCOOL XiaoWei, serif",
-          fontSize: 12, color:"rgba(231,199,115,0.5)",
+          fontSize: 12, color:"rgba(236,220,166,0.5)",
           letterSpacing:"0.5em", textIndent:"0.5em",
         }}>· 未 启 之 卷 ·</div>
 

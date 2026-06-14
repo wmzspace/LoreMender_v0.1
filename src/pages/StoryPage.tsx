@@ -140,7 +140,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
         <div className="title-han" style={{
           fontSize: 17, color:"var(--gold-pale)",
           letterSpacing:"0.22em", textIndent:"0.22em",
-          textShadow: "0 0 10px rgba(231,199,115,0.4)",
+          textShadow: "0 0 10px rgba(236,220,166,0.4)",
         }}>{chapter?.title}</div>
       </div>
 

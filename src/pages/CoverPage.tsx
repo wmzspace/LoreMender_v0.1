@@ -12,24 +12,24 @@ export function CoverPage({ onStart, onWorld }: CoverPageProps) {
         backgroundImage:"url(/images/cover.jpg)",
         backgroundSize:"cover",
         backgroundPosition:"center top",
-        backgroundColor:"#0a0604",
+        backgroundColor:"#06090b",
       }}/>
 
       {/* bottom scrim so the buttons stay readable over the art */}
       <div style={{
         position:"absolute", inset:0, pointerEvents:"none",
-        background:"linear-gradient(180deg, transparent 42%, rgba(8,5,3,0.45) 64%, rgba(6,4,3,0.86) 82%, rgba(5,3,2,0.99) 100%)",
+        background:"linear-gradient(180deg, transparent 42%, rgba(5,8,11,0.45) 64%, rgba(6,4,3,0.86) 82%, rgba(5,3,2,0.99) 100%)",
       }}/>
 
       {/* classical book-cover frame (题封) */}
       <div style={{
         position:"absolute", inset:"calc(14px + env(safe-area-inset-top,0px)) 14px calc(14px + var(--safe-bottom))",
-        border:"1px solid rgba(201,161,74,0.32)", borderRadius:2,
+        border:"1px solid rgba(205,178,119,0.32)", borderRadius:2,
         pointerEvents:"none", zIndex:3,
       }}/>
       <div style={{
         position:"absolute", inset:"calc(18px + env(safe-area-inset-top,0px)) 18px calc(18px + var(--safe-bottom))",
-        border:"1px solid rgba(201,161,74,0.13)", borderRadius:2,
+        border:"1px solid rgba(205,178,119,0.13)", borderRadius:2,
         pointerEvents:"none", zIndex:3,
       }}/>
 

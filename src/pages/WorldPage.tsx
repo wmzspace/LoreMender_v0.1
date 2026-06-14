@@ -29,9 +29,9 @@ export function WorldPage({ onBack, onEnter }: WorldPageProps) {
                 <div style={{display:"flex", gap: 14, alignItems:"flex-start"}}>
                   <div style={{
                     width: 58, height: 58, flexShrink: 0, borderRadius: 6,
-                    background:"radial-gradient(circle at 50% 38%, rgba(168,49,31,0.2), rgba(40,30,18,0.06) 64%, transparent 78%)",
+                    background:"radial-gradient(circle at 50% 38%, rgba(178,58,44,0.2), rgba(20,28,32,0.06) 64%, transparent 78%)",
                     border:"1px solid rgba(140,107,41,0.55)",
-                    boxShadow:"inset 0 0 10px rgba(78,58,20,0.35), inset 0 1px 0 rgba(255,240,205,0.4)",
+                    boxShadow:"inset 0 0 10px rgba(70,62,38,0.35), inset 0 1px 0 rgba(255,240,205,0.4)",
                     display:"flex", alignItems:"center", justifyContent:"center",
                   }}>
                     <WorldIcon type={c.key}/>
@@ -41,7 +41,7 @@ export function WorldPage({ onBack, onEnter }: WorldPageProps) {
                       fontSize: 17, color:"var(--ink-deep)",
                       letterSpacing:"0.22em", textIndent:"0.22em",
                       marginBottom: 8,
-                      borderBottom: "1px solid rgba(78,58,20,0.25)",
+                      borderBottom: "1px solid rgba(70,62,38,0.25)",
                       paddingBottom: 6,
                     }}>{c.title}</div>
                     <div style={{
@@ -60,7 +60,7 @@ export function WorldPage({ onBack, onEnter }: WorldPageProps) {
       <div style={{
         position:"absolute", left: 0, right: 0, bottom: 0,
         padding: `12px 20px calc(16px + var(--safe-bottom))`,
-        background: "linear-gradient(180deg, transparent, rgba(10,6,4,0.95) 30%)",
+        background: "linear-gradient(180deg, transparent, rgba(7,11,14,0.95) 30%)",
       }}>
         <button className="btn-primary press" onClick={onEnter} style={{width: "100%"}}>
           进 入 副 本

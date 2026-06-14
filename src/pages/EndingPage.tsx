@@ -75,7 +75,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             <Particles count={16}/>
             <div style={{
               position:"absolute", left:0, right:0, bottom: 0, height: 80,
-              background:"linear-gradient(180deg, transparent, rgba(10,6,4,0.98))",
+              background:"linear-gradient(180deg, transparent, rgba(7,11,14,0.98))",
               pointerEvents:"none",
             }}/>
           </div>
@@ -105,10 +105,10 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
                 fontSize: 26, color:"var(--gold-pale)",
                 letterSpacing:"0.3em", textIndent:"0.3em",
                 marginTop: 8,
-                textShadow: "0 0 20px rgba(231,199,115,0.4)",
+                textShadow: "0 0 20px rgba(236,220,166,0.4)",
               }}>{e.name}</div>
               <div style={{
-                fontSize: 12.5, color:"rgba(231,217,179,0.7)",
+                fontSize: 12.5, color:"rgba(228,224,208,0.7)",
                 fontStyle:"italic", letterSpacing:"0.08em",
                 marginTop: -2,
               }}>「{e.epitaph}」</div>
@@ -132,7 +132,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
               <div style={{
                 textAlign:"center",
                 fontFamily:"ZCOOL XiaoWei, serif",
-                fontSize: 11, color:"rgba(78,58,20,0.65)",
+                fontSize: 11, color:"rgba(70,62,38,0.65)",
                 letterSpacing:"0.4em", textIndent:"0.4em",
                 marginTop: 4,
               }}>· 全 章 终 ·</div>

@@ -23,8 +23,8 @@ export function CoverArt() {
         </radialGradient>
         <radialGradient id="cv-ridge" cx="50%" cy="100%" r="70%">
           <stop offset="0%" stopColor="#e08a36" stopOpacity="0.34"/>
-          <stop offset="45%" stopColor="#a8311f" stopOpacity="0.12"/>
-          <stop offset="100%" stopColor="#a8311f" stopOpacity="0"/>
+          <stop offset="45%" stopColor="#b23a2c" stopOpacity="0.12"/>
+          <stop offset="100%" stopColor="#b23a2c" stopOpacity="0"/>
         </radialGradient>
         <linearGradient id="cv-mist" x1="0" x2="0" y1="0" y2="1">
           <stop offset="0%" stopColor="#cdbb90" stopOpacity="0"/>
@@ -38,7 +38,7 @@ export function CoverArt() {
       {/* large faint 史 watermark seated behind the moon */}
       <text x="195" y="468" textAnchor="middle"
             fontFamily="ZCOOL XiaoWei, serif" fontSize="280"
-            fill="#e7c773" opacity="0.05">史</text>
+            fill="#ecdca6" opacity="0.05">史</text>
 
       {/* moon + halo, seated in the open band between subtitle and synopsis */}
       <g transform="translate(160 332)">
@@ -51,7 +51,7 @@ export function CoverArt() {
       </g>
 
       {/* celestial compass rings — the time-space / 青史 motif */}
-      <g transform="translate(195 332)" fill="none" stroke="#e7c773">
+      <g transform="translate(195 332)" fill="none" stroke="#ecdca6">
         <circle r="150" strokeWidth="0.5" opacity="0.16"/>
         <circle r="118" strokeWidth="0.5" opacity="0.32" strokeDasharray="2 7"/>
         <circle r="90" strokeWidth="0.5" opacity="0.2"/>
@@ -75,10 +75,10 @@ export function CoverArt() {
             fill="#150d08"/>
       <rect x="0" y="648" width="390" height="30" fill="url(#cv-mist)" opacity="0.8"/>
       <path d="M0 716 L74 688 L162 712 L244 684 L322 710 L390 692 L390 780 L0 780 Z"
-            fill="#0a0604"/>
+            fill="#06090b"/>
 
       {/* lone pavilion silhouette on the near ridge */}
-      <g transform="translate(286 690)" fill="#0a0604" stroke="#3a2a14" strokeWidth="0.6">
+      <g transform="translate(286 690)" fill="#06090b" stroke="#3a2a14" strokeWidth="0.6">
         <path d="M-22 6 L0 -10 L22 6 Z" fill="#120b07"/>
         <rect x="-15" y="6" width="30" height="18" fill="#0c0705"/>
         <line x1="-26" y1="6" x2="26" y2="6" stroke="#5a4424" strokeWidth="1" opacity="0.6"/>

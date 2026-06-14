@@ -20,7 +20,7 @@ export function SceneClinic() {
         <pattern id="sg-cab-grid" x="0" y="0" width="36" height="40" patternUnits="userSpaceOnUse">
           <rect width="36" height="40" fill="url(#sg-cab)"/>
           <rect x="2" y="2" width="32" height="36" fill="none" stroke="#5a3a20" strokeWidth="1.2"/>
-          <circle cx="18" cy="20" r="1.6" fill="#e7c773" opacity="0.7"/>
+          <circle cx="18" cy="20" r="1.6" fill="#ecdca6" opacity="0.7"/>
         </pattern>
       </defs>
 
@@ -28,7 +28,7 @@ export function SceneClinic() {
 
       <g transform="translate(220 30)">
         <rect width="170" height="220" fill="url(#sg-cab-grid)"/>
-        <rect width="170" height="220" fill="none" stroke="#0a0604" strokeWidth="1"/>
+        <rect width="170" height="220" fill="none" stroke="#06090b" strokeWidth="1"/>
         <g stroke="#7a5a30" strokeWidth="1" fill="none" opacity="0.6">
           <path d="M20 -5 L20 18"/>
           <path d="M60 -5 L60 22"/>
@@ -62,21 +62,21 @@ export function SceneClinic() {
       <rect x="20" y="214" width="350" height="6" fill="#1a0f08"/>
 
       <g transform="translate(80 178)">
-        <rect x="0" y="0" width="160" height="26" fill="#e9d4a6" opacity="0.92"/>
+        <rect x="0" y="0" width="160" height="26" fill="#e3dcc7" opacity="0.92"/>
         <g stroke="#3a2a14" strokeWidth="0.5" opacity="0.55">
           <line x1="6" y1="6" x2="154" y2="6"/>
           <line x1="6" y1="12" x2="148" y2="12"/>
           <line x1="6" y1="18" x2="150" y2="18"/>
         </g>
-        <rect x="-6" y="-3" width="6" height="32" fill="#8a6e3f"/>
-        <rect x="160" y="-3" width="6" height="32" fill="#8a6e3f"/>
-        <rect x="130" y="3" width="14" height="14" fill="#a8311f" opacity="0.9"/>
+        <rect x="-6" y="-3" width="6" height="32" fill="#7c7358"/>
+        <rect x="160" y="-3" width="6" height="32" fill="#7c7358"/>
+        <rect x="130" y="3" width="14" height="14" fill="#b23a2c" opacity="0.9"/>
       </g>
 
       <g transform="translate(195 130)">
         <ellipse cx="0" cy="80" rx="70" ry="14" fill="url(#sg-candle)"/>
-        <rect x="-4" y="40" width="8" height="40" fill="#f0dcae"/>
-        <rect x="-6" y="38" width="12" height="4" fill="#c9a14a"/>
+        <rect x="-4" y="40" width="8" height="40" fill="#e9e2d0"/>
+        <rect x="-6" y="38" width="12" height="4" fill="#cdb277"/>
         <path d="M0 20 C-6 32 -6 44 0 48 C6 44 6 32 0 20 Z" fill="#ffd081">
           <animateTransform attributeName="transform" type="scale" values="1 1; 1 1.05; 1 1" dur="1.6s" repeatCount="indefinite"/>
         </path>

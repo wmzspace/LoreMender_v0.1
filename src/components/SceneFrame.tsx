@@ -11,7 +11,7 @@ export function SceneFrame({ children, height = 240 }: SceneFrameProps) {
     <div style={{
       position:"relative", width:"100%", height,
       overflow: "hidden",
-      background: "#0a0604",
+      background: "#06090b",
     }}>
       {children}
       <div className="grain"/>
@@ -19,7 +19,7 @@ export function SceneFrame({ children, height = 240 }: SceneFrameProps) {
       <Particles count={10}/>
       <div style={{
         position:"absolute", left:0, right:0, bottom:0, height: 60,
-        background: "linear-gradient(180deg, transparent, rgba(10,6,4,0.95))",
+        background: "linear-gradient(180deg, transparent, rgba(7,11,14,0.95))",
         pointerEvents:"none",
       }}/>
     </div>

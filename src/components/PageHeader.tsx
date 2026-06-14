@@ -27,7 +27,7 @@ export function PageHeader({ eyebrow, title, intro }: PageHeaderProps) {
         <div className="title-han" style={{
           fontSize: 22, color: "var(--gold-pale)", marginTop: 7,
           letterSpacing: "0.3em", textIndent: "0.3em",
-          textShadow: "0 0 14px rgba(231,199,115,0.25)",
+          textShadow: "0 0 14px rgba(236,220,166,0.25)",
         }}>{title}</div>
       )}
       {title && (
@@ -41,7 +41,7 @@ export function PageHeader({ eyebrow, title, intro }: PageHeaderProps) {
       {intro && (
         <div style={{
           fontSize: 12.5, lineHeight: 1.75, opacity: 0.8,
-          color: "rgba(231,217,179,0.88)", letterSpacing: "0.05em",
+          color: "rgba(228,224,208,0.88)", letterSpacing: "0.05em",
           marginTop: title ? 12 : 8,
           maxWidth: 300, marginLeft: "auto", marginRight: "auto",
         }}>{intro}</div>

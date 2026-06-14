@@ -20,7 +20,7 @@ export function BottomSheet({ open, onClose, children }: BottomSheetProps) {
           overflowY: "auto",
         }}>
           <div style={{
-            width: 40, height: 4, background: "rgba(78,58,20,0.4)",
+            width: 40, height: 4, background: "rgba(70,62,38,0.4)",
             margin: "0 auto 12px", borderRadius: 2,
           }}/>
           {children}

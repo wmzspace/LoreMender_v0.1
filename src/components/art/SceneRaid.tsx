@@ -31,8 +31,8 @@ export function SceneRaid() {
         <rect x="80" y="90" width="60" height="110" fill="#1c1108"/>
         <rect x="290" y="50" width="100" height="150" fill="#120a06"/>
         <rect x="240" y="85" width="60" height="115" fill="#1a0f07"/>
-        <path d="M0 60 L80 60 L75 50 L5 50 Z" fill="#0a0604"/>
-        <path d="M290 50 L390 50 L385 40 L295 40 Z" fill="#0a0604"/>
+        <path d="M0 60 L80 60 L75 50 L5 50 Z" fill="#06090b"/>
+        <path d="M290 50 L390 50 L385 40 L295 40 Z" fill="#06090b"/>
       </g>
 
       <g transform="translate(70 130)">
@@ -49,16 +49,16 @@ export function SceneRaid() {
         <circle cx="0" cy="0" r="55" fill="url(#rg-lantern)" opacity="0.45"/>
       </g>
 
-      <g fill="#0a0604" transform="translate(180 130)">
+      <g fill="#06090b" transform="translate(180 130)">
         <ellipse cx="0" cy="0" rx="9" ry="9"/>
         <path d="M-12 6 L-10 60 L-3 60 L0 26 L3 60 L10 60 L12 6 Z"/>
-        <line x1="-18" y1="-10" x2="-18" y2="50" stroke="#0a0604" strokeWidth="2"/>
+        <line x1="-18" y1="-10" x2="-18" y2="50" stroke="#06090b" strokeWidth="2"/>
         <path d="M-22 -16 L-14 -16 L-14 -8 L-22 -8 Z" fill="#1a0f08"/>
       </g>
-      <g fill="#0a0604" transform="translate(210 132)">
+      <g fill="#06090b" transform="translate(210 132)">
         <ellipse cx="0" cy="0" rx="9" ry="9"/>
         <path d="M-12 6 L-10 60 L-3 60 L0 26 L3 60 L10 60 L12 6 Z"/>
-        <line x1="14" y1="-10" x2="14" y2="50" stroke="#0a0604" strokeWidth="2"/>
+        <line x1="14" y1="-10" x2="14" y2="50" stroke="#06090b" strokeWidth="2"/>
         <path d="M10 -16 L18 -16 L18 -8 L10 -8 Z" fill="#1a0f08"/>
       </g>
 

@@ -4,34 +4,38 @@
    ============================================================ */
 
 :root {
-  /* Ink palette */
-  --ink-deepest: #0d0905;
-  --ink-deep: #1a120b;
-  --ink: #2a1e13;
-  --ink-soft: #3a2c1d;
+  /* Ink — 冷青墨黑,带极淡蓝绿,去褐(高级感来自冷而深) */
+  --ink-deepest: #05080a;
+  --ink-deep: #0a1014;
+  --ink: #121b20;
+  --ink-soft: #1d2930;
 
-  /* Paper */
-  --paper: #ebd9b3;
-  --paper-bright: #f3e5c2;
-  --paper-deep: #c8b078;
-  --paper-shadow: #8a734a;
+  /* Paper — 冷调象牙,克制使用 */
+  --paper: #ece5d4;
+  --paper-bright: #f5f0e2;
+  --paper-deep: #c2b89e;
+  --paper-shadow: #7c7460;
 
-  /* Gold */
-  --gold-pale: #e7c773;
-  --gold: #c9a14a;
-  --gold-deep: #8c6b29;
-  --gold-shadow: #4e3a14;
+  /* Gold — 香槟金,降饱和偏冷(取代橘黄铜金) */
+  --gold-pale: #ecdca6;
+  --gold: #cdb277;
+  --gold-deep: #8f7846;
+  --gold-shadow: #463c22;
+
+  /* Jade(青)— 招牌冷调,呼应青囊/青史,作金的冷对比 */
+  --jade-pale: #a6dccb;
+  --jade: #5fa892;
+  --jade-deep: #2c6657;
 
   /* Accents */
-  --vermillion: #a8311f;
-  --vermillion-deep: #6b1a10;
-  --candle: #ffb968;
-  --candle-deep: #d97a2b;
-  --jade: #5a7158;
+  --vermillion: #b23a2c;
+  --vermillion-deep: #6e1f18;
+  --candle: #ffcf8a;
+  --candle-deep: #d98a3f;
 
   /* Night */
-  --night: #0f1620;
-  --night-blue: #1c2538;
+  --night: #0b141a;
+  --night-blue: #14202c;
 
   /* UI */
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -44,7 +48,7 @@ html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; }
 body {
   font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
   color: var(--paper);
-  background: #060403;
+  background: #04070a;
   min-height: 100vh;
   min-height: 100dvh; /* dynamic viewport: tracks mobile URL-bar collapse */
   -webkit-font-smoothing: antialiased;
@@ -64,9 +68,9 @@ button { font-family: inherit; }
   justify-content: center;
   padding: 24px;
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(201,161,74,0.10), transparent 60%),
-    radial-gradient(ellipse at 30% 80%, rgba(168,49,31,0.05), transparent 50%),
-    #060403;
+    radial-gradient(ellipse at 50% 28%, rgba(95,168,146,0.08), transparent 60%),
+    radial-gradient(ellipse at 30% 82%, rgba(205,178,119,0.06), transparent 55%),
+    #04070a;
   position: relative;
   overflow: hidden;
 }
@@ -74,10 +78,10 @@ button { font-family: inherit; }
   content: "";
   position: absolute; inset: 0;
   background-image:
-    radial-gradient(1px 1px at 10% 20%, rgba(231,199,115,0.25), transparent 60%),
-    radial-gradient(1px 1px at 70% 40%, rgba(231,199,115,0.15), transparent 60%),
-    radial-gradient(1px 1px at 30% 80%, rgba(231,199,115,0.2), transparent 60%),
-    radial-gradient(1px 1px at 85% 75%, rgba(231,199,115,0.18), transparent 60%);
+    radial-gradient(1px 1px at 10% 20%, rgba(236,220,166,0.25), transparent 60%),
+    radial-gradient(1px 1px at 70% 40%, rgba(236,220,166,0.15), transparent 60%),
+    radial-gradient(1px 1px at 30% 80%, rgba(236,220,166,0.2), transparent 60%),
+    radial-gradient(1px 1px at 85% 75%, rgba(236,220,166,0.18), transparent 60%);
   pointer-events: none;
 }
 
@@ -92,10 +96,10 @@ button { font-family: inherit; }
   border-radius: 44px;
   overflow: hidden;
   box-shadow:
-    0 0 0 2px #1a1208,
-    0 0 0 10px #0a0604,
+    0 0 0 2px #0a1014,
+    0 0 0 10px #06090b,
     0 30px 80px rgba(0,0,0,0.7),
-    0 0 120px rgba(201,161,74,0.08);
+    0 0 120px rgba(205,178,119,0.08);
 }
 @media (max-width: 480px) {
   /* Lock the outer document so the whole UI can't be dragged/overflow when the
@@ -103,7 +107,7 @@ button { font-family: inherit; }
   html, body { height: 100dvh; overflow: hidden; }
   .stage {
     padding: 0;
-    background: #060403;
+    background: #04070a;
     min-height: 0;
     height: 100vh;
     height: 100dvh;
@@ -123,7 +127,7 @@ button { font-family: inherit; }
   position: absolute;
   top: 0; left: 50%; transform: translateX(-50%);
   width: 120px; height: 28px;
-  background: #060403;
+  background: #04070a;
   border-radius: 0 0 18px 18px;
   z-index: 100;
   pointer-events: none;
@@ -194,30 +198,30 @@ button { font-family: inherit; }
    ============================================================ */
 .paper-bg {
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(255,220,160,0.18), transparent 55%),
-    radial-gradient(ellipse at 80% 80%, rgba(168,49,31,0.07), transparent 55%),
+    radial-gradient(ellipse at 30% 20%, rgba(240,230,196,0.18), transparent 55%),
+    radial-gradient(ellipse at 80% 80%, rgba(178,58,44,0.07), transparent 55%),
     repeating-linear-gradient(45deg, rgba(138,115,74,0.03) 0 2px, transparent 2px 6px),
-    linear-gradient(180deg, #e9d4a6, #d4ba85);
+    linear-gradient(180deg, #e3dcc7, #c3b896);
   color: var(--ink);
 }
 .paper-bg-deep {
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(255,220,160,0.10), transparent 55%),
+    radial-gradient(ellipse at 30% 20%, rgba(240,230,196,0.10), transparent 55%),
     repeating-linear-gradient(45deg, rgba(60,40,20,0.04) 0 2px, transparent 2px 6px),
-    linear-gradient(180deg, #b8985f, #8a6e3f);
+    linear-gradient(180deg, #aaa083, #7c7358);
   color: var(--ink-deep);
 }
 .night-bg {
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(255,185,104,0.15), transparent 55%),
-    radial-gradient(ellipse at 50% 100%, rgba(168,49,31,0.10), transparent 50%),
-    linear-gradient(180deg, #0a0e16, #1a1208 70%, #0d0905);
+    radial-gradient(ellipse at 50% -5%, rgba(95,168,146,0.12), transparent 55%),
+    radial-gradient(ellipse at 50% 105%, rgba(205,178,119,0.07), transparent 55%),
+    linear-gradient(180deg, #0a141a, #0a1014 62%, #05080a);
 }
 .night-deep-bg {
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(201,161,74,0.10), transparent 60%),
-    radial-gradient(ellipse at 80% 80%, rgba(168,49,31,0.08), transparent 50%),
-    #060403;
+    radial-gradient(ellipse at 28% 12%, rgba(205,178,119,0.08), transparent 60%),
+    radial-gradient(ellipse at 80% 88%, rgba(95,168,146,0.07), transparent 55%),
+    #06090b;
 }
 
 /* Grain overlay */
@@ -285,9 +289,9 @@ button { font-family: inherit; }
   min-height: 52px;
   padding: 14px 28px;
   background:
-    linear-gradient(180deg, #e7c773 0%, #c9a14a 50%, #8c6b29 100%);
-  color: #2a1e13;
-  border: 1px solid #6b4d18;
+    linear-gradient(180deg, #ecdca6 0%, #cdb277 50%, #8f7846 100%);
+  color: #121b20;
+  border: 1px solid #5a4d2c;
   border-radius: 2px;
   font-family: "ZCOOL XiaoWei", serif;
   font-size: 17px;
@@ -297,19 +301,19 @@ button { font-family: inherit; }
   cursor: pointer;
   transition: transform 120ms, box-shadow 200ms, filter 200ms;
   box-shadow:
-    inset 0 1px 0 rgba(255,235,180,0.5),
-    inset 0 -2px 0 rgba(78,58,20,0.3),
-    0 0 0 1px rgba(255,220,140,0.4),
-    0 0 24px rgba(231,199,115,0.25),
+    inset 0 1px 0 rgba(246,240,214,0.5),
+    inset 0 -2px 0 rgba(70,62,38,0.3),
+    0 0 0 1px rgba(240,228,184,0.4),
+    0 0 24px rgba(236,220,166,0.25),
     0 6px 18px rgba(0,0,0,0.5);
 }
 .btn-primary::before, .btn-primary::after {
   content: "";
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 8px; height: 8px;
-  background: #4e3a14;
+  background: #463c22;
   border-radius: 50%;
-  box-shadow: inset 0 1px 0 rgba(255,220,140,0.4);
+  box-shadow: inset 0 1px 0 rgba(240,228,184,0.4);
 }
 .btn-primary::before { left: 10px; }
 .btn-primary::after { right: 10px; }
@@ -330,7 +334,7 @@ button { font-family: inherit; }
   cursor: pointer;
   transition: all 200ms;
 }
-.btn-ghost:active { background: rgba(201,161,74,0.1); }
+.btn-ghost:active { background: rgba(205,178,119,0.1); }
 
 /* ============================================================
    Paper panel — looks like aged xuan paper
@@ -338,14 +342,14 @@ button { font-family: inherit; }
 .paper-panel {
   position: relative;
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(255,235,190,0.5), transparent 60%),
-    radial-gradient(ellipse at 80% 90%, rgba(168,49,31,0.08), transparent 50%),
-    linear-gradient(180deg, #f0dcae, #d8be88);
+    radial-gradient(ellipse at 30% 20%, rgba(244,238,206,0.5), transparent 60%),
+    radial-gradient(ellipse at 80% 90%, rgba(178,58,44,0.08), transparent 50%),
+    linear-gradient(180deg, #e9e2d0, #cabf9f);
   color: var(--ink);
-  border: 1px solid rgba(78,58,20,0.4);
+  border: 1px solid rgba(70,62,38,0.4);
   box-shadow:
     inset 0 0 30px rgba(138,115,74,0.18),
-    inset 0 1px 0 rgba(255,245,210,0.6),
+    inset 0 1px 0 rgba(246,243,228,0.6),
     0 6px 24px rgba(0,0,0,0.4);
   border-radius: 2px;
 }
@@ -353,7 +357,7 @@ button { font-family: inherit; }
   content: "";
   position: absolute; inset: 0;
   background-image:
-    repeating-linear-gradient(45deg, rgba(78,58,20,0.025) 0 2px, transparent 2px 5px);
+    repeating-linear-gradient(45deg, rgba(70,62,38,0.025) 0 2px, transparent 2px 5px);
   pointer-events: none;
   border-radius: inherit;
 }
@@ -417,18 +421,18 @@ button { font-family: inherit; }
   letter-spacing: 0.28em;
   text-indent: 0.28em;
   color: var(--gold-pale);
-  text-shadow: 0 0 12px rgba(231,199,115,0.4);
+  text-shadow: 0 0 12px rgba(236,220,166,0.4);
 }
 .icon-btn {
   width: 38px; height: 38px;
   display: inline-flex; align-items: center; justify-content: center;
-  background: rgba(20,14,8,0.5);
-  border: 1px solid rgba(201,161,74,0.35);
+  background: rgba(11,17,20,0.5);
+  border: 1px solid rgba(205,178,119,0.35);
   border-radius: 50%;
   color: var(--gold-pale);
   cursor: pointer;
 }
-.icon-btn:active { background: rgba(201,161,74,0.15); }
+.icon-btn:active { background: rgba(205,178,119,0.15); }
 
 /* ============================================================
    Bottom nav (in-story)
@@ -439,14 +443,14 @@ button { font-family: inherit; }
   grid-template-columns: repeat(4, 1fr);
   padding: 8px 8px calc(8px + var(--safe-bottom));
   background:
-    linear-gradient(180deg, rgba(10,6,4,0.0), rgba(10,6,4,0.85) 30%, rgba(10,6,4,0.95));
-  border-top: 1px solid rgba(201,161,74,0.25);
+    linear-gradient(180deg, rgba(7,11,14,0.0), rgba(7,11,14,0.85) 30%, rgba(7,11,14,0.95));
+  border-top: 1px solid rgba(205,178,119,0.25);
 }
 .bottomnav::before {
   content: "";
   position: absolute; top: 0; left: 12%; right: 12%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(231,199,115,0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(236,220,166,0.5), transparent);
 }
 .navitem {
   display: flex;
@@ -456,7 +460,7 @@ button { font-family: inherit; }
   padding: 8px 4px;
   background: none;
   border: 0;
-  color: rgba(235,217,179,0.45);
+  color: rgba(228,224,208,0.45);
   font-family: "ZCOOL XiaoWei", serif;
   font-size: 11px;
   letter-spacing: 0.25em;
@@ -466,13 +470,13 @@ button { font-family: inherit; }
 }
 .navitem .navdot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: rgba(201,161,74,0.3);
+  background: rgba(205,178,119,0.3);
   margin-bottom: 2px;
 }
-.navitem.active { color: var(--gold-pale); }
+.navitem.active { color: var(--jade-pale); }
 .navitem.active .navdot {
-  background: var(--gold-pale);
-  box-shadow: 0 0 10px var(--gold-pale);
+  background: var(--jade);
+  box-shadow: 0 0 10px var(--jade);
 }
 
 /* ============================================================
@@ -483,13 +487,13 @@ button { font-family: inherit; }
   margin: 0 14px;
   padding: 16px 18px 18px;
   background:
-    linear-gradient(180deg, rgba(34,24,14,0.96), rgba(20,14,8,0.98));
-  border: 1px solid rgba(201,161,74,0.6);
+    linear-gradient(180deg, rgba(34,24,14,0.96), rgba(11,17,20,0.98));
+  border: 1px solid rgba(205,178,119,0.6);
   border-radius: 2px;
   color: var(--paper);
   box-shadow:
-    inset 0 0 24px rgba(231,199,115,0.06),
-    inset 0 1px 0 rgba(231,199,115,0.22),
+    inset 0 0 24px rgba(236,220,166,0.06),
+    inset 0 1px 0 rgba(236,220,166,0.22),
     0 8px 28px rgba(0,0,0,0.7);
 }
 .dialogue::before {
@@ -505,7 +509,7 @@ button { font-family: inherit; }
   letter-spacing: 0.25em;
   text-indent: 0.25em;
   padding: 2px 14px;
-  background: linear-gradient(90deg, rgba(201,161,74,0.18), transparent);
+  background: linear-gradient(90deg, rgba(205,178,119,0.18), transparent);
   border-left: 2px solid var(--gold-pale);
   margin-bottom: 10px;
 }
@@ -532,8 +536,8 @@ button { font-family: inherit; }
   min-height: 56px;
   padding: 12px 16px;
   background:
-    linear-gradient(180deg, rgba(40,30,18,0.85), rgba(20,14,8,0.85));
-  border: 1px solid rgba(201,161,74,0.4);
+    linear-gradient(180deg, rgba(20,28,32,0.85), rgba(11,17,20,0.85));
+  border: 1px solid rgba(205,178,119,0.4);
   border-radius: 2px;
   color: var(--paper);
   font-family: "Noto Serif SC", serif;
@@ -552,9 +556,9 @@ button { font-family: inherit; }
   box-shadow: 0 0 8px var(--gold-pale);
 }
 .choice:active {
-  background: linear-gradient(180deg, rgba(60,45,25,0.95), rgba(30,20,12,0.95));
+  background: linear-gradient(180deg, rgba(26,38,42,0.95), rgba(30,20,12,0.95));
   border-color: var(--gold-pale);
-  box-shadow: 0 0 0 1px rgba(231,199,115,0.3), 0 0 24px rgba(231,199,115,0.15);
+  box-shadow: 0 0 0 1px rgba(236,220,166,0.3), 0 0 24px rgba(236,220,166,0.15);
 }
 .choice-letter {
   width: 22px; height: 22px;
@@ -581,17 +585,17 @@ button { font-family: inherit; }
 .progress-dots .dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: rgba(201,161,74,0.3);
+  background: rgba(205,178,119,0.3);
   transition: all 300ms;
 }
 .progress-dots .dot.active {
   width: 24px;
   border-radius: 3px;
-  background: var(--gold-pale);
-  box-shadow: 0 0 8px var(--gold-pale);
+  background: var(--jade-pale);
+  box-shadow: 0 0 8px var(--jade);
 }
 .progress-dots .dot.done {
-  background: rgba(231,199,115,0.6);
+  background: rgba(236,220,166,0.6);
 }
 
 /* ============================================================
@@ -602,7 +606,7 @@ button { font-family: inherit; }
   left: 50%;
   top: 90px;
   transform: translateX(-50%);
-  background: linear-gradient(180deg, rgba(15,10,6,0.96), rgba(30,20,12,0.96));
+  background: linear-gradient(180deg, rgba(9,14,17,0.96), rgba(30,20,12,0.96));
   border: 1px solid var(--gold-pale);
   color: var(--gold-pale);
   font-family: "ZCOOL XiaoWei", serif;
@@ -615,7 +619,7 @@ button { font-family: inherit; }
   line-height: 1.5;
   width: max-content;
   max-width: calc(100% - 40px);
-  box-shadow: 0 0 24px rgba(231,199,115,0.3), 0 8px 24px rgba(0,0,0,0.6);
+  box-shadow: 0 0 24px rgba(236,220,166,0.3), 0 8px 24px rgba(0,0,0,0.6);
   animation: toastIn 300ms ease both;
 }
 /* Keep the centering translateX through the whole animation — a plain
@@ -687,7 +691,7 @@ button { font-family: inherit; }
   font-size: 26px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(255,200,160,0.4), 0 0 20px rgba(168,49,31,0.6);
+  box-shadow: 0 0 0 2px rgba(255,200,160,0.4), 0 0 20px rgba(178,58,44,0.6);
   filter: grayscale(0) brightness(1.3);
   letter-spacing: 0.05em;
 }
@@ -714,7 +718,7 @@ button { font-family: inherit; }
 /* Keyboard focus ring only — pointer clicks shouldn't show it. */
 :focus:not(:focus-visible) { outline: none; }
 :focus-visible {
-  outline: 2px solid rgba(231,199,115,0.85);
+  outline: 2px solid rgba(236,220,166,0.85);
   outline-offset: 2px;
 }
 
@@ -731,28 +735,28 @@ button { font-family: inherit; }
     transform: translateY(-1px);
     filter: brightness(1.05);
     box-shadow:
-      inset 0 1px 0 rgba(255,235,180,0.6),
-      inset 0 -2px 0 rgba(78,58,20,0.3),
-      0 0 0 1px rgba(255,220,140,0.55),
-      0 0 32px rgba(231,199,115,0.42),
+      inset 0 1px 0 rgba(246,240,214,0.6),
+      inset 0 -2px 0 rgba(70,62,38,0.3),
+      0 0 0 1px rgba(240,228,184,0.55),
+      0 0 32px rgba(236,220,166,0.42),
       0 10px 26px rgba(0,0,0,0.55);
   }
   .btn-ghost:hover {
-    background: rgba(201,161,74,0.12);
+    background: rgba(205,178,119,0.12);
     border-color: var(--gold-pale);
     color: var(--gold-pale);
   }
   .icon-btn:hover {
-    background: rgba(201,161,74,0.2);
+    background: rgba(205,178,119,0.2);
     border-color: var(--gold-pale);
     color: var(--gold-pale);
   }
   .choice:hover {
     transform: translateY(-1px);
     border-color: var(--gold-pale);
-    box-shadow: 0 0 0 1px rgba(231,199,115,0.25), 0 8px 20px rgba(0,0,0,0.45);
+    box-shadow: 0 0 0 1px rgba(236,220,166,0.25), 0 8px 20px rgba(0,0,0,0.45);
   }
-  .navitem:hover { color: rgba(235,217,179,0.85); }
+  .navitem:hover { color: rgba(228,224,208,0.85); }
   .lift:hover { transform: translateY(-3px); }
 }
 

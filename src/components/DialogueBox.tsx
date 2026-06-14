@@ -43,7 +43,7 @@ export function DialogueBox({ speaker, text, isNarration, onTap }: DialogueBoxPr
       <div className="dialogue-text" style={{
         whiteSpace: "pre-line",
         fontStyle: isNarration ? "italic" : "normal",
-        color: isNarration ? "rgba(231,217,179,0.85)" : "var(--paper)",
+        color: isNarration ? "rgba(228,224,208,0.85)" : "var(--paper)",
       }}>
         {shown}
         {done && (

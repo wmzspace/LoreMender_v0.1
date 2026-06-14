@@ -6,10 +6,10 @@ export function SceneEndingAsh() {
         <radialGradient id="ea" cx="50%" cy="62%" r="55%">
           <stop offset="0%" stopColor="#ff8b3a" stopOpacity="0.85"/>
           <stop offset="40%" stopColor="#c93a14" stopOpacity="0.45"/>
-          <stop offset="100%" stopColor="#0a0604" stopOpacity="0"/>
+          <stop offset="100%" stopColor="#06090b" stopOpacity="0"/>
         </radialGradient>
       </defs>
-      <rect width="390" height="320" fill="#0a0604"/>
+      <rect width="390" height="320" fill="#06090b"/>
       <ellipse cx="195" cy="220" rx="220" ry="160" fill="url(#ea)"/>
 
       <g transform="translate(110 130)">
@@ -40,8 +40,8 @@ export function SceneEndingSealed() {
          style={{width:"100%", height:"100%"}}>
       <defs>
         <linearGradient id="es" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1a1208"/>
-          <stop offset="1" stopColor="#0a0604"/>
+          <stop offset="0" stopColor="#0a1014"/>
+          <stop offset="1" stopColor="#06090b"/>
         </linearGradient>
       </defs>
       <rect width="390" height="320" fill="url(#es)"/>
@@ -59,14 +59,14 @@ export function SceneEndingSealed() {
       </g>
 
       <g transform="translate(150 130)">
-        <rect width="90" height="60" fill="#1a0f08" stroke="#c9a14a" strokeWidth="1.5"/>
+        <rect width="90" height="60" fill="#1a0f08" stroke="#cdb277" strokeWidth="1.5"/>
         <rect x="10" y="10" width="70" height="40" fill="#3a2516"/>
         <g transform="translate(25 22)">
           <rect width="40" height="16" fill="#c5a06a"/>
-          <line x1="0" y1="0" x2="0" y2="16" stroke="#8a6e3f" strokeWidth="3"/>
-          <line x1="40" y1="0" x2="40" y2="16" stroke="#8a6e3f" strokeWidth="3"/>
+          <line x1="0" y1="0" x2="0" y2="16" stroke="#7c7358" strokeWidth="3"/>
+          <line x1="40" y1="0" x2="40" y2="16" stroke="#7c7358" strokeWidth="3"/>
         </g>
-        <circle cx="45" cy="30" r="60" fill="#e7c773" opacity="0.08"/>
+        <circle cx="45" cy="30" r="60" fill="#ecdca6" opacity="0.08"/>
       </g>
 
       {Array.from({length:18}).map((_,i)=>(
@@ -87,8 +87,8 @@ export function SceneEndingLiving() {
       <defs>
         <radialGradient id="el" cx="50%" cy="60%" r="55%">
           <stop offset="0" stopColor="#ffd081" stopOpacity="0.5"/>
-          <stop offset="0.5" stopColor="#c9a14a" stopOpacity="0.2"/>
-          <stop offset="1" stopColor="#0a0604" stopOpacity="0"/>
+          <stop offset="0.5" stopColor="#cdb277" stopOpacity="0.2"/>
+          <stop offset="1" stopColor="#06090b" stopOpacity="0"/>
         </radialGradient>
         <linearGradient id="el2" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#1a2418"/>
@@ -111,14 +111,14 @@ export function SceneEndingLiving() {
       ))}
 
       <g transform="translate(40 130)">
-        <rect x="-3" y="60" width="6" height="80" fill="#0a0604"/>
-        <circle cx="0" cy="50" r="40" fill="#0a0604"/>
-        <circle cx="-20" cy="35" r="22" fill="#0a0604"/>
-        <circle cx="20" cy="35" r="22" fill="#0a0604"/>
+        <rect x="-3" y="60" width="6" height="80" fill="#06090b"/>
+        <circle cx="0" cy="50" r="40" fill="#06090b"/>
+        <circle cx="-20" cy="35" r="22" fill="#06090b"/>
+        <circle cx="20" cy="35" r="22" fill="#06090b"/>
       </g>
       <g transform="translate(345 110)">
-        <rect x="-3" y="70" width="6" height="80" fill="#0a0604"/>
-        <circle cx="0" cy="55" r="45" fill="#0a0604"/>
+        <rect x="-3" y="70" width="6" height="80" fill="#06090b"/>
+        <circle cx="0" cy="55" r="45" fill="#06090b"/>
       </g>
 
       <text x="195" y="220" textAnchor="middle" fontFamily="ZCOOL XiaoWei, serif"

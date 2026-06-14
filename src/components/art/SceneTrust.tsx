@@ -4,12 +4,12 @@ export function SceneTrust() {
          style={{width:"100%", height:"100%", display:"block"}}>
       <defs>
         <linearGradient id="tg-bg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1a120b"/>
-          <stop offset="1" stopColor="#0a0604"/>
+          <stop offset="0" stopColor="#0a1014"/>
+          <stop offset="1" stopColor="#06090b"/>
         </linearGradient>
         <radialGradient id="tg-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0" stopColor="#e7c773" stopOpacity="0.4"/>
-          <stop offset="1" stopColor="#0a0604" stopOpacity="0"/>
+          <stop offset="0" stopColor="#ecdca6" stopOpacity="0.4"/>
+          <stop offset="1" stopColor="#06090b" stopOpacity="0"/>
         </radialGradient>
       </defs>
       <rect width="390" height="200" fill="url(#tg-bg)"/>
@@ -25,7 +25,7 @@ export function SceneTrust() {
       <text x="195" y="150" textAnchor="middle"
             fontFamily="ZCOOL XiaoWei, serif"
             fontSize="120"
-            fill="#e7c773"
+            fill="#ecdca6"
             opacity="0.08">托</text>
     </svg>
   );

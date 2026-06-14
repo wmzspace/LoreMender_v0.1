@@ -61,26 +61,26 @@ function CircleIllust({
         <radialGradient id={`cg-${uid}`} cx="50%" cy="45%" r="50%">
           <stop offset="0%" stopColor="#d4943a" stopOpacity="0.6" />
           <stop offset="55%" stopColor="#5a3010" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#0e0905" stopOpacity="0" />
+          <stop offset="100%" stopColor="#06100e" stopOpacity="0" />
         </radialGradient>
         <clipPath id={`cc-${uid}`}><circle cx={r} cy={r} r={r - 3} /></clipPath>
       </defs>
       {/* 外发光 */}
       {glow && (
         <circle cx={r} cy={r} r={r}
-          fill="none" stroke="rgba(201,161,74,0.25)" strokeWidth={6}
+          fill="none" stroke="rgba(205,178,119,0.25)" strokeWidth={6}
           style={{ filter: "blur(4px)" }}
         />
       )}
       {/* 描边 */}
       <circle cx={r} cy={r} r={r - 1.5}
         fill="none"
-        stroke={glow ? "#c9a14a" : "#5a3a14"}
+        stroke={glow ? "#cdb277" : "#423a22"}
         strokeWidth={glow ? 2.5 : 1.5}
         opacity={glow ? 1 : 0.6}
       />
       {/* 暗背景 */}
-      <circle cx={r} cy={r} r={r - 3} fill="#120a04" />
+      <circle cx={r} cy={r} r={r - 3} fill="#0a1512" />
       {/* 烛光渐变 */}
       <circle cx={r} cy={r} r={r - 3} fill={`url(#cg-${uid})`} clipPath={`url(#cc-${uid})`} />
       {/* 内容 */}
@@ -88,7 +88,7 @@ function CircleIllust({
         {[0.32, 0.48, 0.63, 0.78].map((x, i) => (
           <line key={i}
             x1={r * x * 2} y1={r * 0.15} x2={r * x * 2} y2={r * 1.85}
-            stroke="#7a5a28" strokeWidth="0.7" opacity="0.4"
+            stroke="#60563a" strokeWidth="0.7" opacity="0.4"
           />
         ))}
         <ellipse cx={r} cy={r * 0.52} rx="3" ry="5.5" fill="#ffb93a" opacity="0.9" />
@@ -111,12 +111,12 @@ function ExpandedCard({
   return (
     <div style={{
       marginTop: 10, marginLeft: 20,
-      background: "linear-gradient(135deg, #2a1e0e 0%, #1e1508 50%, #221808 100%)",
-      border: `1px solid ${isCurrent ? "#c9a14a" : "#5a3a14"}`,
+      background: "linear-gradient(135deg, #12201f 0%, #0c1a18 50%, #0e1c1a 100%)",
+      border: `1px solid ${isCurrent ? "#cdb277" : "#423a22"}`,
       borderRadius: 4,
       padding: "12px 14px",
       boxShadow: isCurrent
-        ? "0 0 28px rgba(201,161,74,0.18), inset 0 0 30px rgba(0,0,0,0.5)"
+        ? "0 0 28px rgba(205,178,119,0.18), inset 0 0 30px rgba(0,0,0,0.5)"
         : "0 4px 16px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.4)",
       position: "relative", overflow: "hidden" as const,
       // 展开动画
@@ -128,14 +128,14 @@ function ExpandedCard({
         marginBottom: 8, position: "relative", zIndex: 1,
       }}>
         <div style={{
-          fontSize: 10, color: "rgba(201,161,74,0.55)",
+          fontSize: 10, color: "rgba(205,178,119,0.55)",
           letterSpacing: "0.18em",
         }}>{ch.numCn}</div>
         <button
           onClick={onCollapse}
           style={{
             background: "none", border: "none", cursor: "pointer",
-            color: "rgba(201,161,74,0.4)", fontSize: 10,
+            color: "rgba(205,178,119,0.4)", fontSize: 10,
             padding: "2px 0", letterSpacing: "0.1em",
             fontFamily: "inherit",
           }}
@@ -155,14 +155,14 @@ function ExpandedCard({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
             <div style={{
-              fontSize: 20, color: isCurrent ? "#d4af6a" : "#b8965a",
+              fontSize: 20, color: isCurrent ? "#d8c48f" : "#b6a482",
               letterSpacing: "0.18em", textIndent: "0.18em",
               textShadow: isCurrent ? "0 0 12px rgba(212,175,106,0.4)" : "none",
             }}>{ch.title}</div>
             {isCurrent && (
               <div style={{
-                fontSize: 9, color: "#c9a14a",
-                border: "1px solid #c9a14a",
+                fontSize: 9, color: "#cdb277",
+                border: "1px solid #cdb277",
                 borderRadius: 2, padding: "1px 5px",
                 letterSpacing: "0.1em",
                 animation: "glowPulse 2s ease-in-out infinite",
@@ -177,13 +177,13 @@ function ExpandedCard({
 
           {/* 分隔线 */}
           <div style={{ display: "flex", alignItems: "center", gap: 5, margin: "8px 0 5px" }}>
-            <div style={{ width: 16, height: 1, background: "#7a5a28" }} />
-            <div style={{ width: 3, height: 3, background: "#c9a14a", borderRadius: "50%", opacity: 0.7 }} />
-            <div style={{ flex: 1, height: 1, background: "#7a5a28", opacity: 0.4 }} />
+            <div style={{ width: 16, height: 1, background: "#60563a" }} />
+            <div style={{ width: 3, height: 3, background: "#cdb277", borderRadius: "50%", opacity: 0.7 }} />
+            <div style={{ flex: 1, height: 1, background: "#60563a", opacity: 0.4 }} />
           </div>
 
           <div style={{
-            fontSize: 9.5, color: "rgba(201,161,74,0.55)",
+            fontSize: 9.5, color: "rgba(205,178,119,0.55)",
             letterSpacing: "0.14em", marginBottom: 3,
           }}>剧情预览</div>
           <div style={{
@@ -200,19 +200,19 @@ function ExpandedCard({
           className="press"
           style={{
             background: isCurrent
-              ? "linear-gradient(180deg, #2a1c0a, #1a1006)"
-              : "linear-gradient(180deg, #1e1608, #140e04)",
-            border: `1.5px solid ${isCurrent ? "#c9a14a" : "#7a5a28"}`,
+              ? "linear-gradient(180deg, #12201e, #0a1512)"
+              : "linear-gradient(180deg, #1e1608, #081210)",
+            border: `1.5px solid ${isCurrent ? "#cdb277" : "#60563a"}`,
             borderRadius: 24,
             padding: "8px 28px",
-            color: isCurrent ? "#d4af6a" : "#a07840",
+            color: isCurrent ? "#d8c48f" : "#8f7846",
             fontSize: 13,
             letterSpacing: "0.28em",
             textIndent: "0.28em",
             cursor: "pointer",
             display: "flex", alignItems: "center", gap: 9,
             boxShadow: isCurrent
-              ? "0 0 14px rgba(201,161,74,0.25), inset 0 0 6px rgba(201,161,74,0.05)"
+              ? "0 0 14px rgba(205,178,119,0.25), inset 0 0 6px rgba(205,178,119,0.05)"
               : "none",
             fontFamily: "'ZCOOL XiaoWei', serif",
           }}
@@ -260,17 +260,17 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
       {/* 背景建筑（右侧） */}
       <svg style={{ position: "absolute", right: 0, top: 0, opacity: 0.07, pointerEvents: "none" }}
         width="130" height="300" viewBox="0 0 130 300">
-        <path d="M15 75 L65 38 L115 75 L120 75 L65 28 L10 75 Z" fill="#c9a14a" />
-        <rect x="35" y="75" width="58" height="110" fill="#c9a14a" opacity="0.5" />
-        <path d="M0 145 L65 98 L130 145 L130 148 L65 90 L0 148 Z" fill="#c9a14a" />
-        <rect x="15" y="148" width="100" height="145" fill="#c9a14a" opacity="0.3" />
+        <path d="M15 75 L65 38 L115 75 L120 75 L65 28 L10 75 Z" fill="#cdb277" />
+        <rect x="35" y="75" width="58" height="110" fill="#cdb277" opacity="0.5" />
+        <path d="M0 145 L65 98 L130 145 L130 148 L65 90 L0 148 Z" fill="#cdb277" />
+        <rect x="15" y="148" width="100" height="145" fill="#cdb277" opacity="0.3" />
         {[0, 1, 2].map(i => (
-          <rect key={i} x={32 + i * 22} y="95" width="13" height="36" fill="none" stroke="#c9a14a" strokeWidth="0.8" />
+          <rect key={i} x={32 + i * 22} y="95" width="13" height="36" fill="none" stroke="#cdb277" strokeWidth="0.8" />
         ))}
         {[0, 1, 2, 3].map(i => (
-          <line key={i} x1={28 + i * 20} y1="168" x2={28 + i * 20} y2="280" stroke="#c9a14a" strokeWidth="1.2" />
+          <line key={i} x1={28 + i * 20} y1="168" x2={28 + i * 20} y2="280" stroke="#cdb277" strokeWidth="1.2" />
         ))}
-        <line x1="18" y1="210" x2="112" y2="210" stroke="#c9a14a" strokeWidth="0.8" />
+        <line x1="18" y1="210" x2="112" y2="210" stroke="#cdb277" strokeWidth="0.8" />
       </svg>
 
       {/* 暗角 */}
@@ -291,19 +291,19 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
             style={{
               position: "absolute", left: 16, top: 16,
               width: 36, height: 36, borderRadius: "50%",
-              background: "transparent", border: "1.5px solid #c9a14a",
+              background: "transparent", border: "1.5px solid #cdb277",
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer", padding: 0,
             }}
           >
             <svg width="14" height="14" viewBox="0 0 14 14">
-              <path d="M9 1 L3 7 L9 13" stroke="#c9a14a" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+              <path d="M9 1 L3 7 L9 13" stroke="#cdb277" strokeWidth="1.8" fill="none" strokeLinecap="round" />
             </svg>
           </button>
 
           <div style={{ textAlign: "center", paddingTop: 4 }}>
             <div style={{
-              fontSize: 22, color: "#d4af6a",
+              fontSize: 22, color: "#d8c48f",
               letterSpacing: "0.3em", textIndent: "0.3em",
               textShadow: "0 0 16px rgba(212,175,106,0.35)",
             }}>副本进程</div>
@@ -314,12 +314,12 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
               {[true, false].map((left, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 3,
                   flexDirection: left ? "row" : "row-reverse" }}>
-                  <div style={{ width: 20, height: 1, background: "#7a5a28", opacity: 0.7 }} />
-                  <div style={{ width: 4, height: 4, background: "#c9a14a", transform: "rotate(45deg)", opacity: 0.8 }} />
+                  <div style={{ width: 20, height: 1, background: "#60563a", opacity: 0.7 }} />
+                  <div style={{ width: 4, height: 4, background: "#cdb277", transform: "rotate(45deg)", opacity: 0.8 }} />
                 </div>
               ))}
               <div style={{
-                fontSize: 11, color: "rgba(201,161,74,0.7)",
+                fontSize: 11, color: "rgba(205,178,119,0.7)",
                 letterSpacing: "0.1em", whiteSpace: "nowrap",
               }}>典故修补者 · 华佗青囊残卷</div>
             </div>
@@ -332,9 +332,9 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
           <div style={{
             position: "absolute", left: 59, top: 10, bottom: 60,
             width: 1.5,
-            background: "linear-gradient(180deg, transparent, #7a5a28 6%, #7a5a28 94%, transparent)",
+            background: "linear-gradient(180deg, transparent, #60563a 6%, #60563a 94%, transparent)",
             opacity: 0.5,
-            boxShadow: "0 0 6px rgba(201,161,74,0.3)",
+            boxShadow: "0 0 6px rgba(205,178,119,0.3)",
           }} />
 
           {ALL_CHAPTERS.map((ch, i) => {
@@ -372,7 +372,7 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                     <div style={{ position: "relative", flexShrink: 0 }}>
                       <div style={{
                         position: "absolute", top: 4, right: "calc(100% + 6px)",
-                        fontSize: 9, color: "rgba(201,161,74,0.65)",
+                        fontSize: 9, color: "rgba(205,178,119,0.65)",
                         letterSpacing: "0.08em", whiteSpace: "nowrap",
                         lineHeight: 1.3, textAlign: "right",
                       }}>
@@ -387,11 +387,11 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                         <div style={{
                           position: "absolute", bottom: 4, right: 4,
                           width: 14, height: 14, borderRadius: "50%",
-                          background: "#1a1006", border: "1px solid #c9a14a",
+                          background: "#0a1512", border: "1px solid #cdb277",
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}>
                           <svg width="7" height="6" viewBox="0 0 7 6" fill="none">
-                            <path d="M1 3 L3 5 L6 1" stroke="#c9a14a" strokeWidth="1.2" strokeLinecap="round" />
+                            <path d="M1 3 L3 5 L6 1" stroke="#cdb277" strokeWidth="1.2" strokeLinecap="round" />
                           </svg>
                         </div>
                       )}
@@ -401,24 +401,24 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                     <div style={{ flex: 1 }}>
                       <div style={{
                         fontSize: 17,
-                        color: isCurrent ? "#d4af6a" : (isDone ? "#b8965a" : "rgba(180,145,80,0.55)"),
+                        color: isCurrent ? "#d8c48f" : (isDone ? "#b6a482" : "rgba(180,145,80,0.55)"),
                         letterSpacing: "0.16em", textIndent: "0.16em",
                         textShadow: isCurrent ? "0 0 10px rgba(212,175,106,0.3)" : "none",
                       }}>{locked ? "？ ？ ？" : ch.title}</div>
                       <div style={{
                         width: 36, height: 1,
-                        background: "linear-gradient(90deg, #7a5a28, transparent)",
+                        background: "linear-gradient(90deg, #60563a, transparent)",
                         margin: "4px 0 3px",
                       }} />
                       <div style={{
-                        fontSize: 10.5, color: "rgba(201,161,74,0.45)",
+                        fontSize: 10.5, color: "rgba(205,178,119,0.45)",
                         lineHeight: 1.5, letterSpacing: "0.03em", maxWidth: 160,
                       }}>{locked ? "尚 未 解 锁" : ch.desc}</div>
                     </div>
 
                     {/* 展开箭头 / 锁 */}
                     <div style={{
-                      flexShrink: 0, color: "rgba(201,161,74,0.4)",
+                      flexShrink: 0, color: "rgba(205,178,119,0.4)",
                       fontSize: 11, paddingRight: 4,
                       display: "flex", alignItems: "center",
                     }}>
@@ -454,18 +454,18 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
             background: "rgba(0,0,0,0.18)",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <div style={{ width: 4, height: 4, background: "#c9a14a", transform: "rotate(45deg)", opacity: 0.55 }} />
-              <div style={{ width: 12, height: 1, background: "rgba(201,161,74,0.35)" }} />
+              <div style={{ width: 4, height: 4, background: "#cdb277", transform: "rotate(45deg)", opacity: 0.55 }} />
+              <div style={{ width: 12, height: 1, background: "rgba(205,178,119,0.35)" }} />
             </div>
             <div style={{
-              fontSize: 10.5, color: "rgba(201,161,74,0.6)",
+              fontSize: 10.5, color: "rgba(205,178,119,0.6)",
               letterSpacing: "0.07em", textAlign: "center",
             }}>
               你的每一次选择，都会改变这段遗憾被记住的方式。
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <div style={{ width: 12, height: 1, background: "rgba(201,161,74,0.35)" }} />
-              <div style={{ width: 4, height: 4, background: "#c9a14a", transform: "rotate(45deg)", opacity: 0.55 }} />
+              <div style={{ width: 12, height: 1, background: "rgba(205,178,119,0.35)" }} />
+              <div style={{ width: 4, height: 4, background: "#cdb277", transform: "rotate(45deg)", opacity: 0.55 }} />
             </div>
           </div>
         </div>
