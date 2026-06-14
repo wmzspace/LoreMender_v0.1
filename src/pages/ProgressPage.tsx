@@ -231,8 +231,10 @@ function ExpandedCard({
 // ── 主组件 ──────────────────────────────────────────────────────
 export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
   const cur = state.currentChapter || 1;
-  // 终章(千年回响=结局演绎)在解锁任意结局后才算解锁
-  const hasEnding = !!state.lastEnding || (state.unlockedEndings?.length ?? 0) > 0;
+  // 终章(千年回响=结局演绎)只在"本周目"已抵达结局时解锁。用 lastEnding(重新
+  // 选择/重置都会清空),不用 unlockedEndings——后者是跨周目持久的图鉴记录,会
+  // 导致回到第一章时第五章仍显示解锁(而 2/3/4 章却是锁的)。
+  const hasEnding = !!state.lastEnding;
   // 默认展开当前章节
   const [expanded, setExpanded] = useState<number>(cur);
 
