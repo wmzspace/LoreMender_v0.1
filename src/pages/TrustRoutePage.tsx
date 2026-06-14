@@ -36,10 +36,11 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
 
         <div style={{
           display:"grid", gridTemplateColumns:"1fr 1fr",
+          gridAutoRows: "1fr",
           gap: 10, paddingBottom: 14,
         }}>
           {TRUST_OPTIONS.map((c, i) => (
-            <div key={c.id} className="fade-up" style={{animationDelay:`${i*70}ms`}}>
+            <div key={c.id} className="fade-up" style={{animationDelay:`${i*70}ms`, height:"100%"}}>
               <CharacterCard
                 char={c}
                 selected={selected === c.id}

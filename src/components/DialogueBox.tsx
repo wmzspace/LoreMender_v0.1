@@ -36,7 +36,7 @@ export function DialogueBox({ speaker, text, isNarration, onTap }: DialogueBoxPr
   };
 
   return (
-    <div className="dialogue press" onClick={onClick} style={{cursor:"pointer"}}>
+    <div className="dialogue" onClick={onClick} style={{cursor:"pointer"}}>
       {speaker && !isNarration && (
         <div className="dialogue-name">{speaker}</div>
       )}

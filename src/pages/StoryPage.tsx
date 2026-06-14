@@ -147,10 +147,9 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
 
       <div style={{
         flex: 1, overflowY:"auto",
-        display:"flex", flexDirection:"column",
         paddingBottom: `calc(20px + var(--safe-bottom) + 64px)`,
       }} className="no-scrollbar">
-        <div style={{margin: "auto 0", padding: "16px 0"}}>
+        <div style={{padding: "18px 0 0"}}>
           {hasChoices && beat && "choices" in beat ? (
             <div className="fade-up">
               <div style={{

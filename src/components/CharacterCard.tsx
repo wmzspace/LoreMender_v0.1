@@ -15,6 +15,8 @@ export function CharacterCard({ char, selected, onSelect }: CharacterCardProps) 
       aria-pressed={selected}
       style={{
         position: "relative",
+        height: "100%",
+        display: "flex", flexDirection: "column",
         textAlign: "left", cursor: "pointer",
         background: selected
           ? "linear-gradient(180deg, rgba(231,199,115,0.18), rgba(40,30,18,0.7))"
@@ -29,7 +31,7 @@ export function CharacterCard({ char, selected, onSelect }: CharacterCardProps) 
         color: "var(--paper)",
         transition: "all 220ms",
       }}>
-      <div style={{position:"relative", height: 130, background:"#0a0604", overflow:"hidden"}}>
+      <div style={{position:"relative", height: 130, flexShrink: 0, background:"#0a0604", overflow:"hidden"}}>
         {char.silhouette && (
           <CharSilhouette kind={char.silhouette} accent={selected ? "#e7c773" : "#8c6b29"}/>
         )}
@@ -37,7 +39,7 @@ export function CharacterCard({ char, selected, onSelect }: CharacterCardProps) 
           <SealTag size="sm">{char.tag}</SealTag>
         </div>
       </div>
-      <div style={{padding: "10px 12px 12px"}}>
+      <div style={{padding: "10px 12px 12px", flex: 1}}>
         <div style={{
           fontFamily: "ZCOOL XiaoWei, serif", fontSize: 15,
           letterSpacing: "0.16em",
