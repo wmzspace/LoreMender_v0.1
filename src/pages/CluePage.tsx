@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BottomNav, BottomSheet, GoldDivider, Topbar } from "../components";
+import { BottomNav, BottomSheet, GoldDivider, Topbar, PageHeader } from "../components";
 import { ClueIcon } from "../components/art";
 import { CLUES } from "../data";
 import type { GameState } from "../data/types";
@@ -34,18 +34,10 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
       <Topbar title="线 索 板" onBack={() => gotoPage("story")}/>
 
       <div className="page-scroll" style={{top: 56, bottom: 64, padding: "0 14px"}}>
-        <div className="fade-in" style={{textAlign:"center", marginBottom: 12}}>
-          <div className="en-small" style={{fontSize: 10, color:"var(--gold-pale)", opacity: 0.7}}>
-            CLUE · BOARD
-          </div>
-          <div style={{
-            fontSize: 12.5, opacity: 0.75, marginTop: 6, lineHeight: 1.7,
-            color:"rgba(231,217,179,0.85)", letterSpacing:"0.05em",
-          }}>
-            医馆里能带走的，从来不止那本残卷。<br/>
-            点开纸片，看看你还记得什么。
-          </div>
-        </div>
+        <PageHeader
+          eyebrow="CLUE · BOARD"
+          intro={<>医馆里能带走的，从来不止那本残卷。<br/>点开纸片，看看你还记得什么。</>}
+        />
 
         <div style={{
           position:"relative", padding: "10px 0",
@@ -143,15 +135,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
         </div>
 
         <button className="btn-primary press" style={{width:"100%", marginTop: 6}}
-          onClick={() => {
-            let ns = state;
-            if (state.currentChapter === 2) {
-              ns = { ...state, currentChapter: 3 };
-              setState(ns);
-              saveState(ns);
-            }
-            gotoPage("story");
-          }}>
+          onClick={() => gotoPage("story")}>
           回 到 医 馆
         </button>
       </div>

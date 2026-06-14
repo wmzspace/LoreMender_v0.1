@@ -1,5 +1,6 @@
 export { Toast } from "./Toast";
 export { Topbar } from "./Topbar";
+export { PageHeader } from "./PageHeader";
 export { BottomNav, type NavKey } from "./BottomNav";
 export { PaperPanel } from "./PaperPanel";
 export { SealTag } from "./SealTag";

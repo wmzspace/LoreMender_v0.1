@@ -1,4 +1,4 @@
-import { BottomNav, SealTag, Topbar } from "../components";
+import { BottomNav, SealTag, Topbar, PageHeader } from "../components";
 import {
   SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
 } from "../components/art";
@@ -18,17 +18,10 @@ export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
       <Topbar title="结 局 图 鉴" onBack={() => gotoPage("story")}/>
 
       <div className="page-scroll" style={{top: 56, bottom: 64, padding: "0 16px"}}>
-        <div className="fade-in" style={{textAlign:"center", marginBottom: 14}}>
-          <div className="en-small" style={{fontSize: 10, opacity: 0.6, color:"var(--gold-pale)"}}>
-            ENDINGS · CODEX
-          </div>
-          <div style={{
-            fontSize: 12.5, opacity: 0.78, marginTop: 6,
-            color:"rgba(231,217,179,0.85)", letterSpacing:"0.05em",
-          }}>
-            已解锁 <span style={{color:"var(--gold-pale)"}}>{unlocked.length}</span> / {Object.keys(ENDINGS).length}
-          </div>
-        </div>
+        <PageHeader
+          eyebrow="ENDINGS · CODEX"
+          intro={<>已解锁 <span style={{color:"var(--gold-pale)"}}>{unlocked.length}</span> / {Object.keys(ENDINGS).length}</>}
+        />
 
         {Object.values(ENDINGS).map((e, i) => {
           const has = unlocked.includes(e.id);

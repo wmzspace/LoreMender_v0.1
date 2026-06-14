@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CharacterCard, PaperPanel, SealTag, Topbar } from "../components";
+import { CharacterCard, PaperPanel, SealTag, Topbar, PageHeader } from "../components";
 import { TRUST_OPTIONS } from "../data";
 import type { GameState } from "../data/types";
 import { saveState } from "../lib/storage";
@@ -29,16 +29,10 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
       <Topbar title="寻 可 托 之 人" onBack={() => gotoPage("story")}/>
 
       <div className="page-scroll" style={{top: 56, bottom: 96, padding:"0 14px"}}>
-        <div className="fade-in" style={{textAlign:"center", margin: "4px 0 14px"}}>
-          <div style={{
-            fontSize: 13, lineHeight: 1.8,
-            color:"rgba(231,217,179,0.88)",
-            letterSpacing:"0.05em",
-          }}>
-            四更将至。<br/>
-            <span style={{color:"var(--gold-pale)"}}>你只能托付一人。</span>
-          </div>
-        </div>
+        <PageHeader
+          eyebrow="THE ENTRUSTING"
+          intro={<>四更将至。<br/><span style={{color:"var(--gold-pale)"}}>你只能托付一人。</span></>}
+        />
 
         <div style={{
           display:"grid", gridTemplateColumns:"1fr 1fr",

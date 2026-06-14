@@ -1,4 +1,4 @@
-import { Topbar, PaperPanel } from "../components";
+import { Topbar, PaperPanel, PageHeader } from "../components";
 import { Particles, WorldIcon } from "../components/art";
 
 interface WorldPageProps {
@@ -19,15 +19,7 @@ export function WorldPage({ onBack, onEnter }: WorldPageProps) {
       <Particles count={10}/>
 
       <div className="page-scroll" style={{top: 56, bottom: 92, padding: "0 16px"}}>
-        <div className="fade-in" style={{textAlign:"center", marginBottom: 18}}>
-          <div className="en-small" style={{fontSize: 10, opacity: 0.6, color:"var(--gold-pale)"}}>
-            Lore · Codex
-          </div>
-          <div className="title-han" style={{
-            fontSize: 22, color:"var(--gold-pale)", marginTop: 6,
-            letterSpacing:"0.3em", textIndent:"0.3em",
-          }}>典 籍 设 定</div>
-        </div>
+        <PageHeader eyebrow="LORE · CODEX" title="典 籍 设 定"/>
 
         <div style={{display:"flex", flexDirection:"column", gap: 14, paddingBottom: 24}}>
           {cards.map((c, i) => (
@@ -36,9 +28,10 @@ export function WorldPage({ onBack, onEnter }: WorldPageProps) {
               <PaperPanel style={{padding: "14px 16px 16px"}}>
                 <div style={{display:"flex", gap: 14, alignItems:"flex-start"}}>
                   <div style={{
-                    width: 60, height: 60, flexShrink: 0,
-                    background:"radial-gradient(circle at 50% 50%, rgba(168,49,31,0.15), transparent 70%)",
-                    border:"1px solid rgba(78,58,20,0.4)",
+                    width: 58, height: 58, flexShrink: 0, borderRadius: 6,
+                    background:"radial-gradient(circle at 50% 38%, rgba(168,49,31,0.2), rgba(40,30,18,0.06) 64%, transparent 78%)",
+                    border:"1px solid rgba(140,107,41,0.55)",
+                    boxShadow:"inset 0 0 10px rgba(78,58,20,0.35), inset 0 1px 0 rgba(255,240,205,0.4)",
                     display:"flex", alignItems:"center", justifyContent:"center",
                   }}>
                     <WorldIcon type={c.key}/>
