@@ -82,15 +82,7 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "huatuo", line: "见到了？\n你觉得，该给谁？" },
       { narration: true, line: "你张了张嘴，却说出另一个判断……" },
       { gotoTrust: true },
-      { speaker: "huatuo", line: "……是吗。\n那就，做决定吧。我已经太老了。" },
-      {
-        choices: [
-          { label: "交给王济", toast: "你选择了最危险的路径。", set: { finalChoice: "wangji" } },
-          { label: "交给陈伯", toast: "你触碰到了这段典故真正的遗憾。", set: { finalChoice: "chenbo" } },
-          { label: "交给玄音道人", toast: "医书入深山，百年后重现。", set: { finalChoice: "xuanyin" } },
-          { label: "毁掉《青囊经》", toast: "你拿起蜡烛，火光映在脸上。", set: { finalChoice: "burn" } },
-        ],
-      },
+      { speaker: "huatuo", line: "……是吗。\n你既已决意，我便随你。我已经太老了。" },
       { gotoEnding: true },
     ],
   },

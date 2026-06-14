@@ -73,10 +73,11 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
     // Skip a `gotoTrust` detour that's already been satisfied. ch4 routes
     // through the trust screen mid-chapter; confirming it remounts StoryPage at
     // beat 0, so without this guard we'd replay up to `gotoTrust` and reopen
-    // the trust screen forever. Once trustedPerson is set, walk past it.
+    // the trust screen forever. The trust screen now sets finalChoice (the
+    // binding decision, incl. "burn"), so once that's set we walk past it.
     while (
       clamped < beats.length - 1 &&
-      (() => { const t = beats[clamped]; return !!t && "gotoTrust" in t && !!t.gotoTrust && !!state.trustedPerson; })()
+      (() => { const t = beats[clamped]; return !!t && "gotoTrust" in t && !!t.gotoTrust && !!state.finalChoice; })()
     ) {
       clamped++;
     }
