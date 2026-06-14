@@ -230,7 +230,9 @@ function ExpandedCard({
 
 // ── 主组件 ──────────────────────────────────────────────────────
 export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
-  const cur = state.currentChapter || 4;
+  const cur = state.currentChapter || 1;
+  // 终章(千年回响=结局演绎)在解锁任意结局后才算解锁
+  const hasEnding = !!state.lastEnding || (state.unlockedEndings?.length ?? 0) > 0;
   // 默认展开当前章节
   const [expanded, setExpanded] = useState<number>(cur);
 
@@ -334,11 +336,13 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
           }} />
 
           {ALL_CHAPTERS.map((ch, i) => {
-            const isExpanded = expanded === ch.num;
-            const isDone = ch.num < cur;
-            const isCurrent = ch.num === cur;
-            const isFuture = ch.num > cur;
-            const rowOpacity = isFuture ? 0.45 : 1;
+            // 解锁规则:终章看是否已通关任一结局,其余看当前进度
+            const unlocked = ch.isFinal ? hasEnding : ch.num <= cur;
+            const locked = !unlocked;
+            const isExpanded = expanded === ch.num && !locked;
+            const isDone = unlocked && (ch.isFinal ? true : ch.num < cur);
+            const isCurrent = !locked && !ch.isFinal && ch.num === cur;
+            const rowOpacity = locked ? 0.4 : 1;
             // S 型错位：奇数章节靠左，偶数靠右
             const xShift = i % 2 === 0 ? 0 : 36;
 
@@ -356,10 +360,10 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                 {/* 折叠态：圆圈行（展开时完全隐藏） */}
                 {!isExpanded && (
                   <div
-                    onClick={() => toggle(ch.num)}
+                    onClick={locked ? undefined : () => toggle(ch.num)}
                     style={{
                       display: "flex", alignItems: "center", gap: 14,
-                      cursor: "pointer",
+                      cursor: locked ? "default" : "pointer",
                     }}
                   >
                     {/* 圆形节点 */}
@@ -398,7 +402,7 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                         color: isCurrent ? "#d4af6a" : (isDone ? "#b8965a" : "rgba(180,145,80,0.55)"),
                         letterSpacing: "0.16em", textIndent: "0.16em",
                         textShadow: isCurrent ? "0 0 10px rgba(212,175,106,0.3)" : "none",
-                      }}>{ch.title}</div>
+                      }}>{locked ? "？ ？ ？" : ch.title}</div>
                       <div style={{
                         width: 36, height: 1,
                         background: "linear-gradient(90deg, #7a5a28, transparent)",
@@ -407,14 +411,22 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                       <div style={{
                         fontSize: 10.5, color: "rgba(201,161,74,0.45)",
                         lineHeight: 1.5, letterSpacing: "0.03em", maxWidth: 160,
-                      }}>{ch.desc}</div>
+                      }}>{locked ? "尚 未 解 锁" : ch.desc}</div>
                     </div>
 
-                    {/* 展开箭头 */}
+                    {/* 展开箭头 / 锁 */}
                     <div style={{
                       flexShrink: 0, color: "rgba(201,161,74,0.4)",
                       fontSize: 11, paddingRight: 4,
-                    }}>▶</div>
+                      display: "flex", alignItems: "center",
+                    }}>
+                      {locked ? (
+                        <svg width="11" height="13" viewBox="0 0 11 13" fill="none">
+                          <rect x="1" y="5.5" width="9" height="7" rx="1" stroke="currentColor" strokeWidth="1"/>
+                          <path d="M3 5.5 V3.7 a2.5 2.5 0 0 1 5 0 V5.5" stroke="currentColor" strokeWidth="1"/>
+                        </svg>
+                      ) : "▶"}
+                    </div>
                   </div>
                 )}
 
