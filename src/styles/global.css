@@ -122,18 +122,6 @@ button { font-family: inherit; }
   }
 }
 
-/* Phone notch (desktop preview only) */
-.phone-notch {
-  position: absolute;
-  top: 0; left: 50%; transform: translateX(-50%);
-  width: 120px; height: 28px;
-  background: #04070a;
-  border-radius: 0 0 18px 18px;
-  z-index: 100;
-  pointer-events: none;
-}
-@media (max-width: 480px) { .phone-notch { display: none; } }
-
 /* Inner screen */
 .screen {
   position: absolute; inset: 0;

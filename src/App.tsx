@@ -100,7 +100,6 @@ export default function App() {
   return (
     <div className="stage">
       <div className="phone">
-        <div className="phone-notch"/>
         <div className="screen">
           <div key={transKey} style={{position:"absolute", inset: 0, animation: "fadeIn 380ms ease both"}}>
             {pageEl}
