@@ -11,3 +11,4 @@ export { BottomSheet } from "./BottomSheet";
 export { ProgressDots } from "./ProgressDots";
 export { SceneFrame } from "./SceneFrame";
 export { LockedDungeon } from "./LockedDungeon";
+export { SoundToggle } from "./SoundToggle";

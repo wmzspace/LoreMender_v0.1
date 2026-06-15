@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import {
   CoverPage, WorldPage, ChapterSelectPage,
   ShowcasePage,
@@ -8,7 +8,17 @@ import {
 import { resolveEnding } from "./data";
 import type { GameState } from "./data/types";
 import { loadState, saveState } from "./lib/storage";
+import { playSfx, type SfxName } from "./lib/audio";
 import type { PageKey } from "./lib/routes";
+
+const SFX_SELECTOR = "[data-sfx], .press, .choice, .navitem, .btn-primary, .btn-ghost, .icon-btn";
+
+/** Delegated click sound: plays the target's `data-sfx`, or "tap" for any other pressable element. */
+function handleScreenClick(e: MouseEvent<HTMLDivElement>) {
+  const target = (e.target as HTMLElement).closest<HTMLElement>(SFX_SELECTOR);
+  if (!target || (target as HTMLButtonElement).disabled) return;
+  playSfx((target.dataset.sfx as SfxName) || "tap");
+}
 
 export default function App() {
   const [state, setState] = useState<GameState>(() => loadState());
@@ -100,7 +110,7 @@ export default function App() {
   return (
     <div className="stage">
       <div className="phone">
-        <div className="screen">
+        <div className="screen" onClick={handleScreenClick}>
           <div key={transKey} style={{position:"absolute", inset: 0, animation: "fadeIn 380ms ease both"}}>
             {pageEl}
           </div>

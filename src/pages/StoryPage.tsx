@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  BottomNav, ChoiceList, DialogueBox, ProgressDots, SceneFrame, Toast, Topbar,
+  BottomNav, ChoiceList, DialogueBox, ProgressDots, SceneFrame, SoundToggle, Toast, Topbar,
 } from "../components";
 import {
   SceneClinic, SceneRaid, SceneTrust, SceneFinal,
 } from "../components/art";
 import { CHARACTERS, LEVEL_ASSET_PLANS, STORY } from "../data";
 import type { Choice, GameState } from "../data/types";
+import { bgmPath, dialogueAudioPath, playBgm, playDialogueAudio, stopBgm, stopDialogueAudio } from "../lib/audio";
 import { loadBeat, saveBeat, saveState } from "../lib/storage";
 import type { PageKey } from "../lib/routes";
 
@@ -297,17 +298,37 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const isNarration = !!(beat && "narration" in beat && beat.narration);
   const hasChoices = !!(beat && "choices" in beat);
 
+  // Auto-play the pre-generated narration/dialogue audio for the current beat.
+  useEffect(() => {
+    if (!beat || isTransition || hasChoices) {
+      stopDialogueAudio();
+      return;
+    }
+    playDialogueAudio(dialogueAudioPath(ch, beatIdx));
+    return () => stopDialogueAudio();
+  }, [beat, ch, beatIdx, isTransition, hasChoices]);
+
+  // Loop the chapter's BGM in the background while reading this chapter.
+  useEffect(() => {
+    const src = bgmPath(ch);
+    if (src) playBgm(src);
+    return () => stopBgm();
+  }, [ch]);
+
   return (
     <div className="page night-deep-bg" style={{paddingBottom: 0}}>
       <Topbar
         title="华佗 · 青囊残卷"
         onBack={() => gotoPage("dungeon")}
         right={
-          <button className="icon-btn press" onClick={() => gotoPage("map")} aria-label="副本进程">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 3 H12 M2 7 H12 M2 11 H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-            </svg>
-          </button>
+          <>
+            <SoundToggle/>
+            <button className="icon-btn press" onClick={() => gotoPage("map")} aria-label="副本进程">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2 3 H12 M2 7 H12 M2 11 H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </>
         }
       />
       <ProgressDots total={5} current={ch}/>

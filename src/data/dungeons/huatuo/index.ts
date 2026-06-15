@@ -4,3 +4,4 @@ export { CHAPTERS } from "./chapters";
 export { CHARACTERS, TRUST_OPTIONS } from "./characters";
 export { CLUES } from "./clues";
 export { ENDINGS, resolveEnding } from "./endings";
+export { NARRATION_VOICE, CHARACTER_VOICES, type VoiceSetting } from "./voices";

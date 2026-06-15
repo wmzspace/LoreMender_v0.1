@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { playSfx } from "../lib/audio";
 
 interface ToastProps {
   text: string;
@@ -8,6 +9,7 @@ interface ToastProps {
 export function Toast({ text, onDone }: ToastProps) {
   useEffect(() => {
     if (!text) return;
+    playSfx("tap");
     const t = setTimeout(onDone, 1800);
     return () => clearTimeout(t);
   }, [text, onDone]);

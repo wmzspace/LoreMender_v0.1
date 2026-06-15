@@ -6,6 +6,7 @@ import {
 import { ENDINGS, resolveEnding } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState } from "../lib/storage";
+import { playSfx } from "../lib/audio";
 import type { PageKey } from "../lib/routes";
 
 /** Map ending ID to its dedicated scene illustration */
@@ -54,6 +55,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
 
   useEffect(() => {
     if (e && !state.unlockedEndings.includes(endId)) {
+      playSfx("unlock");
       const ns: GameState = {
         ...state,
         unlockedEndings: [...state.unlockedEndings, endId],

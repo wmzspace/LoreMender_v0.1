@@ -21,7 +21,7 @@ export function ChoiceList({ choices, onChoose }: ChoiceListProps) {
         const sealTilt = i % 2 === 0 ? -5 : 4;
         const cardTilt = CARD_TILTS[i % CARD_TILTS.length];
         return (
-          <button key={i} className="choice press" onClick={() => onChoose(c, i)}
+          <button key={i} className="choice press" data-sfx="confirm" onClick={() => onChoose(c, i)}
                   style={{
                     animation: `choiceIn 380ms ease both ${i*80+60}ms`,
                     "--tilt": `${cardTilt}deg`,

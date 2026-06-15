@@ -18,6 +18,7 @@ export function BottomNav({ active, onNav }: BottomNavProps) {
       {NAV_ITEMS.map(it => (
         <button key={it.key}
           className={"navitem press " + (active === it.key ? "active" : "")}
+          data-sfx="nav"
           onClick={() => onNav(it.key)}>
           <span className="navdot"></span>
           <span>{it.label}</span>
