@@ -128,7 +128,7 @@ fire.wav: small candle flame catching dry bamboo, soft crackle, no explosion, sh
 
 | 类型 | 路径 |
 | --- | --- |
-| 章节插图 | `public/images/levels/` |
+| 章节插图 | `public/images/levels/1/chapters/` |
 | 章节视频 | `public/videos/` |
 | BGM | `public/audio/bgm/` |
 | 音效 | `public/audio/sfx/` |

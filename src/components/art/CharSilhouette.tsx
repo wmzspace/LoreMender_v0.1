@@ -3,9 +3,27 @@ import type { SilhouetteKind } from "../../data/types";
 interface CharSilhouetteProps {
   kind: SilhouetteKind;
   accent?: string;
+  /** AI-generated portrait image — takes priority over SVG silhouette */
+  portrait?: string;
 }
 
-export function CharSilhouette({ kind, accent = "#cdb277" }: CharSilhouetteProps) {
+export function CharSilhouette({ kind, accent = "#cdb277", portrait }: CharSilhouetteProps) {
+  // If a portrait image is provided, render it instead of the SVG silhouette
+  if (portrait) {
+    return (
+      <img
+        src={portrait}
+        alt="角色头像"
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "center top",
+        }}
+      />
+    );
+  }
+
   const common = (
     <defs>
       <radialGradient id={`cs-${kind}`} cx="50%" cy="40%" r="60%">

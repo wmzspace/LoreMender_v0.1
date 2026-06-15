@@ -1,9 +1,34 @@
+import { useState } from "react";
 import { Topbar, SealTag, LockedDungeon } from "../components";
 import { Particles, SceneClinic } from "../components/art";
 
 interface ChapterSelectPageProps {
   onBack: () => void;
   onEnter: () => void;
+}
+
+/** Overlay the AI-generated dungeon cover image on top of the SVG scene */
+function DungeonCoverImage() {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      src="/images/levels/1/chapters/dungeon_cover_huatuo.webp"
+      alt="华佗·青囊残卷 副本封面"
+      onLoad={() => setLoaded(true)}
+      onError={() => setLoaded(false)}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        opacity: loaded ? 1 : 0,
+        transition: "opacity 360ms ease",
+        zIndex: 1,
+        pointerEvents: "none",
+      }}
+    />
+  );
 }
 
 export function ChapterSelectPage({ onBack, onEnter }: ChapterSelectPageProps) {
@@ -28,6 +53,7 @@ export function ChapterSelectPage({ onBack, onEnter }: ChapterSelectPageProps) {
           }}>
             <div style={{position:"relative", height: 200}}>
               <SceneClinic/>
+              <DungeonCoverImage/>
               <div className="grain"/>
               <div className="vignette"/>
               <Particles count={12}/>

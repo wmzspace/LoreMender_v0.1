@@ -7,7 +7,7 @@
 - 提示词包：`docs/ai_prompt_pack.md`
 - 五关剧情大纲：`docs/story_5_level_outline.md`
 - 游戏内参赛档案：封面点击“参赛档案”
-- 章节插图自动接入：把图片放到 `public/images/levels/*.png` 后，剧情页会优先显示 AI 插图；若文件不存在，则继续使用内置 SVG 场景。
+- 章节插图自动接入：把图片放到 `public/images/levels/1/chapters/*.png` 后，剧情页会优先显示 AI 插图；若文件不存在，则继续使用内置 SVG 场景。
 
 ## 统一视觉风格
 
@@ -20,11 +20,11 @@
 | 状态 | 素材 | 用途 | 提示词摘要 | 建议路径 |
 | --- | --- | --- | --- | --- |
 | 待生成 | cover_qingnang.png | 首页封面 | 华佗、青囊残卷、烛火、古籍、东方幻想游戏封面 | `public/images/cover.jpg` |
-| 待生成 | level01_prison.png | 第一章场景 | 许昌大牢、烛火、散落竹简、老医者剪影 | `public/images/levels/level01_prison.png` |
-| 待生成 | level02_three_people.png | 第二章场景 | 三位候选人、街巷、草药、山林与曹营暗示 | `public/images/levels/level02_three_people.png` |
-| 待生成 | level03_cao_mansion.png | 第三章场景 | 朱漆大堂、青铜灯树、权力压迫、竹简 | `public/images/levels/level03_cao_mansion.png` |
-| 待生成 | level04_choice.png | 第四章场景 | 深夜囚室、残卷、蜡烛、托付抉择 | `public/images/levels/level04_choice.png` |
-| 待生成 | level05_echo.png | 第五章场景 | 千年回响、残卷化光、医道流传、星点 | `public/images/levels/level05_echo.png` |
+| 待生成 | chapter01_prison.png | 第一章场景 | 许昌大牢、烛火、散落竹简、老医者剪影 | `public/images/levels/1/chapters/chapter01_prison.png` |
+| 待生成 | chapter02_three_people.png | 第二章场景 | 三位候选人、街巷、草药、山林与曹营暗示 | `public/images/levels/1/chapters/chapter02_three_people.png` |
+| 待生成 | chapter03_cao_mansion.png | 第三章场景 | 朱漆大堂、青铜灯树、权力压迫、竹简 | `public/images/levels/1/chapters/chapter03_cao_mansion.png` |
+| 待生成 | chapter04_choice.png | 第四章场景 | 深夜囚室、残卷、蜡烛、托付抉择 | `public/images/levels/1/chapters/chapter04_choice.png` |
+| 待生成 | chapter05_echo.png | 第五章场景 | 千年回响、残卷化光、医道流传、星点 | `public/images/levels/1/chapters/chapter05_echo.png` |
 
 ## 视频素材
 

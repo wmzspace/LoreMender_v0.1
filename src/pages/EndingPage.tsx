@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GoldDivider, PaperPanel, SealTag } from "../components";
 import {
   Particles, SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
@@ -7,6 +7,40 @@ import { ENDINGS, resolveEnding } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState } from "../lib/storage";
 import type { PageKey } from "../lib/routes";
+
+/** Map ending ID to its dedicated scene illustration */
+const ENDING_IMAGES: Record<string, string> = {
+  chenbo_true: "/images/levels/1/chapters/endings/ending_chenbo.webp",
+  xuanyin_fallback: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
+  wangji_trap: "/images/levels/1/chapters/endings/ending_wangji.webp",
+  burn_ending: "/images/levels/1/chapters/endings/ending_burn.webp",
+};
+
+/** Overlay AI-generated ending scene illustration on top of SVG scene */
+function EndingSceneImage({ endId }: { endId: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const src = ENDING_IMAGES[endId];
+  if (!src) return null;
+  return (
+    <img
+      src={src}
+      alt={`${ENDINGS[endId]?.name || ''} 结局插图`}
+      onLoad={() => setLoaded(true)}
+      onError={() => setLoaded(false)}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        opacity: loaded ? 1 : 0,
+        transition: "opacity 360ms ease",
+        zIndex: 1,
+        pointerEvents: "none",
+      }}
+    />
+  );
+}
 
 interface EndingPageProps {
   state: GameState;
@@ -71,6 +105,8 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
         <div style={{position:"relative"}}>
           <div style={{position:"relative", height: 280}}>
             {sceneFor(endId)}
+            {/* AI-generated ending illustration overlay */}
+            {ENDING_IMAGES[endId] && <EndingSceneImage endId={endId} />}
             <div className="grain"/>
             <div className="vignette"/>
             <Particles count={16}/>

@@ -27,30 +27,49 @@ const ALL_CHAPTERS = [
     title: "牢狱初醒",
     desc: "阿吉醒来，拼合竹简，与华佗首次对话。",
     preview: "建安十三年，许昌大牢。烛火摇曳中，阿吉从昏迷中醒来。面前是一位苍老的身影，正在拼合散落的竹简。师父的第一句话，将改变这一夜的走向……",
+    characters: [
+      { name: "华佗", portrait: "/images/levels/1/characters/huatuo_square.webp" },
+      { name: "阿吉", portrait: "/images/levels/1/characters/aj_square.webp" },
+    ],
   },
   {
     num: 2, numCn: "第二章", id: "ch2",
     title: "三人之试",
     desc: "走访三位候选人，通过对话识别各自真相。",
     preview: "三个人，一本书，只有一次机会。王济眼神游移，陈伯鞋上沾满泥土，玄音道人衣袂飘飘。看人不能只看表面，而你必须做出判断……",
+    characters: [
+      { name: "王济", portrait: "/images/levels/1/characters/wangji_square.webp" },
+      { name: "陈伯", portrait: "/images/levels/1/characters/chenbo_square.webp" },
+      { name: "玄音道人", portrait: "/images/levels/1/characters/xuanyin_square.webp" },
+    ],
   },
   {
     num: 3, numCn: "第三章", id: "ch3",
     title: "曹府密谈",
     desc: "曹操召见，博弈周旋，面对交书换命的诱饵。",
     preview: "朱漆大堂，青铜灯树。魏王坐在上方，案上放着一卷竹简。「交出来，本王保你师徒平安。」权谋的压迫从四面合拢，你只能周旋……",
+    characters: [
+      { name: "曹操", portrait: "/images/levels/1/characters/caocao_square.webp" },
+    ],
   },
   {
     num: 4, numCn: "第四章", id: "ch4",
     title: "青囊抉择",
     desc: "华佗囚室深夜，青囊残卷现世。",
     preview: "夜色沉入许昌大牢，青囊残卷终于现世。救一人，救一术，还是救万民？你将面对最后的抉择，而此前积累的信任、线索与疑点，都会在此刻改变命运的方向……",
+    characters: [
+      { name: "华佗", portrait: "/images/levels/1/characters/huatuo_square.webp" },
+    ],
   },
   {
     num: 5, numCn: "第五章", id: "ch5",
     title: "千年回响",
     desc: "终章回响，理解修补的真正意义。",
     preview: "书烧了，他死了，可是——无论你做了哪个选择，历史的长河中总有一道涟漪。此后千年，那道涟漪会以何种方式被人记住？",
+    characters: [
+      { name: "华佗", portrait: "/images/levels/1/characters/huatuo_square.webp" },
+      { name: "阿吉", portrait: "/images/levels/1/characters/aj_square.webp" },
+    ],
   },
 ];
 
@@ -210,6 +229,42 @@ function ExpandedCard({
             fontSize: 11, color: `${PAPER}0.62)`,
             lineHeight: 1.75, letterSpacing: "0.02em",
           }}>{ch.preview}</div>
+
+          {/* 关键人物 */}
+          {ch.characters && ch.characters.length > 0 && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 8,
+              marginTop: 10,
+            }}>
+              <div style={{
+                fontSize: 9, color: `rgba(236,220,166,0.55)`,
+                letterSpacing: "0.2em",
+              }}>关 键 人 物</div>
+              <div style={{
+                display: "flex", gap: 6,
+              }}>
+                {ch.characters.map((c, ci) => (
+                  <div key={ci} style={{
+                    display: "flex", alignItems: "center", gap: 4,
+                  }}>
+                    <div style={{
+                      width: 24, height: 24, borderRadius: "50%",
+                      overflow: "hidden",
+                      border: `1px solid ${isCurrent ? "rgba(95,168,146,0.6)" : "rgba(205,178,119,0.4)"}`,
+                      flexShrink: 0,
+                    }}>
+                      <img src={c.portrait} alt={c.name}
+                        style={{width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top"}} />
+                    </div>
+                    <div style={{
+                      fontSize: 10, color: `${PAPER}0.6)`,
+                      letterSpacing: "0.06em",
+                    }}>{c.name}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

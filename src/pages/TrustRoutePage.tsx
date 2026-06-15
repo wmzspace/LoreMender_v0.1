@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { SealTag, Topbar, PageHeader } from "../components";
-import { CharSilhouette } from "../components/art";
+import { CharSilhouette, SceneTrust } from "../components/art";
 import { TRUST_OPTIONS } from "../data";
 import type { GameState } from "../data/types";
 import { saveState } from "../lib/storage";
@@ -22,6 +22,30 @@ interface TrustRoutePageProps {
   state: GameState;
   setState: (s: GameState) => void;
   gotoPage: (p: PageKey) => void;
+}
+
+// ── 大关选择场景插图 ────────────────────────────────────────────
+function TrustSceneImage() {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      src="/images/levels/1/chapters/trust/trust_scene.webp"
+      alt="青囊何归 场景插图"
+      onLoad={() => setLoaded(true)}
+      onError={() => setLoaded(false)}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        opacity: loaded ? 1 : 0,
+        transition: "opacity 360ms ease",
+        zIndex: 1,
+        pointerEvents: "none",
+      }}
+    />
+  );
 }
 
 // ── 圆形烛光徽：人物剪影 / 焚字玺，呼应进程页的烛光圆牌 ─────────
@@ -100,6 +124,24 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
       <div className="vignette"/>
 
       <div className="page-scroll" style={{top: 56, bottom: 96, padding:"0 14px"}}>
+        {/* 场景插图 */}
+        <div style={{
+          position: "relative", width: "100%", height: 160,
+          overflow: "hidden", borderRadius: 2,
+          marginBottom: 14,
+          border: "1px solid rgba(205,178,119,0.3)",
+        }}>
+          <SceneTrust/>
+          <TrustSceneImage/>
+          <div className="grain"/>
+          <div className="vignette"/>
+          <div style={{
+            position:"absolute", left:0, right:0, bottom:0, height: 40,
+            background: "linear-gradient(180deg, transparent, rgba(7,11,14,0.95))",
+            pointerEvents:"none",
+          }}/>
+        </div>
+
         <PageHeader
           eyebrow="THE ENTRUSTING"
           intro={<>
@@ -135,7 +177,7 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
                 aria-pressed={sel}
               >
                 <PortraitMedallion ring={sel ? JADE : GOLD_DEEP} glow={sel}>
-                  <CharSilhouette kind={c.silhouette} accent={sel ? JADE : GOLD_DEEP}/>
+                  <CharSilhouette kind={c.silhouette} accent={sel ? JADE : GOLD_DEEP} portrait={c.portrait}/>
                 </PortraitMedallion>
 
                 <div style={{flex: 1, minWidth: 0}}>

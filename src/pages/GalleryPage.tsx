@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BottomNav, SealTag, Topbar, PageHeader } from "../components";
 import {
   SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
@@ -6,11 +7,45 @@ import { ENDINGS } from "../data";
 import type { GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
 
+/** Map ending ID to its dedicated AI scene illustration */
+const ENDING_IMAGES: Record<string, string> = {
+  chenbo_true: "/images/levels/1/chapters/endings/ending_chenbo.webp",
+  xuanyin_fallback: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
+  wangji_trap: "/images/levels/1/chapters/endings/ending_wangji.webp",
+  burn_ending: "/images/levels/1/chapters/endings/ending_burn.webp",
+};
+
 function sceneForEnding(id: string) {
   const glyph = ENDINGS[id]?.glyph;
   if (glyph === "wall") return <SceneEndingSealed/>;
   if (glyph === "fire") return <SceneEndingAsh/>;
   return <SceneEndingLiving/>;
+}
+
+/** AI ending scene image overlay — loads on top of SVG fallback */
+function EndingCardImage({ endId }: { endId: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const src = ENDING_IMAGES[endId];
+  if (!src) return null;
+  return (
+    <img
+      src={src}
+      alt={ENDINGS[endId]?.name || ''}
+      onLoad={() => setLoaded(true)}
+      onError={() => setLoaded(false)}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        opacity: loaded ? 1 : 0,
+        transition: "opacity 360ms ease",
+        zIndex: 1,
+        pointerEvents: "none",
+      }}
+    />
+  );
 }
 
 interface GalleryPageProps {
@@ -46,7 +81,10 @@ export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
               }}>
                 <div style={{position:"relative", height: 130}}>
                   {has ? (
-                    sceneForEnding(e.id)
+                    <>
+                      {sceneForEnding(e.id)}
+                      <EndingCardImage endId={e.id} />
+                    </>
                   ) : (
                     <div style={{
                       width:"100%", height:"100%",

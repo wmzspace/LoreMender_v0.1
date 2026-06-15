@@ -17,6 +17,8 @@ export interface Character {
   short?: string;
   detail?: string;
   silhouette?: SilhouetteKind;
+  /** AI-generated portrait image path (takes priority over silhouette) */
+  portrait?: string;
 }
 
 export type SilhouetteKind = "scholar" | "rugged" | "songbird" | "elder";

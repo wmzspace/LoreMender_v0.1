@@ -17,35 +17,181 @@ interface StoryPageProps {
   gotoEnding: () => void;
 }
 
-function AiSceneImage({ chapter }: { chapter: number }) {
-  const [loaded, setLoaded] = useState(false);
-  const asset = LEVEL_ASSET_PLANS.find(level => level.chapter === chapter);
-  const imagePath = asset?.imagePath;
-  useEffect(() => {
-    setLoaded(false);
-  }, [imagePath]);
+/** Beat-level illustration map: chapter -> beatIndex -> image path
+ *  Beat indices align with the beats[] array in story.ts.
+ *  Transition beats (gotoChapter / gotoTrust / gotoEnding) are skipped.
+ */
+const BEAT_IMAGES: Record<string, Record<number, string>> = {
+  // 第一章 · 牢狱初醒 (beats 0-7, beat 8 = gotoChapter)
+  ch1: {
+    0: "/images/levels/1/chapters/ch1_beats/beat01_darkness_straw.webp",
+    1: "/images/levels/1/chapters/ch1_beats/beat02_waking.webp",
+    2: "/images/levels/1/chapters/ch1_beats/beat03_silhouette.webp",
+    3: "/images/levels/1/chapters/ch1_beats/beat04_bamboo_slips.webp",
+    4: "/images/levels/1/chapters/ch1_beats/beat05_choice.webp",
+    5: "/images/levels/1/chapters/ch1_beats/beat04_bamboo_slips.webp",
+    6: "/images/levels/1/chapters/ch1_beats/beat04_bamboo_slips.webp",
+    7: "/images/levels/1/chapters/ch1_beats/beat07_trust.webp",
+  },
+  // 第二章 · 三人之试 (beats 0-9, beat 10 = gotoChapter)
+  ch2: {
+    0: "/images/levels/1/chapters/ch2_beats/beat00_dawn_shop.webp",
+    1: "/images/levels/1/chapters/ch2_beats/beat01_three_figures.webp",
+    2: "/images/levels/1/chapters/ch2_beats/beat02_wangji.webp",
+    3: "/images/levels/1/chapters/ch2_beats/beat03_wangji_suspicious.webp",
+    4: "/images/levels/1/chapters/ch2_beats/beat04_chenbo.webp",
+    5: "/images/levels/1/chapters/ch2_beats/beat05_chenbo_herbs.webp",
+    6: "/images/levels/1/chapters/ch2_beats/beat06_xuanyin.webp",
+    7: "/images/levels/1/chapters/ch2_beats/beat07_xuanyin_detached.webp",
+    8: "/images/levels/1/chapters/ch2_beats/beat08_choice.webp",
+    9: "/images/levels/1/chapters/ch2_beats/beat09_nightfall.webp",
+  },
+  // 第三章 · 曹府密谈 (beats 0-8, beat 9 = gotoChapter)
+  ch3: {
+    0: "/images/levels/1/chapters/ch3_beats/beat00_soldiers.webp",
+    1: "/images/levels/1/chapters/ch3_beats/beat01_summons.webp",
+    2: "/images/levels/1/chapters/ch3_beats/beat02_cao_hall.webp",
+    3: "/images/levels/1/chapters/ch3_beats/beat03_caocao.webp",
+    4: "/images/levels/1/chapters/ch3_beats/beat04_aj_small.webp",
+    5: "/images/levels/1/chapters/ch3_beats/beat05_ultimatum.webp",
+    6: "/images/levels/1/chapters/ch3_beats/beat06_choice.webp",
+    7: "/images/levels/1/chapters/ch3_beats/beat07_three_days.webp",
+    8: "/images/levels/1/chapters/ch3_beats/beat08_return.webp",
+  },
+  // 第四章 · 青囊抉择 (beats 0-6, beat 3 = gotoTrust, beat 7 = gotoChapter)
+  ch4: {
+    0: "/images/levels/1/chapters/ch4_beats/beat00_dying_candle.webp",
+    1: "/images/levels/1/chapters/ch4_beats/beat01_huatuo_asking.webp",
+    2: "/images/levels/1/chapters/ch4_beats/beat02_hesitate.webp",
+    // beat 3 = gotoTrust (transition, no image needed)
+    4: "/images/levels/1/chapters/ch4_beats/beat04_huatuo_accept.webp",
+    5: "/images/levels/1/chapters/ch4_beats/beat05_last_slip.webp",
+    6: "/images/levels/1/chapters/ch4_beats/beat06_final_wisdom.webp",
+  },
+  // 第五章 · 千年回响 (beats 0-5, beat 6 = gotoEnding)
+  ch5: {
+    0: "/images/levels/1/chapters/ch5_beats/beat00_dawn_drum.webp",
+    1: "/images/levels/1/chapters/ch5_beats/beat01_aj_question.webp",
+    2: "/images/levels/1/chapters/ch5_beats/beat02_huatuo_wisdom.webp",
+    3: "/images/levels/1/chapters/ch5_beats/beat03_glowing_slip.webp",
+    4: "/images/levels/1/chapters/ch5_beats/beat04_choice.webp",
+    5: "/images/levels/1/chapters/ch5_beats/beat05_farewell.webp",
+  },
+};
 
-  if (!asset) return null;
+/** Preload images into browser cache via off-screen Image objects. */
+const _preloaded = new Set<string>();
+function preloadImages(paths: string[]) {
+  for (const p of paths) {
+    if (_preloaded.has(p)) continue;
+    _preloaded.add(p);
+    const img = new Image();
+    img.src = p;
+  }
+}
+
+/** Collect all image paths for a given chapter key */
+function chapterImagePaths(chKey: string): string[] {
+  const map = BEAT_IMAGES[chKey];
+  if (!map) return [];
+  return Object.values(map);
+}
+
+/** Resolve the image path for a given chapter + beat index */
+function resolveImagePath(chapter: number, beatIdx: number): string | undefined {
+  const chKey = "ch" + chapter;
+  const beatImage = BEAT_IMAGES[chKey]?.[beatIdx];
+  const asset = LEVEL_ASSET_PLANS.find(level => level.chapter === chapter);
+  return beatImage || asset?.imagePath;
+}
+
+/**
+ * Double-buffered scene image: keeps the previous image visible underneath
+ * while the new one loads and fades in on top. This eliminates blank gaps
+ * entirely — the player always sees *something*.
+ */
+function AiSceneImage({ chapter, beatIdx }: { chapter: number; beatIdx: number }) {
+  const imagePath = resolveImagePath(chapter, beatIdx);
+
+  // Current (new) image loaded state
+  const [currentSrc, setCurrentSrc] = useState<string | undefined>(imagePath);
+  const [currentLoaded, setCurrentLoaded] = useState(false);
+  // Previous image stays visible until new one finishes loading
+  const [prevSrc, setPrevSrc] = useState<string | undefined>();
+
+  // Preload full chapter + next chapter's first beat on mount
+  useEffect(() => {
+    const chKey = "ch" + chapter;
+    const paths = chapterImagePaths(chKey);
+    const nextChKey = "ch" + (chapter + 1);
+    const nextFirst = BEAT_IMAGES[nextChKey]?.[0];
+    if (nextFirst) paths.push(nextFirst);
+    preloadImages(paths);
+  }, [chapter]);
+
+  // Handle beat change: keep old image, start loading new one on top
+  useEffect(() => {
+    if (!imagePath) return;
+    if (imagePath === currentSrc) return; // same image, no-op
+
+    // Check if already in cache (preloaded or visited before)
+    const testImg = new Image();
+    testImg.src = imagePath;
+    if (testImg.complete) {
+      // Instant cache hit — swap immediately, no blank
+      setPrevSrc(currentSrc);
+      setCurrentSrc(imagePath);
+      setCurrentLoaded(true);
+    } else {
+      // Need to load — keep old image visible, overlay new when ready
+      setPrevSrc(currentSrc);
+      setCurrentSrc(imagePath);
+      setCurrentLoaded(false);
+    }
+  }, [imagePath, currentSrc]);
+
+  if (!currentSrc && !prevSrc) return null;
 
   return (
-    <img
-      key={asset.imagePath}
-      src={asset.imagePath}
-      alt={`${asset.title} AI 场景插图`}
-      onLoad={() => setLoaded(true)}
-      onError={() => setLoaded(false)}
-      style={{
-        position: "absolute",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        opacity: loaded ? 1 : 0,
-        transition: "opacity 360ms ease",
-        zIndex: 1,
-        pointerEvents: "none",
-      }}
-    />
+    <>
+      {/* Previous image (stays visible underneath until new one fades in) */}
+      {prevSrc && (
+        <img
+          src={prevSrc}
+          alt=""
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: 1,
+            zIndex: 1,
+            pointerEvents: "none",
+          }}
+        />
+      )}
+      {/* Current image (fades in on top once loaded) */}
+      {currentSrc && (
+        <img
+          src={currentSrc}
+          alt={`章节${chapter} 剧情插图`}
+          onLoad={() => setCurrentLoaded(true)}
+          onError={() => setCurrentLoaded(false)}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: currentLoaded ? 1 : 0,
+            transition: "opacity 360ms ease",
+            zIndex: 2,
+            pointerEvents: "none",
+          }}
+        />
+      )}
+    </>
   );
 }
 
@@ -178,7 +324,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
 
       <SceneFrame height={220}>
         {sceneEl}
-        <AiSceneImage chapter={ch} />
+        <AiSceneImage chapter={ch} beatIdx={beatIdx} />
       </SceneFrame>
 
       <div style={{
