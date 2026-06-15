@@ -27,35 +27,30 @@ const ALL_CHAPTERS = [
     title: "牢狱初醒",
     desc: "阿吉醒来，拼合竹简，与华佗首次对话。",
     preview: "建安十三年，许昌大牢。烛火摇曳中，阿吉从昏迷中醒来。面前是一位苍老的身影，正在拼合散落的竹简。师父的第一句话，将改变这一夜的走向……",
-    isFinal: false,
   },
   {
     num: 2, numCn: "第二章", id: "ch2",
     title: "三人之试",
     desc: "走访三位候选人，通过对话识别各自真相。",
     preview: "三个人，一本书，只有一次机会。王济眼神游移，陈伯鞋上沾满泥土，玄音道人衣袂飘飘。看人不能只看表面，而你必须做出判断……",
-    isFinal: false,
   },
   {
     num: 3, numCn: "第三章", id: "ch3",
     title: "曹府密谈",
     desc: "曹操召见，博弈周旋，面对交书换命的诱饵。",
     preview: "朱漆大堂，青铜灯树。魏王坐在上方，案上放着一卷竹简。「交出来，本王保你师徒平安。」权谋的压迫从四面合拢，你只能周旋……",
-    isFinal: false,
   },
   {
     num: 4, numCn: "第四章", id: "ch4",
     title: "青囊抉择",
     desc: "华佗囚室深夜，青囊残卷现世。",
     preview: "夜色沉入许昌大牢，青囊残卷终于现世。救一人，救一术，还是救万民？你将面对最后的抉择，而此前积累的信任、线索与疑点，都会在此刻改变命运的方向……",
-    isFinal: false,
   },
   {
     num: 5, numCn: "第五章", id: "ch5",
     title: "千年回响",
-    desc: "结局演绎，知识卡解锁，海报生成。",
+    desc: "终章回响，理解修补的真正意义。",
     preview: "书烧了，他死了，可是——无论你做了哪个选择，历史的长河中总有一道涟漪。此后千年，那道涟漪会以何种方式被人记住？",
-    isFinal: true,
   },
 ];
 
@@ -237,9 +232,7 @@ function ExpandedCard({
 // ── 主组件 ──────────────────────────────────────────────────────
 export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
   const cur = state.currentChapter || 1;
-  // 终章(千年回响)只在"本周目"已抵达结局时解锁。用 lastEnding(重选/重置都清空),
-  // 不用 unlockedEndings——后者跨周目持久,会导致回到第一章时第五章仍显示解锁。
-  const hasEnding = !!state.lastEnding;
+  // 默认展开当前章节
   const [expanded, setExpanded] = useState<number>(cur);
 
   const toggle = (num: number) => setExpanded(prev => (prev === num ? -1 : num));
@@ -303,10 +296,10 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
           }} />
 
           {ALL_CHAPTERS.map((ch, i) => {
-            const unlocked = ch.isFinal ? hasEnding : ch.num <= cur;
+            const unlocked = ch.num <= cur;
             const locked = !unlocked;
-            const isCurrent = !locked && !ch.isFinal && ch.num === cur;
-            const isDone = unlocked && (ch.isFinal ? true : ch.num < cur);
+            const isCurrent = !locked && ch.num === cur;
+            const isDone = unlocked && ch.num < cur;
             const isExpanded = expanded === ch.num && !locked;
             const accent = isCurrent ? "jade" : isDone ? "gold" : undefined;
 

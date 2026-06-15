@@ -23,7 +23,21 @@
 > **你不能救他，但你还有一夜，可以决定医道是否断绝。**
 
 **游戏时长**：5–10 分钟  
-**包含内容**：4 个剧情章节（+ 结局演绎）· 5 条线索 · 3 个可托付人物（+ 毁去残卷）· 4 种结局
+**包含内容**：5 个剧情章节 · 5 条线索 · 3 个可托付人物（+ 毁去残卷）· 4 种结局
+
+---
+
+## 🏆 参赛准备
+
+本仓库已整理腾讯云黑客松 / AI CAN DO IT 方向的提交材料入口：
+
+- [比赛提交说明](./docs/competition_submission.md)：作品定位、五章流程、AI 使用说明、演示视频脚本与提交清单。
+- [AI 对话历史](./docs/ai_dialogue_history.md)：按“目标 - 输入 - 输出 - 采纳 - 人工修改”整理的记录模板。
+- [AI 素材生成记录](./docs/asset_generation_log.md)：插图、视频、BGM/SFX 的生成提示词与落地路径。
+- [五关剧情大纲](./docs/story_5_level_outline.md)：每关剧情目标、玩家动作、文化表达点和素材需求。
+- [AI 素材提示词包](./docs/ai_prompt_pack.md)：可直接复制到 AI 绘图、视频、音乐工具中的提示词。
+
+游戏封面新增了 **参赛档案** 入口，用于在 Demo 内展示五关剧情、AI 素材计划和对话历史提交链路。
 
 ---
 
@@ -109,7 +123,7 @@ LoreMender_v0.1/
 
 ## 🚀 快速开始
 
-> 需要 Node.js ≥ 18
+> 需要 Node.js ≥ 20.19.0 或 ≥ 22.12.0（Vite 8 要求）
 
 ```bash
 # 1. 安装依赖
@@ -192,7 +206,7 @@ npm run preview
 
 ```typescript
 {
-  currentChapter: number,         // 进度 (1-4)
+  currentChapter: number,         // 进度 (1-5)
   finalChoice: string | null,     // 青囊何归 的决定 (wangji/chenbo/xuanyin/burn) — 决定结局
   trustedPerson: string | null,   // 托付对象 id (焚书时为空)
   searchedClues: string[],        // 已查看的线索 id

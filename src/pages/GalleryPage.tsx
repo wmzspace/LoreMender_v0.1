@@ -6,6 +6,13 @@ import { ENDINGS } from "../data";
 import type { GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
 
+function sceneForEnding(id: string) {
+  const glyph = ENDINGS[id]?.glyph;
+  if (glyph === "wall") return <SceneEndingSealed/>;
+  if (glyph === "fire") return <SceneEndingAsh/>;
+  return <SceneEndingLiving/>;
+}
+
 interface GalleryPageProps {
   state: GameState;
   gotoPage: (p: PageKey) => void;
@@ -39,9 +46,7 @@ export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
               }}>
                 <div style={{position:"relative", height: 130}}>
                   {has ? (
-                    e.id === "ash" ? <SceneEndingAsh/> :
-                    e.id === "sealed" ? <SceneEndingSealed/> :
-                    <SceneEndingLiving/>
+                    sceneForEnding(e.id)
                   ) : (
                     <div style={{
                       width:"100%", height:"100%",

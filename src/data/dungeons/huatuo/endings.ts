@@ -20,7 +20,7 @@ export const ENDINGS: Record<string, Ending> = {
     id: "wangji_trap", name: "重锁深阁", rank: "遗憾未竟", rankColor: "#6e1f18",
     epitaph: "大部分内容，被锁进曹氏秘库，再未见光。",
     body: "你把《青囊经》交给了王济。\n\n他将医书献给曹操。曹营的医官抄录了部分方子。\n\n但大部分内容，被锁进曹氏秘库，再未见光。\n\n华佗在牢中听闻，沉默了很久。",
-    glyph: "fire",
+    glyph: "wall",
   },
   burn_ending: {
     id: "burn_ending", name: "青囊焚尽", rank: "遗憾焚绝", rankColor: "#b23a2c",

@@ -11,3 +11,13 @@ export {
   ENDINGS,
   resolveEnding,
 } from "./dungeons/huatuo";
+
+export {
+  LEVEL_ASSET_PLANS,
+  AI_WORKFLOW_RECORDS,
+} from "./competition";
+export type {
+  AssetStatus,
+  LevelAssetPlan,
+  AiWorkflowRecord,
+} from "./competition";
