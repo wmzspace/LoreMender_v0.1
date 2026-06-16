@@ -67,20 +67,22 @@ const ALL_CHAPTERS = [
     desc: "终章回响，理解修补的真正意义。",
     preview: "书烧了，他死了，可是——无论你做了哪个选择，历史的长河中总有一道涟漪。此后千年，那道涟漪会以何种方式被人记住？",
     characters: [
-      { name: "华佗", portrait: "/images/levels/1/characters/huatuo_square.webp" },
       { name: "阿吉", portrait: "/images/levels/1/characters/aj_square.webp" },
+      { name: "华佗", portrait: "/images/levels/1/characters/huatuo_square.webp" },
     ],
   },
 ];
 
-// ── 章节节点圆（冷墨底 · 烛光 · 金/青描边） ─────────────────────
+// ── 章节节点圆（头像 · 金/青描边） ──────────────────────────────
 function NodeMedallion({
-  size = 64, dim = false, accent,
+  size = 64, dim = false, accent, portrait,
 }: {
   size?: number;
   dim?: boolean;
   /** 高亮色：jade=当前章，gold=已完成首饰，undefined=普通描边 */
   accent?: "jade" | "gold";
+  /** 角色头像路径；提供时替换默认的竹简烛光 */
+  portrait?: string;
 }) {
   const r = size / 2;
   const uid = `${size}-${accent ?? "n"}`;
@@ -90,11 +92,13 @@ function NodeMedallion({
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
       style={{ flexShrink: 0, opacity: dim ? 0.78 : 1, transition: "opacity 0.3s" }}>
       <defs>
-        <radialGradient id={`cg-${uid}`} cx="50%" cy="44%" r="52%">
-          <stop offset="0%" stopColor="#ffcf8a" stopOpacity="0.42" />
-          <stop offset="52%" stopColor={GOLD_SHADOW} stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#06100e" stopOpacity="0" />
-        </radialGradient>
+        {!portrait && (
+          <radialGradient id={`cg-${uid}`} cx="50%" cy="44%" r="52%">
+            <stop offset="0%" stopColor="#ffcf8a" stopOpacity="0.42" />
+            <stop offset="52%" stopColor={GOLD_SHADOW} stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#06100e" stopOpacity="0" />
+          </radialGradient>
+        )}
         <clipPath id={`cc-${uid}`}><circle cx={r} cy={r} r={r - 3} /></clipPath>
       </defs>
       {/* 外发光（高亮章节） */}
@@ -106,20 +110,41 @@ function NodeMedallion({
       )}
       {/* 暗墨底 */}
       <circle cx={r} cy={r} r={r - 3} fill={INK} />
-      {/* 烛光渐变 */}
-      <circle cx={r} cy={r} r={r - 3} fill={`url(#cg-${uid})`} clipPath={`url(#cc-${uid})`} />
-      {/* 内容：竹简 + 烛火 */}
-      <g clipPath={`url(#cc-${uid})`} opacity={0.5}>
-        {[0.34, 0.5, 0.66, 0.82].map((x, i) => (
-          <line key={i}
-            x1={r * x * 2} y1={r * 0.18} x2={r * x * 2} y2={r * 1.82}
-            stroke={GOLD_DEEP} strokeWidth="0.7" opacity="0.4"
+
+      {portrait ? (
+        <>
+          {/* 头像 */}
+          <image
+            href={portrait}
+            x={3} y={3} width={size - 6} height={size - 6}
+            clipPath={`url(#cc-${uid})`}
+            preserveAspectRatio="xMidYMin slice"
           />
-        ))}
-        <ellipse cx={r} cy={r * 0.54} rx="2.6" ry="5" fill="#ffd79a" opacity="0.9" />
-        <ellipse cx={r} cy={r * 0.64} rx="5.5" ry="2.6" fill={GOLD} opacity="0.35" />
-        <rect x={r - 1.8} y={r * 0.74} width="3.6" height={r * 0.5} fill={GOLD_SHADOW} opacity="0.6" />
-      </g>
+          {/* 底部淡入暗渐变，柔化图片与描边的衔接 */}
+          <circle cx={r} cy={r} r={r - 3}
+            fill={`url(#cg-${uid})`} clipPath={`url(#cc-${uid})`}
+            opacity={0}
+          />
+        </>
+      ) : (
+        <>
+          {/* 烛光渐变 */}
+          <circle cx={r} cy={r} r={r - 3} fill={`url(#cg-${uid})`} clipPath={`url(#cc-${uid})`} />
+          {/* 内容：竹简 + 烛火 */}
+          <g clipPath={`url(#cc-${uid})`} opacity={0.5}>
+            {[0.34, 0.5, 0.66, 0.82].map((x, i) => (
+              <line key={i}
+                x1={r * x * 2} y1={r * 0.18} x2={r * x * 2} y2={r * 1.82}
+                stroke={GOLD_DEEP} strokeWidth="0.7" opacity="0.4"
+              />
+            ))}
+            <ellipse cx={r} cy={r * 0.54} rx="2.6" ry="5" fill="#ffd79a" opacity="0.9" />
+            <ellipse cx={r} cy={r * 0.64} rx="5.5" ry="2.6" fill={GOLD} opacity="0.35" />
+            <rect x={r - 1.8} y={r * 0.74} width="3.6" height={r * 0.5} fill={GOLD_SHADOW} opacity="0.6" />
+          </g>
+        </>
+      )}
+
       {/* 描边 */}
       <circle cx={r} cy={r} r={r - 1.5}
         fill="none" stroke={ring}
@@ -180,7 +205,8 @@ function ExpandedCard({
       </div>
 
       <div style={{ display: "flex", gap: 13, position: "relative", zIndex: 1 }}>
-        <NodeMedallion size={88} accent={isCurrent ? "jade" : isDone ? "gold" : undefined} />
+        <NodeMedallion size={88} accent={isCurrent ? "jade" : isDone ? "gold" : undefined}
+          portrait={ch.characters[0]?.portrait} />
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -399,7 +425,8 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                       letterSpacing: "0.1em",
                     }}>{ch.numCn}</div>
                     <div style={{ position: "relative" }}>
-                      <NodeMedallion size={isCurrent ? 64 : 58} dim={isDone} accent={accent} />
+                      <NodeMedallion size={isCurrent ? 64 : 58} dim={isDone} accent={accent}
+                        portrait={ch.characters[0]?.portrait} />
                       {isDone && (
                         <div style={{
                           position: "absolute", bottom: 0, right: 0,

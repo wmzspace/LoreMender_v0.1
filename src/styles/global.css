@@ -3,6 +3,21 @@
    Mobile-first 古风 game UI
    ============================================================ */
 
+/*
+ * ZCOOL XiaoWei 和 Ma Shan Zheng 对「回」(U+56DE) 的字形极为古朴（近甲骨文），
+ * 放在普通文本中视觉异常。用 unicode-range 覆盖声明，将该字回落至 Noto Serif SC。
+ */
+@font-face {
+  font-family: "ZCOOL XiaoWei";
+  src: local("Noto Serif SC"), local("STSong"), local("SimSun");
+  unicode-range: U+56DE;
+}
+@font-face {
+  font-family: "Ma Shan Zheng";
+  src: local("Noto Serif SC"), local("STSong"), local("SimSun");
+  unicode-range: U+56DE;
+}
+
 :root {
   /* Ink — 冷青墨黑,带极淡蓝绿,去褐(高级感来自冷而深) */
   --ink-deepest: #05080a;

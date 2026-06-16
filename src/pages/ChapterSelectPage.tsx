@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Topbar, SealTag, LockedDungeon } from "../components";
 import { Particles, SceneClinic } from "../components/art";
+import type { GameState } from "../data/types";
 
 interface ChapterSelectPageProps {
   onBack: () => void;
   onEnter: () => void;
+  state: GameState;
 }
 
 /** Overlay the AI-generated dungeon cover image on top of the SVG scene */
@@ -31,7 +33,8 @@ function DungeonCoverImage() {
   );
 }
 
-export function ChapterSelectPage({ onBack, onEnter }: ChapterSelectPageProps) {
+export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageProps) {
+  const cleared = state.unlockedEndings.length > 0;
   const locked = [
     { name:"李白·谪仙遗恨", brief:"长安一片月，万户不敢扣门。" },
     { name:"岳飞·风波未平", brief:"风波亭外，何人为他递一柄伞。" },
@@ -106,7 +109,7 @@ export function ChapterSelectPage({ onBack, onEnter }: ChapterSelectPageProps) {
         <div style={{display:"flex", flexDirection:"column", gap: 10}}>
           {locked.map((l, i) => (
             <div key={i} className="fade-up" style={{animationDelay: `${i*60}ms`}}>
-              <LockedDungeon title={l.name} subtitle={l.brief}/>
+              <LockedDungeon title={l.name} subtitle={l.brief} comingSoon={cleared}/>
             </div>
           ))}
         </div>

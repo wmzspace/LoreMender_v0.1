@@ -26,13 +26,12 @@ export function CoverPage({ onStart, onWorld, onShowcase }: CoverPageProps) {
       <div className="grain"/>
       <div className="vignette"/>
 
-      {/* eyebrow — first beat of the THE PROLOGUE / THE ENTRUSTING / THE EPILOGUE triad */}
       <div className="en-small fade-in" style={{
         position:"absolute", top:"calc(20px + env(safe-area-inset-top,0px))", left: 26,
         zIndex: 3, fontSize: 10, letterSpacing:"0.34em",
         color:"var(--gold-pale)", opacity: 0.55,
         textShadow:"0 1px 6px rgba(0,0,0,0.8)",
-      }}>THE PROLOGUE</div>
+      }}>The LOREMENDER</div>
 
       {/* classical book-cover frame (题封) */}
       <div style={{

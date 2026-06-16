@@ -69,6 +69,7 @@ export default function App() {
       break;
     case "dungeon":
       pageEl = <ChapterSelectPage
+        state={state}
         onBack={() => gotoPage("cover")}
         onEnter={() => {
           if (!state.currentChapter) {
