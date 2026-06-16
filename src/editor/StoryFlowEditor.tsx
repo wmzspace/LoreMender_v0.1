@@ -140,7 +140,7 @@ export default function StoryFlowEditor() {
     const a = document.createElement('a');
     a.href = url; a.download = 'story.ts'; a.click();
     URL.revokeObjectURL(url);
-    showToast('story.ts 已下载，替换到 src/data/ 目录即可', true);
+    showToast('story.ts 已下载，替换到 src/data/dungeons/huatuo/ 即可', true);
   };
 
   const handleCopy = () => {
@@ -381,10 +381,10 @@ export default function StoryFlowEditor() {
                 padding: '8px 20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0',
                 display: 'flex', alignItems: 'center', gap: 12, fontSize: 12, flexShrink: 0,
               }}>
-                <span style={{ color: '#64748b', fontFamily: 'monospace' }}>src/data/story.ts</span>
+                <span style={{ color: '#64748b', fontFamily: 'monospace' }}>src/data/dungeons/huatuo/story.ts</span>
                 <div style={{ padding: '2px 8px', background: '#dbeafe', color: '#1d4ed8', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>TypeScript</div>
                 <div style={{ flex: 1 }} />
-                <span style={{ color: '#94a3b8' }}>直接编辑，切换节点图后重新读取</span>
+                <span style={{ color: '#94a3b8' }}>直接编辑，下载后替换源文件即可生效</span>
               </div>
               <div style={{
                 flex: 1, position: 'relative', overflow: 'hidden',

@@ -1,9 +1,10 @@
 import type { Node } from '@xyflow/react';
 import type {
   StoryNodeData, DialogueBlockNodeData, NarrationNodeData,
-  ChoiceNodeData, GotoNodeData, ChapterNodeData, DialogueLine,
+  ChoiceNodeData, GotoNodeData, ChapterNodeData, DialogueLine, EndingNodeData,
 } from './storyToFlow';
 import type { Choice } from '../data/types';
+import { ENDINGS } from '../data';
 
 interface Props {
   node: Node<StoryNodeData> | null;
@@ -11,8 +12,25 @@ interface Props {
   onClose: () => void;
 }
 
-// ── 已知角色列表 ─────────────────────────────────────────────────
-const SPEAKERS = ['华佗', '徒弟', '大徒儿·吴普', '旁白', '阿瑶', '老栾', '老周'];
+// ── 已知角色（key → 中文名） ──────────────────────────────────────
+const SPEAKERS = [
+  { id: 'huatuo',  name: '华佗' },
+  { id: 'aj',      name: '阿吉' },
+  { id: 'wangji',  name: '王济' },
+  { id: 'chenbo',  name: '陈伯' },
+  { id: 'xuanyin', name: '玄音道人' },
+  { id: 'caocao',  name: '曹操' },
+  { id: 'soldier', name: '士卒' },
+];
+
+// ── 场景 ID 列表（与 story.ts 保持一致） ─────────────────────────
+const SCENES = [
+  { value: 'xuchang_prison', label: 'xuchang_prison · 许昌牢狱' },
+  { value: 'three_places',   label: 'three_places · 三人之试' },
+  { value: 'cao_mansion',    label: 'cao_mansion · 曹府密谈' },
+  { value: 'huatuo_cell',    label: 'huatuo_cell · 华佗牢房' },
+  { value: 'final_choice',   label: 'final_choice · 最终抉择' },
+];
 
 // ── 样式 token ────────────────────────────────────────────────────
 const panel: React.CSSProperties = {
@@ -35,6 +53,7 @@ const inp: React.CSSProperties = {
 
 const ta: React.CSSProperties = { ...inp, minHeight: 72, resize: 'vertical' };
 const sel: React.CSSProperties = { ...inp, cursor: 'pointer' };
+const roInp: React.CSSProperties = { ...inp, background: '#f1f5f9', color: '#94a3b8' };
 
 const kindColor: Record<string, string> = {
   chapter: '#3b82f6', narration: '#64748b', dialogueBlock: '#22c55e',
@@ -58,25 +77,26 @@ function Btn({ children, onClick, color = '#3b82f6', variant = 'outline' }: {
   );
 }
 
-// ── SpeakerInput: 下拉 + 自定义输入 ──────────────────────────────
+// ── SpeakerInput: 下拉选已知角色（存 key），也可自由输入 ──────────
 function SpeakerInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const isKnown = SPEAKERS.some(s => s.id === value);
   return (
     <div style={{ display: 'flex', gap: 6 }}>
       <select
-        style={{ ...sel, flex: '0 0 auto', width: 120 }}
-        value={SPEAKERS.includes(value) ? value : '__custom'}
+        style={{ ...sel, flex: '0 0 auto', width: 130 }}
+        value={isKnown ? value : '__custom'}
         onChange={e => {
           if (e.target.value !== '__custom') onChange(e.target.value);
         }}
       >
-        {SPEAKERS.map(s => <option key={s} value={s}>{s}</option>)}
+        {SPEAKERS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         <option value="__custom">自定义…</option>
       </select>
       <input
         style={{ ...inp, flex: 1 }}
         value={value}
         onChange={e => onChange(e.target.value)}
-        placeholder="角色名"
+        placeholder="角色 key"
       />
     </div>
   );
@@ -117,13 +137,14 @@ export default function NodePropsPanel({ node, onChange, onClose }: Props) {
             <input style={inp} value={cd.title} onChange={e => upd({ title: e.target.value } as any)} />
             <label style={lbl}>场景 ID</label>
             <select style={sel} value={cd.scene} onChange={e => upd({ scene: e.target.value } as any)}>
-              <option value="clinic_night">clinic_night · 医馆夜景</option>
-              <option value="raid_coming">raid_coming · 搜查将至</option>
-              <option value="find_trust">find_trust · 寻找托付</option>
-              <option value="final_choice">final_choice · 最终抉择</option>
+              {SCENES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              {/* 保留自定义值回显 */}
+              {!SCENES.some(s => s.value === cd.scene) && (
+                <option value={cd.scene}>{cd.scene}</option>
+              )}
             </select>
             <label style={lbl}>章节 ID（只读）</label>
-            <input style={{ ...inp, background: '#f1f5f9', color: '#94a3b8' }} value={cd.chapterId} readOnly />
+            <input style={roInp} value={cd.chapterId} readOnly />
           </>);
         })()}
 
@@ -144,7 +165,7 @@ export default function NodePropsPanel({ node, onChange, onClose }: Props) {
           return (<>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>对白列表</span>
-              <Btn color="#22c55e" onClick={() => setLines([...bd.lines, { speaker: '华佗', line: '' }])}>
+              <Btn color="#22c55e" onClick={() => setLines([...bd.lines, { speaker: 'aj', line: '' }])}>
                 + 添加对白
               </Btn>
             </div>
@@ -214,27 +235,35 @@ export default function NodePropsPanel({ node, onChange, onClose }: Props) {
                 <label style={lbl}>选项文本</label>
                 <input style={inp} value={choice.label}
                   onChange={e => { const nc = [...cd.choices]; nc[i] = { ...nc[i], label: e.target.value }; setChoices(nc); }} />
-                <label style={lbl}>Toast 提示</label>
+                <label style={lbl}>Toast 提示（可选）</label>
                 <input style={inp} value={choice.toast ?? ''}
-                  onChange={e => { const nc = [...cd.choices]; nc[i] = { ...nc[i], toast: e.target.value }; setChoices(nc); }} />
+                  onChange={e => { const nc = [...cd.choices]; nc[i] = { ...nc[i], toast: e.target.value || undefined }; setChoices(nc); }} />
                 <label style={lbl}>状态变更（key=value，逗号分隔）</label>
                 <input style={inp} placeholder="firstChoice=trust, ch2=hide"
                   value={choice.set ? Object.entries(choice.set).map(([k, v]) => `${k}=${v}`).join(', ') : ''}
                   onChange={e => {
                     const set: Record<string, string> = {};
                     e.target.value.split(',').forEach(pair => {
-                      const [k, v] = pair.split('=').map(s => s.trim());
-                      if (k && v !== undefined) set[k] = v;
+                      const eq = pair.indexOf('=');
+                      if (eq > 0) {
+                        const k = pair.slice(0, eq).trim();
+                        const v = pair.slice(eq + 1).trim();
+                        if (k) set[k] = v;
+                      }
                     });
                     const nc = [...cd.choices]; nc[i] = { ...nc[i], set }; setChoices(nc);
                   }} />
                 <label style={lbl}>结局 ID（可选）</label>
                 <select style={sel} value={choice.ending ?? ''}
-                  onChange={e => { const nc = [...cd.choices]; nc[i] = { ...nc[i], ending: (e.target.value as any) || undefined }; setChoices(nc); }}>
+                  onChange={e => {
+                    const nc = [...cd.choices];
+                    nc[i] = { ...nc[i], ending: (e.target.value as any) || undefined };
+                    setChoices(nc);
+                  }}>
                   <option value="">— 无 —</option>
-                  <option value="ash">ash · 原卷成灰</option>
-                  <option value="sealed">sealed · 密室封存</option>
-                  <option value="living">living · 医道未断</option>
+                  {Object.values(ENDINGS).map(e => (
+                    <option key={e.id} value={e.id}>{e.id} · {e.name}</option>
+                  ))}
                 </select>
               </div>
             ))}
@@ -247,10 +276,31 @@ export default function NodePropsPanel({ node, onChange, onClose }: Props) {
           return (<>
             <label style={lbl}>跳转目标</label>
             <select style={sel} value={gd.target} onChange={e => upd({ target: e.target.value } as any)}>
-              {['ch1','ch2','ch3','ch4','clue','trust','ending'].map(t => (
+              {['ch1','ch2','ch3','ch4','ch5','clue','trust','ending'].map(t => (
                 <option key={t} value={t}>{t}</option>
               ))}
             </select>
+          </>);
+        })()}
+
+        {/* ── 结局节点（只读展示，修改请编辑 endings.ts） ── */}
+        {d.kind === 'ending' && (() => {
+          const ed = d as EndingNodeData;
+          return (<>
+            <div style={{
+              background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 6,
+              padding: '8px 10px', fontSize: 11, color: '#9a3412', marginTop: 8,
+            }}>
+              结局数据来自 <code>endings.ts</code>，此处只读。如需修改请直接编辑源文件。
+            </div>
+            <label style={lbl}>结局 ID</label>
+            <input style={roInp} value={ed.endingId} readOnly />
+            <label style={lbl}>结局名称</label>
+            <input style={roInp} value={ed.name} readOnly />
+            <label style={lbl}>评级</label>
+            <input style={roInp} value={ed.rank} readOnly />
+            <label style={lbl}>正文摘要</label>
+            <textarea style={{ ...roInp, minHeight: 80, resize: 'none' } as any} value={ed.body} readOnly />
           </>);
         })()}
 
