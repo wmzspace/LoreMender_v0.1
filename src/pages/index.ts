@@ -6,6 +6,7 @@ export { ShowcasePage } from "./ShowcasePage";
 export { StoryPage } from "./StoryPage";
 export { MiniGamePage } from "./MiniGamePage";
 export { CluePage } from "./CluePage";
+export { DungeonStatusPage } from "./DungeonStatusPage";
 export { TrustRoutePage } from "./TrustRoutePage";
 export { ProgressPage } from "./ProgressPage";
 export { EndingPage } from "./EndingPage";

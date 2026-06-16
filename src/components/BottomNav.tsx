@@ -2,7 +2,7 @@ export type NavKey = "story" | "clue" | "map" | "gallery";
 
 const NAV_ITEMS: { key: NavKey; label: string }[] = [
   { key: "story", label: "剧情" },
-  { key: "clue", label: "线索" },
+  { key: "clue", label: "副本" },
   { key: "map", label: "进程" },
   { key: "gallery", label: "图鉴" },
 ];

@@ -2,7 +2,7 @@ import { useState, type MouseEvent } from "react";
 import {
   CoverPage, WorldPage, VolumeSelectPage, ChapterSelectPage,
   ShowcasePage,
-  StoryPage, MiniGamePage, CluePage, TrustRoutePage,
+  StoryPage, MiniGamePage, DungeonStatusPage, TrustRoutePage,
   ProgressPage, EndingPage, GalleryPage,
 } from "./pages";
 import { resolveEnding } from "./data";
@@ -96,7 +96,7 @@ export default function App() {
       pageEl = <MiniGamePage state={state} setState={setState} gotoPage={gotoPage}/>;
       break;
     case "clue":
-      pageEl = <CluePage state={state} setState={setState} gotoPage={gotoPage}/>;
+      pageEl = <DungeonStatusPage state={state} gotoPage={gotoPage}/>;
       break;
     case "trust":
       pageEl = <TrustRoutePage state={state} setState={setState} gotoPage={gotoPage}/>;
