@@ -6,7 +6,7 @@ import {
 import { ENDINGS, resolveEnding } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState } from "../lib/storage";
-import { playSfx, playDialogueAudio, stopDialogueAudio, resumeDialogueIfPaused, useAudioMuted } from "../lib/audio";
+import { playSfx, playDialogueAudio, stopDialogueAudio, useAudioMuted } from "../lib/audio";
 import type { PageKey } from "../lib/routes";
 
 /** Map ending ID to narrator voiceover for the ending body text */
@@ -109,13 +109,6 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
     };
   });
 
-  // Tracks whether narration is active — read in onEnded to decide loop vs dismiss.
-  // Updated on every render so it's always fresh when the video fires ended.
-  const hasNarrationRef = useRef(false);
-  useEffect(() => {
-    hasNarrationRef.current = !!ENDING_NARRATION[endId] && !isMuted;
-  });
-
   // Reset completion flags each time the overlay opens
   useEffect(() => {
     if (showVideo) {
@@ -153,9 +146,13 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
     };
   }, [showVideo, e?.body]);
 
-  // React doesn't reliably sync the `muted` DOM property via JSX props — drive it directly.
+  // React doesn't reliably sync `muted`/`loop` DOM properties via JSX props — drive directly.
+  // loop=true when narration is present (video plays until narration finishes).
   useEffect(() => {
-    if (videoRef.current) videoRef.current.muted = isMuted;
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+      videoRef.current.loop = !!ENDING_NARRATION[endId] && !isMuted;
+    }
   }, [isMuted, showVideo]);
 
   const handleVideoTap = () => {
@@ -240,26 +237,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             playsInline
             muted={isMuted}
             onCanPlay={() => setVideoReady(true)}
-            onTimeUpdate={() => {
-              // When narration is active, seek back before the video reaches ended.
-              // This prevents the ended event from firing, which on iOS would
-              // trigger an audio session reset that silently kills the narration.
-              if (!hasNarrationRef.current) return;
-              const vid = videoRef.current;
-              if (vid?.duration && vid.currentTime >= vid.duration - 0.5) {
-                vid.currentTime = 0;
-              }
-            }}
-            onEnded={() => {
-              // With narration: onTimeUpdate prevents this from firing.
-              // Without narration: single-play mode, dismiss on end.
-              if (hasNarrationRef.current) {
-                if (videoRef.current) videoRef.current.play().catch(() => {});
-                return;
-              }
-              videoEndedRef.current = true;
-              checkAndDismissRef.current();
-            }}
+            onEnded={() => { videoEndedRef.current = true; checkAndDismissRef.current(); }}
             style={{
               position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover",
               opacity: videoReady ? 1 : 0,

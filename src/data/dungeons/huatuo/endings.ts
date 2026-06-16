@@ -1,40 +1,51 @@
 import type { Ending, EndingId, GameState } from "../../types";
 
-// Keyed by string rather than Record<EndingId, …>: EndingId keeps the legacy
-// ash/sealed/living ids for save-compat, but only the 4 active endings are
-// defined here, so an exhaustive Record would (incorrectly) demand all 7 keys.
 export const ENDINGS: Record<string, Ending> = {
   chenbo_true: {
-    id: "chenbo_true", name: "医者人间", rank: "典故修补", rankColor: "#2c6657",
-    epitaph: "书没有留下，医道留下了。",
-    body: "你把《青囊经》交给了陈伯。\n\n他不识字，却把方子一条条背下来，教给街市的百姓。\n\n千年后，那些方子化作无数药方，流散人间。\n\n华佗在牢中闭上了眼睛。嘴角，有一丝笑意。",
+    id: "chenbo_true",
+    name: "医者人间",
+    rank: "典故修补",
+    rankColor: "#2c6657",
+    epitaph: "书未全存，医道却入了人间。",
+    body: "你把残卷托给陈伯。药方没有被锁进高阁，而是在街巷之间一遍遍誊写、背诵、校正。许多内容终会散失，可有些用法变成乡间口耳相传的救急法门。华佗闭眼前，终于听见牢外有人仍在问药。",
     glyph: "shoots",
   },
   xuanyin_fallback: {
-    id: "xuanyin_fallback", name: "残卷余音", rank: "遗憾半修", rankColor: "#8f7846",
-    epitaph: "只有只言片语，流传于世。",
-    body: "你把《青囊经》交给了玄音道人。\n\n他带着医书入山，藏于道观深处。\n\n数百年后，战火烧毁山门，残卷不知所终。\n\n只有只言片语，流传于世。",
+    id: "xuanyin_fallback",
+    name: "残卷余音",
+    rank: "遗憾半修",
+    rankColor: "#8f7846",
+    epitaph: "歌诀传得远，禁忌也一并留下。",
+    body: "你把残卷托给玄音。他把难懂的医理改作歌诀，带向乐坊与山门。后世未必能得到全卷，却能从曲调里记住该救什么、又该避开什么。残术不再完整，但没有完全失声。",
     glyph: "wall",
   },
   wangji_trap: {
-    id: "wangji_trap", name: "重锁深阁", rank: "遗憾未竟", rankColor: "#6e1f18",
-    epitaph: "大部分内容，被锁进曹氏秘库，再未见光。",
-    body: "你把《青囊经》交给了王济。\n\n他将医书献给曹操。曹营的医官抄录了部分方子。\n\n但大部分内容，被锁进曹氏秘库，再未见光。\n\n华佗在牢中听闻，沉默了很久。",
+    id: "wangji_trap",
+    name: "重锁深阁",
+    rank: "遗憾未竟",
+    rankColor: "#6e1f18",
+    epitaph: "卷入权门的书，终究少见天光。",
+    body: "你把残卷托给王济。他确有能力保下一部分内容，也确实让它进入曹府医案。可门第与功名会重新筛选文字，许多不合时宜的提醒被删去，许多民间经验被轻看。书活了下来，却又被锁住。",
     glyph: "wall",
   },
   burn_ending: {
-    id: "burn_ending", name: "青囊焚尽", rank: "遗憾焚绝", rankColor: "#b23a2c",
-    epitaph: "外科之术，从此失传。",
-    body: "你拿起蜡烛，点燃了《青囊经》。\n\n竹简在火光中卷曲、变黑、化为灰烬。\n\n华佗没有看你。他望着窗外，很久很久。\n\n外科之术，从此失传。",
+    id: "burn_ending",
+    name: "青囊焚尽",
+    rank: "遗憾焚绝",
+    rankColor: "#b23a2c",
+    epitaph: "火光保住了秘密，也烧断了去路。",
+    body: "你点燃残卷。竹简在火里卷曲、发黑、化灰。无人能借它作恶，也无人能据它救人。华佗没有责怪你，只望着窗外很久。此后千年，人们只记得那本应当存在的书。",
     glyph: "fire",
   },
 };
 
 export function resolveEnding(state: GameState): EndingId {
-  const { finalChoice } = state;
-  if (finalChoice === "chenbo") return "chenbo_true";
-  if (finalChoice === "xuanyin") return "xuanyin_fallback";
-  if (finalChoice === "wangji") return "wangji_trap";
-  if (finalChoice === "burn") return "burn_ending";
+  const highCount = Object.values(state.gameResults ?? {}).filter(r => r.best === "high").length;
+
+  if (state.finalChoice === "chenbo" && state.chenbo_trust >= 1 && highCount >= 2) return "chenbo_true";
+  if (state.finalChoice === "chenbo") return "xuanyin_fallback";
+  if (state.finalChoice === "xuanyin") return "xuanyin_fallback";
+  if (state.finalChoice === "wangji") return "wangji_trap";
+  if (state.finalChoice === "burn") return "burn_ending";
   return "xuanyin_fallback";
 }

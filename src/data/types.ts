@@ -1,5 +1,3 @@
-// ── 通用基础类型 ────────────────────────────────────────────────
-
 export interface Chapter {
   id: string;
   num: number;
@@ -17,7 +15,6 @@ export interface Character {
   short?: string;
   detail?: string;
   silhouette?: SilhouetteKind;
-  /** AI-generated portrait image path (takes priority over silhouette) */
   portrait?: string;
 }
 
@@ -34,15 +31,11 @@ export interface Clue {
 
 export type ClueIconType = "scroll" | "ledger" | "lips" | "music" | "needle";
 
-// ── 结局类型 ────────────────────────────────────────────────────
-
-/** 华佗副本结局 ID */
 export type EndingId =
   | "chenbo_true"
   | "xuanyin_fallback"
   | "wangji_trap"
   | "burn_ending"
-  // 旧版兼容
   | "ash"
   | "sealed"
   | "living";
@@ -57,40 +50,69 @@ export interface Ending {
   glyph: string;
 }
 
-// ── 选项 / Beat 类型 ────────────────────────────────────────────
+export type GameResultRank = "high" | "mid" | "low";
+
+export interface StoredGameResult {
+  best: GameResultRank;
+  attempts: number;
+  completed: boolean;
+}
+
+export type MiniGameKind =
+  | "bambooPuzzle"
+  | "woodenBox"
+  | "herbMemory"
+  | "caseTriage"
+  | "songFormula";
+
+export interface GameReward {
+  item: string;
+  skill?: keyof Pick<
+    GameState,
+    "medical_skill" | "asked_heart" | "chenbo_trust" | "wangji_trust" | "xuanyin_trust"
+  >;
+}
+
+export interface GameNode {
+  id: string;
+  name: string;
+  kind: MiniGameKind;
+  unlockItem: string;
+  requiredItem?: string;
+  nextBeatUnlocked: string;
+  reward: GameReward;
+}
 
 export interface Choice {
   label: string;
   toast?: string;
-  /** 状态变更，值统一为字符串（序列化友好） */
   set?: Record<string, string>;
   ending?: EndingId;
-  /** 显示条件（仅运行时使用，编辑器可忽略） */
   condition?: Record<string, unknown>;
 }
 
 export type Beat =
   | { speaker: string; line: string; narration?: false }
   | { narration: true; line: string }
+  | { game: GameNode }
   | { choices: Choice[] }
   | { gotoChapter: string }
   | { gotoTrust: true }
   | { gotoEnding: true }
   | { unlockEnding: string; generatePoster?: boolean };
 
-// ── 场景 / 章节 ─────────────────────────────────────────────────
-
 export type SceneKind =
-  // 华佗副本场景
   | "xuchang_prison"
-  | "three_places"
+  | "street_market"
   | "cao_mansion"
+  | "music_house"
+  | "old_shrine"
+  | "three_places"
   | "huatuo_cell"
   | "ending_true"
   | "ending_fallback"
   | "ending_trap"
   | "ending_ash"
-  // 旧版兼容
   | "clinic_night"
   | "raid_coming"
   | "find_trust"
@@ -99,13 +121,11 @@ export type SceneKind =
 export interface StoryChapter {
   scene: SceneKind;
   title: string;
+  fullTitle: string;
   beats: Beat[];
 }
 
-// ── 游戏状态 ────────────────────────────────────────────────────
-
 export interface GameState {
-  // 华佗副本新字段
   firstImpression: string | null;
   trust_huatuo: string | null;
   found_clue: string | null;
@@ -114,14 +134,24 @@ export interface GameState {
   caoCunning: string | null;
   finalChoice: string | null;
 
-  // 通用字段
   searchedClues: string[];
   trustedPerson: string | null;
   currentChapter: number;
   unlockedEndings: EndingId[];
   lastEnding: EndingId | null;
 
-  // 旧版兼容字段（保留避免 localStorage 读取报错）
+  items: string[];
+  gameResults: Record<string, StoredGameResult>;
+  activeGameId: string | null;
+
+  medical_skill: number;
+  asked_heart: number;
+  chenbo_trust: number;
+  wangji_trust: number;
+  xuanyin_trust: number;
+
+  classifyRetry: boolean | null; // true=分类后继续修正, false=直接退出, null=未决定
+
   firstChoice?: string | null;
   ch2?: string | null;
   finalDecision?: string | null;

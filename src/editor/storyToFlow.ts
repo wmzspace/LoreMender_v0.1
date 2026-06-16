@@ -64,10 +64,6 @@ export type StoryNodeData =
   | EndingNodeData;
 
 const Y_GAP = 130;
-const X_GAP = 520; // horizontal spacing between chapters in "all" view
-
-// Chapter order determines horizontal position in full-story view
-const CHAPTER_ORDER = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'];
 
 /** 把原始 beats 数组中连续的 speaker beats 合并为块 */
 function mergeBeats(beats: Beat[]): Array<{ beat: Beat; origIndex: number }[]> {
@@ -102,9 +98,8 @@ export function storyToFlow(
     ? Object.entries(story).filter(([id]) => id === filterChapterId)
     : Object.entries(story);
 
-  entries.forEach(([chapterId, chapter], chIndex) => {
-    const chapterPos = CHAPTER_ORDER.indexOf(chapterId);
-    const baseX = 100 + (chapterPos >= 0 ? chapterPos : chIndex) * X_GAP;
+  entries.forEach(([chapterId, chapter]) => {
+    const baseX = 100;
 
     const chapterNodeId = `ch_${chapterId}`;
     nodes.push({
@@ -196,7 +191,12 @@ export function flowToStory(
       }
     });
 
-    story[chapterId] = { scene: chNode.data.scene as any, title: chNode.data.title, beats };
+    story[chapterId] = {
+      scene: chNode.data.scene as any,
+      title: chNode.data.title,
+      fullTitle: chNode.data.title,
+      beats,
+    };
   });
 
   return story;

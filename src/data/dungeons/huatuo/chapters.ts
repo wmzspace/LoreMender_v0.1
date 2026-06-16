@@ -1,9 +1,9 @@
 import type { Chapter } from "../../types";
 
 export const CHAPTERS: Chapter[] = [
-  { id: "ch1", num: 1, name: "牢狱初醒", brief: "建安十三年，许昌大牢。烛火中，一个老人在等你。" },
-  { id: "ch2", num: 2, name: "三人之试", brief: "三个人，只有一个值得托付。" },
-  { id: "ch3", num: 3, name: "曹府密谈", brief: "魏王要书，你只有三天。" },
-  { id: "ch4", num: 4, name: "青囊抉择", brief: "你只剩一次决定。" },
-  { id: "ch5", num: 5, name: "千年回响", brief: "书烧了，他死了，可是——" },
+  { id: "ch1", num: 1, name: "许昌大牢", brief: "阿吉醒于牢狱，拼合散简，取得开启木盒的资格。" },
+  { id: "ch2", num: 2, name: "押解街市", brief: "押解途中经过药市，陈伯考验你能否整理民间验方。" },
+  { id: "ch3", num: 3, name: "曹府问审", brief: "曹府病案压在案上，王济要求你判断医术与权力的边界。" },
+  { id: "ch4", num: 4, name: "民间乐坊", brief: "玄音把医理唱成曲调，你要补全歌诀并守住禁忌。" },
+  { id: "ch5", num: 5, name: "青囊归处", brief: "旧祠之中，选择青囊残术最不容易断绝的去路。" },
 ];

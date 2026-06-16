@@ -1,8 +1,8 @@
 import { useState, type MouseEvent } from "react";
 import {
-  CoverPage, WorldPage, ChapterSelectPage,
+  CoverPage, WorldPage, VolumeSelectPage, ChapterSelectPage,
   ShowcasePage,
-  StoryPage, CluePage, TrustRoutePage,
+  StoryPage, MiniGamePage, CluePage, TrustRoutePage,
   ProgressPage, EndingPage, GalleryPage,
 } from "./pages";
 import { resolveEnding } from "./data";
@@ -69,9 +69,15 @@ export default function App() {
       />;
       break;
     case "dungeon":
+      pageEl = <VolumeSelectPage
+        onBack={() => gotoPage("cover")}
+        onEnterFirst={() => gotoPage("chapters")}
+      />;
+      break;
+    case "chapters":
       pageEl = <ChapterSelectPage
         state={state}
-        onBack={() => gotoPage("cover")}
+        onBack={() => gotoPage("dungeon")}
         onEnter={() => {
           if (!state.currentChapter) {
             const ns: GameState = { ...state, currentChapter: 1 };
@@ -85,6 +91,9 @@ export default function App() {
     case "story":
       pageEl = <StoryPage state={state} setState={setState}
         gotoPage={gotoPage} gotoEnding={gotoEnding}/>;
+      break;
+    case "minigame":
+      pageEl = <MiniGamePage state={state} setState={setState} gotoPage={gotoPage}/>;
       break;
     case "clue":
       pageEl = <CluePage state={state} setState={setState} gotoPage={gotoPage}/>;
