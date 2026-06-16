@@ -52,7 +52,12 @@ export function playDialogueAudio(src: string, onEnded?: () => void, rate = 1.0)
   if (isAudioMuted()) return;
   if (currentSrc === src && currentAudio && !currentAudio.paused) return;
   stopDialogueAudio();
-  const audio = new Audio(src);
+  // Reuse the gesture-unlocked element when available (bypasses iOS autoplay gate).
+  const audio = _dialogueUnlocked ?? new Audio();
+  _dialogueUnlocked = null;
+  audio.src = src;
+  audio.currentTime = 0;
+  audio.volume = 1;
   audio.playbackRate = rate;
   if (onEnded) audio.addEventListener("ended", onEnded, { once: true });
   audio.play().catch(() => {});
@@ -96,11 +101,27 @@ function getAudioContext(): AudioContext {
 
 let _primed = false;
 
+// A tiny silent WAV used to gesture-unlock an HTMLAudioElement on iOS.
+// iOS only allows audio.play() from within a user gesture; by playing this
+// inline data URI synchronously during handleScreenClick, we get an element
+// that can be reused for narration even after a setTimeout delay.
+const SILENT_WAV = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+let _dialogueUnlocked: HTMLAudioElement | null = null;
+
 /**
  * Call on the first user gesture (e.g. any screen tap) to unlock the AudioContext
  * and pre-decode all SFX into memory — subsequent plays are near-instant.
+ * Also pre-unlocks an HTMLAudioElement for dialogue/narration (iOS autoplay gate).
  */
 export function primeAudio(): void {
+  // Replenish the pre-unlocked dialogue slot on every gesture so that
+  // playDialogueAudio can reuse it even inside a setTimeout callback.
+  if (!_dialogueUnlocked) {
+    const a = new Audio(SILENT_WAV);
+    a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+    _dialogueUnlocked = a;
+  }
+
   if (_primed) return;
   _primed = true;
   const ctx = getAudioContext();
