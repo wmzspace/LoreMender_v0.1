@@ -8,13 +8,14 @@ import {
 import { resolveEnding } from "./data";
 import type { GameState } from "./data/types";
 import { loadState, saveState } from "./lib/storage";
-import { playSfx, type SfxName } from "./lib/audio";
+import { playSfx, primeAudio, type SfxName } from "./lib/audio";
 import type { PageKey } from "./lib/routes";
 
 const SFX_SELECTOR = "[data-sfx], .press, .choice, .navitem, .btn-primary, .btn-ghost, .icon-btn";
 
 /** Delegated click sound: plays the target's `data-sfx`, or "tap" for any other pressable element. */
 function handleScreenClick(e: MouseEvent<HTMLDivElement>) {
+  primeAudio();
   const target = (e.target as HTMLElement).closest<HTMLElement>(SFX_SELECTOR);
   if (!target || (target as HTMLButtonElement).disabled) return;
   playSfx((target.dataset.sfx as SfxName) || "tap");
@@ -98,7 +99,7 @@ export default function App() {
       pageEl = <EndingPage state={state} setState={setState} gotoPage={gotoPage}/>;
       break;
     case "gallery":
-      pageEl = <GalleryPage state={state} gotoPage={gotoPage}/>;
+      pageEl = <GalleryPage state={state} setState={setState} gotoPage={gotoPage}/>;
       break;
     default:
       pageEl = (

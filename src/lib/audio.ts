@@ -30,6 +30,7 @@ export function setAudioMuted(muted: boolean): void {
   } else {
     currentBgm?.play().catch(() => {});
   }
+  if (_sfxGain) _sfxGain.gain.value = muted ? 0 : 1;
   muteListeners.forEach(fn => fn(muted));
 }
 
@@ -70,20 +71,57 @@ export function stopDialogueAudio(): void {
 const SFX_BASE = "/audio/levels/1/sfx";
 
 export type SfxName = "tap" | "back" | "confirm" | "nav" | "unlock";
+const SFX_NAMES: SfxName[] = ["tap", "back", "confirm", "nav", "unlock"];
 
 /** "tap" is the generic fallback sound and yields to any more specific SFX requested in the same tick. */
 const SFX_PRIORITY: Record<SfxName, number> = {
   tap: 0, back: 1, confirm: 1, nav: 1, unlock: 1,
 };
 
+// --- Web Audio API singleton for zero-latency SFX ---
+let _actx: AudioContext | null = null;
+let _sfxGain: GainNode | null = null;
+const _sfxBuffers = new Map<SfxName, AudioBuffer>();
+
+function getAudioContext(): AudioContext {
+  if (!_actx) {
+    _actx = new AudioContext();
+    _sfxGain = _actx.createGain();
+    _sfxGain.gain.value = isAudioMuted() ? 0 : 1;
+    _sfxGain.connect(_actx.destination);
+  }
+  return _actx;
+}
+
+let _primed = false;
+
+/**
+ * Call on the first user gesture (e.g. any screen tap) to unlock the AudioContext
+ * and pre-decode all SFX into memory — subsequent plays are near-instant.
+ */
+export function primeAudio(): void {
+  if (_primed) return;
+  _primed = true;
+  const ctx = getAudioContext();
+  if (ctx.state === "suspended") ctx.resume().catch(() => {});
+  SFX_NAMES.forEach(async (name) => {
+    try {
+      const res = await fetch(`${SFX_BASE}/${name}.wav`);
+      const arr = await res.arrayBuffer();
+      _sfxBuffers.set(name, await ctx.decodeAudioData(arr));
+    } catch { /* non-fatal */ }
+  });
+}
+
 let pendingSfx: SfxName | null = null;
 let pendingPriority = -1;
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
- * Plays a short, possibly-overlapping UI sound effect. No-op while muted.
- * If multiple SFX are requested within the same short window (e.g. a tap that
- * also triggers a page transition with its own SFX), only the highest-priority one plays.
+ * Plays a short UI sound effect. No-op while muted.
+ * Uses pre-decoded Web Audio buffers for near-zero latency; falls back to
+ * HTMLAudioElement if the buffer isn't loaded yet (e.g. very first interaction).
+ * Multiple SFX requested in the same 30 ms window resolve to the highest-priority one.
  */
 export function playSfx(name: SfxName): void {
   if (isAudioMuted()) return;
@@ -94,10 +132,22 @@ export function playSfx(name: SfxName): void {
   }
   if (flushTimer) return;
   flushTimer = setTimeout(() => {
-    if (pendingSfx) new Audio(`${SFX_BASE}/${pendingSfx}.wav`).play().catch(() => {});
+    const sfx = pendingSfx;
     pendingSfx = null;
     pendingPriority = -1;
     flushTimer = null;
+    if (!sfx) return;
+    const buf = _sfxBuffers.get(sfx);
+    if (buf && _actx?.state === "running" && _sfxGain) {
+      // Pre-decoded path — effectively zero latency (only when context is confirmed running)
+      const src = _actx.createBufferSource();
+      src.buffer = buf;
+      src.connect(_sfxGain);
+      src.start(0);
+    } else {
+      // Fallback: HTMLAudioElement — works within iOS gesture propagation window
+      new Audio(`${SFX_BASE}/${sfx}.wav`).play().catch(() => {});
+    }
   }, 30);
 }
 

@@ -4,7 +4,8 @@ import {
   SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
 } from "../components/art";
 import { ENDINGS } from "../data";
-import type { GameState } from "../data/types";
+import type { EndingId, GameState } from "../data/types";
+import { saveState } from "../lib/storage";
 import type { PageKey } from "../lib/routes";
 
 /** Map ending ID to its dedicated AI scene illustration */
@@ -50,11 +51,19 @@ function EndingCardImage({ endId }: { endId: string }) {
 
 interface GalleryPageProps {
   state: GameState;
+  setState: (s: GameState) => void;
   gotoPage: (p: PageKey) => void;
 }
 
-export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
+export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
   const unlocked = state.unlockedEndings || [];
+
+  const enterEnding = (endId: EndingId) => {
+    const ns: GameState = { ...state, lastEnding: endId };
+    setState(ns);
+    saveState(ns);
+    gotoPage("ending");
+  };
   return (
     <div className="page night-deep-bg">
       <Topbar title="结 局 图 鉴" onBack={() => gotoPage("story")}/>
@@ -73,12 +82,16 @@ export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
                 marginBottom: 14,
                 animationDelay: `${i*90}ms`,
               }}>
-              <div style={{
-                position:"relative", overflow:"hidden",
-                border: "1px solid " + (has ? "rgba(205,178,119,0.6)" : "rgba(70,62,38,0.5)"),
-                borderRadius: 2,
-                boxShadow: has ? "0 0 0 1px rgba(236,220,166,0.12), 0 8px 24px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.5)",
-              }}>
+              <div
+                onClick={has ? () => enterEnding(e.id) : undefined}
+                className={has ? "press" : undefined}
+                style={{
+                  position:"relative", overflow:"hidden",
+                  border: "1px solid " + (has ? "rgba(205,178,119,0.6)" : "rgba(70,62,38,0.5)"),
+                  borderRadius: 2,
+                  boxShadow: has ? "0 0 0 1px rgba(236,220,166,0.12), 0 8px 24px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.5)",
+                  cursor: has ? "pointer" : "default",
+                }}>
                 <div style={{position:"relative", height: 130}}>
                   {has ? (
                     <>
@@ -100,16 +113,26 @@ export function GalleryPage({ state, gotoPage }: GalleryPageProps) {
                   <div className="grain"/>
                   <div className="vignette"/>
                   {has && (
-                    <div style={{
-                      position:"absolute", top: 10, right: 10,
-                      animation: "sealStamp 600ms ease both",
-                    }}>
-                      <SealTag size="sm" style={{
-                        background: e.rankColor,
-                        transform:"rotate(-6deg)",
-                        width: 38, height: 38, fontSize: 10,
-                      }}>{e.rank.slice(0,2)}</SealTag>
-                    </div>
+                    <>
+                      <div style={{
+                        position:"absolute", top: 10, right: 10,
+                        animation: "sealStamp 600ms ease both",
+                      }}>
+                        <SealTag size="sm" style={{
+                          background: e.rankColor,
+                          transform:"rotate(-6deg)",
+                          width: 38, height: 38, fontSize: 10,
+                        }}>{e.rank.slice(0,2)}</SealTag>
+                      </div>
+                      {/* play hint */}
+                      <div style={{
+                        position:"absolute", bottom: 10, left: 12,
+                        fontFamily:"ZCOOL XiaoWei, serif",
+                        fontSize: 11, color:"rgba(205,178,119,0.65)",
+                        letterSpacing:"0.18em", textIndent:"0.18em",
+                        zIndex: 2,
+                      }}>▶ 回 放</div>
+                    </>
                   )}
                 </div>
                 <div style={{

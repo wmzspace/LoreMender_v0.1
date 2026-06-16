@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Topbar, SealTag, LockedDungeon } from "../components";
-import { Particles, SceneClinic } from "../components/art";
+import { Particles } from "../components/art";
 import type { GameState } from "../data/types";
 
 interface ChapterSelectPageProps {
@@ -9,27 +9,34 @@ interface ChapterSelectPageProps {
   state: GameState;
 }
 
-/** Overlay the AI-generated dungeon cover image on top of the SVG scene */
-function DungeonCoverImage() {
-  const [loaded, setLoaded] = useState(false);
+/** Static cover image + looping video; image shows immediately, video fades in when ready */
+function DungeonCoverVideo() {
+  const [ready, setReady] = useState(false);
   return (
-    <img
-      src="/images/levels/1/chapters/dungeon_cover_huatuo.webp"
-      alt="华佗·青囊残卷 副本封面"
-      onLoad={() => setLoaded(true)}
-      onError={() => setLoaded(false)}
-      style={{
-        position: "absolute",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        opacity: loaded ? 1 : 0,
-        transition: "opacity 360ms ease",
-        zIndex: 1,
-        pointerEvents: "none",
-      }}
-    />
+    <>
+      <img
+        src="/images/levels/1/chapters/dungeon_cover_huatuo.webp"
+        alt=""
+        style={{
+          position:"absolute", inset:0,
+          width:"100%", height:"100%", objectFit:"cover",
+          zIndex:1, pointerEvents:"none",
+        }}
+      />
+      <video
+        autoPlay muted loop playsInline
+        onCanPlay={() => setReady(true)}
+        style={{
+          position:"absolute", inset:0,
+          width:"100%", height:"100%", objectFit:"cover",
+          zIndex:2, pointerEvents:"none",
+          opacity: ready ? 1 : 0,
+          transition: "opacity 600ms ease",
+        }}
+      >
+        <source src="/videos/levels/1/dungeon_cover_huatuo.mp4" type="video/mp4"/>
+      </video>
+    </>
   );
 }
 
@@ -47,7 +54,7 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
       <Particles count={8}/>
 
       <div className="page-scroll" style={{top: 56, bottom: 0, padding: "0 16px calc(28px + var(--safe-bottom))"}}>
-        <div className="fade-in" style={{marginBottom: 22}}>
+        <div style={{marginBottom: 22}}>
           <div style={{
             position:"relative", overflow:"hidden",
             borderRadius: 2,
@@ -55,8 +62,7 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
             boxShadow: "0 0 0 1px rgba(236,220,166,0.18), 0 12px 32px rgba(0,0,0,0.6), inset 0 0 60px rgba(236,220,166,0.08)",
           }}>
             <div style={{position:"relative", height: 200}}>
-              <SceneClinic/>
-              <DungeonCoverImage/>
+              <DungeonCoverVideo/>
               <div className="grain"/>
               <div className="vignette"/>
               <Particles count={12}/>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GoldDivider, PaperPanel, SealTag } from "../components";
 import {
   Particles, SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
@@ -6,8 +6,16 @@ import {
 import { ENDINGS, resolveEnding } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState } from "../lib/storage";
-import { playSfx } from "../lib/audio";
+import { playSfx, useAudioMuted } from "../lib/audio";
 import type { PageKey } from "../lib/routes";
+
+/** Map ending ID to its cinematic opening video */
+const ENDING_VIDEOS: Record<string, string> = {
+  chenbo_true:      "/videos/levels/1/ending_chenbo_A_humble_village_doctor_s_hand.mp4",
+  wangji_trap:      "/videos/levels/1/ending_wangji_Lacquered_chest_closes_over_scroll_202606161241.mp4",
+  xuanyin_fallback: "/videos/levels/1/ending_xuanyin.mp4",
+  burn_ending:      "/videos/levels/1/ending_burn.mp4",
+};
 
 /** Map ending ID to its dedicated scene illustration */
 const ENDING_IMAGES: Record<string, string> = {
@@ -53,9 +61,59 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   const endId: EndingId = state.lastEnding || resolveEnding(state);
   const e = ENDINGS[endId];
 
+  const videoSrc = ENDING_VIDEOS[endId];
+  // Capture first-unlock status before the state mutation in the effect below
+  const isFirstUnlock = useRef(e ? !state.unlockedEndings.includes(endId) : false);
+  const [showVideo, setShowVideo] = useState(!!videoSrc);
+  const [fadingOut, setFadingOut] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const lastTapRef = useRef(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const isMuted = useAudioMuted();
+
+  // Typewriter effect for body text during video
+  const [displayedBody, setDisplayedBody] = useState("");
+  useEffect(() => {
+    if (!showVideo || !e?.body) return;
+    setDisplayedBody("");
+    let i = 0;
+    const body = e.body;
+    let intervalId: ReturnType<typeof setInterval>;
+    const timeoutId = setTimeout(() => {
+      intervalId = setInterval(() => {
+        i++;
+        setDisplayedBody(body.slice(0, i));
+        if (i >= body.length) clearInterval(intervalId);
+      }, 90);
+    }, 1000);
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, [showVideo, e?.body]);
+
+  // React doesn't reliably sync the `muted` DOM property via JSX props — drive it directly
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.muted = isMuted;
+  }, [isMuted, showVideo]);
+
+  const dismissVideo = () => {
+    if (fadingOut) return;
+    setFadingOut(true);
+    if (isFirstUnlock.current) playSfx("unlock");
+    setTimeout(() => setShowVideo(false), 600);
+  };
+
+  const handleVideoTap = () => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 350) dismissVideo();
+    lastTapRef.current = now;
+  };
+
   useEffect(() => {
     if (e && !state.unlockedEndings.includes(endId)) {
-      playSfx("unlock");
+      // sfx deferred to dismissVideo when video exists; fire immediately otherwise
+      if (!videoSrc) playSfx("unlock");
       const ns: GameState = {
         ...state,
         unlockedEndings: [...state.unlockedEndings, endId],
@@ -103,6 +161,97 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   if (!e) return null;
   return (
     <div className="page night-deep-bg" style={{overflowY:"auto"}}>
+      {/* Cinematic opening video — fullscreen within .page, double-tap to skip */}
+      {showVideo && videoSrc && (
+        <div
+          onClick={handleVideoTap}
+          style={{
+            position:"absolute", inset:0, zIndex:50,
+            opacity: fadingOut ? 0 : 1,
+            transition:"opacity 600ms ease",
+          }}
+        >
+          {/* static ending image — visible immediately until video is ready */}
+          {ENDING_IMAGES[endId] && (
+            <img
+              src={ENDING_IMAGES[endId]}
+              alt=""
+              style={{position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover"}}
+            />
+          )}
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted={isMuted}
+            onCanPlay={() => setVideoReady(true)}
+            onEnded={dismissVideo}
+            style={{
+              position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover",
+              opacity: videoReady ? 1 : 0,
+              transition: "opacity 600ms ease",
+            }}
+          >
+            <source src={videoSrc} type="video/mp4"/>
+          </video>
+
+          {/* top scrim + title + body (flows naturally below epitaph) */}
+          <div style={{
+            position:"absolute", top:0, left:0, right:0,
+            padding:"calc(22px + env(safe-area-inset-top,0px)) 28px 48px",
+            background:"linear-gradient(180deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 50%, transparent 100%)",
+            pointerEvents:"none",
+          }}>
+            <div className="en-small fade-in" style={{
+              fontSize:10, letterSpacing:"0.38em",
+              color:"var(--gold-pale)", opacity:0.6,
+              marginBottom:12,
+            }}>THE LOREMENDER</div>
+            <div className="title-han fade-in" style={{
+              fontSize:28, color:"var(--gold-pale)",
+              letterSpacing:"0.28em", textIndent:"0.28em",
+              textShadow:"0 0 24px rgba(236,220,166,0.35), 0 2px 8px rgba(0,0,0,0.9)",
+              animationDelay:"120ms",
+            }}>{e.name}</div>
+            <div className="fade-in" style={{
+              marginTop:10,
+              fontSize:13, fontStyle:"italic",
+              color:"rgba(228,224,208,0.65)",
+              letterSpacing:"0.06em",
+              textShadow:"0 1px 6px rgba(0,0,0,0.8)",
+              animationDelay:"240ms",
+            }}>「{e.epitaph}」</div>
+            {displayedBody && (
+              <div style={{
+                marginTop:22,
+                fontSize:14, lineHeight:2,
+                color:"rgba(228,224,208,0.88)",
+                whiteSpace:"pre-line",
+                letterSpacing:"0.05em",
+                textAlign:"center",
+                textShadow:"0 1px 6px rgba(0,0,0,0.9)",
+              }}>{displayedBody}</div>
+            )}
+          </div>
+
+          {/* bottom scrim + skip hint */}
+          <div style={{
+            position:"absolute", bottom:0, left:0, right:0,
+            padding:"64px 0 calc(48px + var(--safe-bottom))",
+            background:"linear-gradient(0deg, rgba(0,0,0,0.65) 0%, transparent 100%)",
+            display:"flex", justifyContent:"center", alignItems:"flex-end",
+            pointerEvents:"none",
+          }}>
+            <div style={{
+              fontFamily:"ZCOOL XiaoWei, serif",
+              fontSize:18, color:"rgba(236,220,166,0.92)",
+              letterSpacing:"0.25em", textIndent:"0.25em",
+              textShadow:"0 0 16px rgba(0,0,0,0.95), 0 2px 4px rgba(0,0,0,0.9)",
+              animation:"skipBlink 2.6s ease-in-out infinite",
+            }}>双击以跳过动画</div>
+          </div>
+        </div>
+      )}
       <div className="page-scroll" style={{padding: 0}}>
         <div style={{position:"relative"}}>
           <div style={{position:"relative", height: 280}}>
@@ -116,7 +265,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
               position:"absolute", top: 14, left: 18, zIndex: 2,
               fontSize: 10, letterSpacing:"0.34em",
               color:"var(--gold-pale)", opacity: 0.6,
-            }}>THE EPILOGUE</div>
+            }}>THE LOREMENDER</div>
             <div style={{
               position:"absolute", left:0, right:0, bottom: 0, height: 80,
               background:"linear-gradient(180deg, transparent, rgba(7,11,14,0.98))",
