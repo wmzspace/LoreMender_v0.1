@@ -48,12 +48,12 @@ let currentAudio: HTMLAudioElement | null = null;
 let currentSrc: string | null = null;
 
 /** Plays the dialogue audio at `src`, replacing any currently-playing line. No-op while muted. */
-export function playDialogueAudio(src: string): void {
+export function playDialogueAudio(src: string, onEnded?: () => void): void {
   if (isAudioMuted()) return;
   if (currentSrc === src && currentAudio && !currentAudio.paused) return;
   stopDialogueAudio();
   const audio = new Audio(src);
-  // Autoplay may be blocked by the browser until the user interacts with the page; ignore.
+  if (onEnded) audio.addEventListener("ended", onEnded, { once: true });
   audio.play().catch(() => {});
   currentAudio = audio;
   currentSrc = src;

@@ -58,7 +58,7 @@
 }
 
 /* ---------- Reset / base ---------- */
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
 html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; }
 body {
   font-family: "Noto Serif SC", "Songti SC", "STSong", serif;

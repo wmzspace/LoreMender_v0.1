@@ -6,8 +6,16 @@ import {
 import { ENDINGS, resolveEnding } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState } from "../lib/storage";
-import { playSfx, useAudioMuted } from "../lib/audio";
+import { playSfx, playDialogueAudio, stopDialogueAudio, useAudioMuted } from "../lib/audio";
 import type { PageKey } from "../lib/routes";
+
+/** Map ending ID to narrator voiceover for the ending body text */
+const ENDING_NARRATION: Record<string, string> = {
+  chenbo_true:      "/audio/levels/1/dialogue/endings/chenbo_true.mp3",
+  wangji_trap:      "/audio/levels/1/dialogue/endings/wangji_trap.mp3",
+  xuanyin_fallback: "/audio/levels/1/dialogue/endings/xuanyin_fallback.mp3",
+  burn_ending:      "/audio/levels/1/dialogue/endings/burn_ending.mp3",
+};
 
 /** Map ending ID to its cinematic opening video */
 const ENDING_VIDEOS: Record<string, string> = {
@@ -71,7 +79,43 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const isMuted = useAudioMuted();
 
-  // Typewriter effect for body text during video
+  // dismissVideo must be defined BEFORE any ref that captures it (avoids const TDZ crash)
+  const dismissVideo = () => {
+    if (fadingOut) return;
+    setFadingOut(true);
+    stopDialogueAudio();
+    if (isFirstUnlock.current) playSfx("unlock");
+    setTimeout(() => setShowVideo(false), 600);
+  };
+
+  // Keep a ref to the latest dismissVideo so async callbacks always call the current closure
+  const dismissVideoRef = useRef(dismissVideo);
+  useEffect(() => { dismissVideoRef.current = dismissVideo; });
+
+  // Track independent completion of video and narration
+  const videoEndedRef = useRef(false);
+  const narrationEndedRef = useRef(false);
+
+  // Evaluated fresh on every call — avoids stale isMuted capture
+  const checkAndDismissRef = useRef(() => {});
+  useEffect(() => {
+    checkAndDismissRef.current = () => {
+      const noNarration = !ENDING_NARRATION[endId] || isMuted;
+      if (videoEndedRef.current && (narrationEndedRef.current || noNarration)) {
+        dismissVideoRef.current();
+      }
+    };
+  });
+
+  // Reset completion flags each time the overlay opens
+  useEffect(() => {
+    if (showVideo) {
+      videoEndedRef.current = false;
+      narrationEndedRef.current = false;
+    }
+  }, [showVideo]);
+
+  // Typewriter + narration
   const [displayedBody, setDisplayedBody] = useState("");
   useEffect(() => {
     if (!showVideo || !e?.body) return;
@@ -79,7 +123,14 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
     let i = 0;
     const body = e.body;
     let intervalId: ReturnType<typeof setInterval>;
+    const narrationSrc = ENDING_NARRATION[endId];
     const timeoutId = setTimeout(() => {
+      if (narrationSrc) {
+        playDialogueAudio(narrationSrc, () => {
+          narrationEndedRef.current = true;
+          checkAndDismissRef.current();
+        });
+      }
       intervalId = setInterval(() => {
         i++;
         setDisplayedBody(body.slice(0, i));
@@ -89,6 +140,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
     return () => {
       clearTimeout(timeoutId);
       clearInterval(intervalId);
+      stopDialogueAudio();
     };
   }, [showVideo, e?.body]);
 
@@ -96,13 +148,6 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   useEffect(() => {
     if (videoRef.current) videoRef.current.muted = isMuted;
   }, [isMuted, showVideo]);
-
-  const dismissVideo = () => {
-    if (fadingOut) return;
-    setFadingOut(true);
-    if (isFirstUnlock.current) playSfx("unlock");
-    setTimeout(() => setShowVideo(false), 600);
-  };
 
   const handleVideoTap = () => {
     const now = Date.now();
@@ -167,6 +212,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
           onClick={handleVideoTap}
           style={{
             position:"absolute", inset:0, zIndex:50,
+            background:"var(--ink-deepest)",
             opacity: fadingOut ? 0 : 1,
             transition:"opacity 600ms ease",
           }}
@@ -185,7 +231,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             playsInline
             muted={isMuted}
             onCanPlay={() => setVideoReady(true)}
-            onEnded={dismissVideo}
+            onEnded={() => onPartDone.current("video")}
             style={{
               position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover",
               opacity: videoReady ? 1 : 0,
