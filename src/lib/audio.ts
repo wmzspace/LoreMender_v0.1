@@ -65,6 +65,13 @@ export function playDialogueAudio(src: string, onEnded?: () => void, rate = 1.0)
   currentSrc = src;
 }
 
+/** Resumes dialogue audio if iOS interrupted it (e.g. during a video ended event). */
+export function resumeDialogueIfPaused(): void {
+  if (currentAudio && currentAudio.paused && currentSrc) {
+    currentAudio.play().catch(() => {});
+  }
+}
+
 export function stopDialogueAudio(): void {
   if (currentAudio) {
     currentAudio.pause();

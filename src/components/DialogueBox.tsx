@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface DialogueBoxProps {
   speaker?: string | null;
@@ -10,24 +10,37 @@ interface DialogueBoxProps {
 export function DialogueBox({ speaker, text, isNarration, onTap }: DialogueBoxProps) {
   const [shown, setShown] = useState("");
   const [done, setDone] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     setShown("");
     setDone(false);
     let i = 0;
-    const id = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       i++;
       setShown(text.slice(0, i));
       if (i >= text.length) {
-        clearInterval(id);
+        clearInterval(intervalRef.current!);
+        intervalRef.current = null;
         setDone(true);
       }
     }, 26);
-    return () => clearInterval(id);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, [text]);
 
   const onClick = () => {
     if (!done) {
+      // Stop the interval before setting full text — otherwise it would
+      // overwrite the complete text with partial text on the next tick.
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       setShown(text);
       setDone(true);
     } else {
