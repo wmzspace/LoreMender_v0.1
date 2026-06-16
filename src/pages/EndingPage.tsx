@@ -96,12 +96,14 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   const videoEndedRef = useRef(false);
   const narrationEndedRef = useRef(false);
 
-  // Evaluated fresh on every call — avoids stale isMuted capture
+  // Evaluated fresh on every call — avoids stale isMuted capture.
+  // When narration is present: video loops, dismiss when narration ends.
+  // When no narration (or muted): video plays once, dismiss when it ends.
   const checkAndDismissRef = useRef(() => {});
   useEffect(() => {
     checkAndDismissRef.current = () => {
-      const noNarration = !ENDING_NARRATION[endId] || isMuted;
-      if (videoEndedRef.current && (narrationEndedRef.current || noNarration)) {
+      const hasNarration = !!ENDING_NARRATION[endId] && !isMuted;
+      if (hasNarration ? narrationEndedRef.current : videoEndedRef.current) {
         dismissVideoRef.current();
       }
     };
@@ -129,7 +131,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
         playDialogueAudio(narrationSrc, () => {
           narrationEndedRef.current = true;
           checkAndDismissRef.current();
-        });
+        }, 1.2);
       }
       intervalId = setInterval(() => {
         i++;
@@ -144,9 +146,13 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
     };
   }, [showVideo, e?.body]);
 
-  // React doesn't reliably sync the `muted` DOM property via JSX props — drive it directly
+  // React doesn't reliably sync `muted`/`loop` DOM properties via JSX props — drive directly.
+  // loop=true when narration is present (video plays until narration finishes).
   useEffect(() => {
-    if (videoRef.current) videoRef.current.muted = isMuted;
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+      videoRef.current.loop = !!ENDING_NARRATION[endId] && !isMuted;
+    }
   }, [isMuted, showVideo]);
 
   const handleVideoTap = () => {
@@ -231,7 +237,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             playsInline
             muted={isMuted}
             onCanPlay={() => setVideoReady(true)}
-            onEnded={() => onPartDone.current("video")}
+            onEnded={() => { videoEndedRef.current = true; checkAndDismissRef.current(); }}
             style={{
               position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover",
               opacity: videoReady ? 1 : 0,
