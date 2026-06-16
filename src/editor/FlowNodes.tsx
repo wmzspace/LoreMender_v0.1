@@ -4,6 +4,7 @@ import type {
   ChapterNodeData, NarrationNodeData, DialogueBlockNodeData,
   ChoiceNodeData, GotoNodeData, EndingNodeData,
 } from './storyToFlow';
+import { CHARACTERS } from '../data';
 
 // ── token ─────────────────────────────────────────────────────────
 const tok = {
@@ -13,6 +14,13 @@ const tok = {
   choice:    { border: '#f59e0b', tag: '#d97706' },
   goto:      { border: '#a855f7', tag: '#7c3aed' },
   ending:    { border: '#f43f5e', tag: '#be123c' },
+};
+
+const endingColors: Record<string, string> = {
+  chenbo_true:      '#22c55e',
+  xuanyin_fallback: '#8b5cf6',
+  wangji_trap:      '#f59e0b',
+  burn_ending:      '#ef4444',
 };
 
 const card = (borderColor: string): React.CSSProperties => ({
@@ -41,7 +49,15 @@ const lc: React.CSSProperties = {
   WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const,
 };
 
-const hStyle = (color: string) => ({ background: color });
+const hStyle = (color: string): React.CSSProperties => ({
+  background: color,
+  width: 14,
+  height: 14,
+  borderRadius: '50%',
+  border: '2px solid #fff',
+  boxShadow: `0 0 0 1.5px ${color}, 0 1px 3px rgba(0,0,0,0.2)`,
+  cursor: 'crosshair',
+});
 
 // ── 章节节点 ─────────────────────────────────────────────────────
 export function ChapterNode({ data }: NodeProps) {
@@ -93,7 +109,7 @@ export function DialogueBlockNode({ data }: NodeProps) {
               flexShrink: 0, fontSize: 10, fontWeight: 700, color: '#16a34a',
               background: '#dcfce7', borderRadius: 4, padding: '1px 6px',
               marginTop: 1, whiteSpace: 'nowrap',
-            }}>{l.speaker}</span>
+            }}>{CHARACTERS[l.speaker]?.name ?? l.speaker}</span>
             <span style={{ color: '#334155', fontSize: 12, lineHeight: 1.5,
               overflow: 'hidden', display: '-webkit-box',
               WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const,
@@ -138,8 +154,8 @@ export function ChoiceNode({ data }: NodeProps) {
 export function GotoNode({ data }: NodeProps) {
   const d = data as GotoNodeData;
   const labels: Record<string, string> = {
-    ch1: '→ 第一章', ch2: '→ 第二章', ch3: '→ 第三章', ch4: '→ 第四章',
-    clue: '→ 线索调查', trust: '→ 托付选择', ending: '→ 结局',
+    ch1: '→ 第一章', ch2: '→ 第二章', ch3: '→ 第三章', ch4: '→ 第四章', ch5: '→ 第五章',
+    trust: '→ 托付选择', ending: '→ 结局',
   };
   return (
     <div>
@@ -156,14 +172,19 @@ export function GotoNode({ data }: NodeProps) {
 // ── 结局节点 ─────────────────────────────────────────────────────
 export function EndingNode({ data }: NodeProps) {
   const d = data as EndingNodeData;
-  const c = { ash: '#ef4444', sealed: '#f59e0b', living: '#22c55e' }[d.endingId] ?? '#94a3b8';
+  const c = endingColors[d.endingId] ?? tok.ending.border;
   return (
     <div>
       <div style={tagDiv(c)}>🏮 结局</div>
       <div style={card(c)}>
         <Handle type="target" position={Position.Left} style={hStyle(c)} />
         <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: 2 }}>{d.name}</div>
-        <div style={{ fontSize: 10, color: '#94a3b8' }}>{d.rank}</div>
+        <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>{d.rank}</div>
+        <div style={{
+          fontSize: 11, color: '#64748b', lineHeight: 1.5,
+          overflow: 'hidden', display: '-webkit-box',
+          WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const,
+        }}>{d.body}</div>
         <Handle type="source" position={Position.Right} style={hStyle(c)} />
       </div>
     </div>

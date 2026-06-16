@@ -3,6 +3,11 @@ import { useEffect, useState } from "react";
 const DIALOGUE_AUDIO_BASE = "/audio/levels/1/dialogue";
 const MUTE_KEY = "loremender:huatuo:muted";
 
+// iOS Safari requires HTMLAudioElement to be constructed inside a user-gesture handler.
+// We create one during primeAudio() (fired on the very first tap) and reuse it for the
+// first playDialogueAudio() call — this sidesteps the "play() not allowed" block.
+const SILENT_WAV = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+
 /** Path to the pre-generated narration/dialogue audio for a given chapter + beat index. */
 export function dialogueAudioPath(chapter: number, beatIdx: number): string {
   return `${DIALOGUE_AUDIO_BASE}/ch${chapter}/${beatIdx}.mp3`;
@@ -46,13 +51,19 @@ export function useAudioMuted(): boolean {
 
 let currentAudio: HTMLAudioElement | null = null;
 let currentSrc: string | null = null;
+let _dialogueUnlocked: HTMLAudioElement | null = null;
 
 /** Plays the dialogue audio at `src`, replacing any currently-playing line. No-op while muted. */
 export function playDialogueAudio(src: string, onEnded?: () => void, rate = 1.0): void {
   if (isAudioMuted()) return;
   if (currentSrc === src && currentAudio && !currentAudio.paused) return;
   stopDialogueAudio();
-  const audio = new Audio(src);
+  // Reuse the pre-unlocked element from primeAudio() if available — avoids iOS autoplay block.
+  const audio = _dialogueUnlocked ?? new Audio();
+  _dialogueUnlocked = null;
+  audio.src = src;
+  audio.currentTime = 0;
+  audio.volume = 1;
   audio.playbackRate = rate;
   if (onEnded) audio.addEventListener("ended", onEnded, { once: true });
   audio.play().catch(() => {});
@@ -67,6 +78,12 @@ export function stopDialogueAudio(): void {
   }
   currentAudio = null;
   currentSrc = null;
+}
+
+export function resumeDialogueIfPaused(): void {
+  if (currentAudio && currentAudio.paused && !isAudioMuted()) {
+    currentAudio.play().catch(() => {});
+  }
 }
 
 const SFX_BASE = "/audio/levels/1/sfx";
@@ -105,6 +122,12 @@ export function primeAudio(): void {
   _primed = true;
   const ctx = getAudioContext();
   if (ctx.state === "suspended") ctx.resume().catch(() => {});
+  // Pre-unlock an HTMLAudioElement inside this user-gesture so iOS allows playback later.
+  if (!_dialogueUnlocked) {
+    const a = new Audio(SILENT_WAV);
+    a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+    _dialogueUnlocked = a;
+  }
   SFX_NAMES.forEach(async (name) => {
     try {
       const res = await fetch(`${SFX_BASE}/${name}.wav`);

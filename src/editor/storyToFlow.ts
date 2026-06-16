@@ -64,6 +64,8 @@ export type StoryNodeData =
   | EndingNodeData;
 
 const Y_GAP = 130;
+const X_GAP = 520;
+const CHAPTER_ORDER = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'];
 
 /** 把原始 beats 数组中连续的 speaker beats 合并为块 */
 function mergeBeats(beats: Beat[]): Array<{ beat: Beat; origIndex: number }[]> {
@@ -98,8 +100,9 @@ export function storyToFlow(
     ? Object.entries(story).filter(([id]) => id === filterChapterId)
     : Object.entries(story);
 
-  entries.forEach(([chapterId, chapter]) => {
-    const baseX = 100;
+  entries.forEach(([chapterId, chapter], chIndex) => {
+    const chapterPos = CHAPTER_ORDER.indexOf(chapterId);
+    const baseX = 100 + (chapterPos >= 0 ? chapterPos : chIndex) * X_GAP;
 
     const chapterNodeId = `ch_${chapterId}`;
     nodes.push({
@@ -169,13 +172,14 @@ export function flowToStory(
 ): Record<string, StoryChapter> {
   const story: Record<string, StoryChapter> = {};
 
-  const chapterNodes = nodes.filter(n => n.data.kind === 'chapter') as Node<ChapterNodeData>[];
+  const chapterNodes = (nodes.filter(n => n.data.kind === 'chapter') as Node<ChapterNodeData>[])
+    .sort((a, b) => a.position.x - b.position.x);
 
   chapterNodes.forEach(chNode => {
     const chapterId = chNode.data.chapterId;
     const beatNodes = nodes
       .filter(n => n.data.kind !== 'chapter' && n.data.kind !== 'ending' && (n.data as any).chapterId === chapterId)
-      .sort((a, b) => ((a.data as any).beatIndex ?? 0) - ((b.data as any).beatIndex ?? 0));
+      .sort((a, b) => a.position.y - b.position.y);
 
     const beats: Beat[] = [];
     beatNodes.forEach(n => {
@@ -194,7 +198,7 @@ export function flowToStory(
     story[chapterId] = {
       scene: chNode.data.scene as any,
       title: chNode.data.title,
-      fullTitle: chNode.data.title,
+      fullTitle: (chNode.data as any).fullTitle ?? chNode.data.title,
       beats,
     };
   });
@@ -216,6 +220,7 @@ export function storyToTypeScript(story: Record<string, StoryChapter>): string {
     lines.push(`  ${chapterId}: {`);
     lines.push(`    scene: "${chapter.scene}",`);
     lines.push(`    title: "${chapter.title}",`);
+    lines.push(`    fullTitle: "${chapter.fullTitle ?? chapter.title}",`);
     lines.push(`    beats: [`);
     chapter.beats.forEach(beat => {
       if ('narration' in beat && beat.narration) {
@@ -243,6 +248,12 @@ export function storyToTypeScript(story: Record<string, StoryChapter>): string {
         lines.push(`      { gotoTrust: true },`);
       } else if ('gotoEnding' in beat) {
         lines.push(`      { gotoEnding: true },`);
+      } else if ('unlockEnding' in beat) {
+        const parts = [`unlockEnding: "${beat.unlockEnding}"`];
+        if (beat.generatePoster) parts.push(`generatePoster: true`);
+        lines.push(`      { ${parts.join(', ')} },`);
+      } else if ('game' in beat) {
+        lines.push(`      { game: ${JSON.stringify(beat.game)} },`);
       }
     });
     lines.push(`    ],`);

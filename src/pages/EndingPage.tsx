@@ -146,12 +146,19 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
     };
   }, [showVideo, e?.body]);
 
-  // React doesn't reliably sync `muted`/`loop` DOM properties via JSX props — drive directly.
-  // loop=true when narration is present (video plays until narration finishes).
+  // Tracks whether narration audio is active — read by onTimeUpdate and onEnded closures.
+  // We use a ref (not state) so the video event handlers always see the current value
+  // without needing to be recreated on every isMuted change.
+  const hasNarrationRef = useRef(false);
+  useEffect(() => { hasNarrationRef.current = !!ENDING_NARRATION[endId] && !isMuted; });
+
+  // React doesn't reliably sync `muted` DOM property via JSX props — drive directly.
+  // We intentionally do NOT set loop=true here: iOS Safari still fires the `ended` event
+  // even on looping videos, which interrupts the audio session. Instead we seek back
+  // to 0 in onTimeUpdate (see below) and replay in onEnded when narration is active.
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = isMuted;
-      videoRef.current.loop = !!ENDING_NARRATION[endId] && !isMuted;
     }
   }, [isMuted, showVideo]);
 
@@ -237,7 +244,24 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             playsInline
             muted={isMuted}
             onCanPlay={() => setVideoReady(true)}
-            onEnded={() => { videoEndedRef.current = true; checkAndDismissRef.current(); }}
+            onTimeUpdate={() => {
+              // Seek back before the natural end to prevent iOS Safari from firing `ended`
+              // on a "looping" video — that event interrupts the audio session on iOS.
+              if (!hasNarrationRef.current) return;
+              const vid = videoRef.current;
+              if (vid?.duration && vid.currentTime >= vid.duration - 0.5) {
+                vid.currentTime = 0;
+              }
+            }}
+            onEnded={() => {
+              if (hasNarrationRef.current) {
+                // Narration still playing — replay video manually (loop=true is unsafe on iOS).
+                if (videoRef.current) videoRef.current.play().catch(() => {});
+                return;
+              }
+              videoEndedRef.current = true;
+              checkAndDismissRef.current();
+            }}
             style={{
               position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover",
               opacity: videoReady ? 1 : 0,
