@@ -1,6 +1,6 @@
 import type { GameState } from "../data/types";
 
-export const STORAGE_KEY = "loremender:huatuo:v3";
+export const STORAGE_KEY = "loremender:huatuo:v4";
 
 export function defaultState(): GameState {
   return {
@@ -25,6 +25,7 @@ export function defaultState(): GameState {
     wangji_trust: 0,
     xuanyin_trust: 0,
     classifyRetry: null,
+    boxCompartment: null,
     firstChoice: null,
     ch2: null,
     ch3: null,
@@ -46,12 +47,13 @@ export function normalizeState(value: Partial<GameState> | null | undefined): Ga
   merged.wangji_trust = Number(merged.wangji_trust || 0);
   merged.xuanyin_trust = Number(merged.xuanyin_trust || 0);
   merged.classifyRetry = merged.classifyRetry ?? null;
+  merged.boxCompartment = merged.boxCompartment ?? null;
   return merged;
 }
 
 export function loadState(): GameState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("loremender:huatuo:v2");
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
     return normalizeState(JSON.parse(raw));
   } catch {
@@ -67,7 +69,7 @@ export function saveState(s: GameState): void {
   }
 }
 
-const BEAT_KEY = "loremender:huatuo:beat:v3";
+const BEAT_KEY = "loremender:huatuo:beat:v4";
 
 export function saveBeat(chapter: number, idx: number): void {
   try {

@@ -12,7 +12,11 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "huatuo", line: "醒了？过来。那些竹筒，散了。" },
       { speaker: "aj", line: "师父……这写的是《青囊经》？" },
       { speaker: "huatuo", line: "是一生所学，也只是一点残术。今夜之后，它能不能留下，我不知道。" },
-      { narration: true, line: "华佗没有把书直接交给你，只把混在一处的竹简推到牢门边。" },
+      { speaker: "aj", line: "我带它走。只要我还活着，就不会让它落进曹府手里。" },
+      { speaker: "huatuo", line: "不。你要记住，守住一本书，不等于守住医道。" },
+      { speaker: "aj", line: "那我该怎么做？" },
+      { speaker: "huatuo", line: "天亮前，找到一条不会断的路。有人会把经验藏在手里，有人会把文字锁进府库，也有人会把救命法子唱给百姓听。你要亲眼看过，才能替青囊决定归处。" },
+      { narration: true, line: "华佗没有把书直接交给你，只把混在一处的竹简推到牢门边。竹简上有病症、医理、药方，也有被血迹浸花的字。" },
       {
         game: {
           id: "bamboo_puzzle",
@@ -24,8 +28,16 @@ export const STORY: Record<string, StoryChapter> = {
           reward: { item: "wooden_box", skill: "medical_skill" },
         },
       },
+      // ── 小游戏高完成度：华佗额外提示 ──
+      {
+        ifKey: "medical_skill",
+        ifVal: "2",
+        beats: [
+          { speaker: "huatuo", line: "你拼对了每一片。记住——医术不是给最尊贵的人，而是给最需要的人。" },
+        ],
+      },
       { narration: true, line: "三幅竹简图各归其位。断裂的绳编下，露出一个旧木盒。" },
-      { speaker: "huatuo", line: "书能拼起，只是第一步。若要带走残术，还得打开它。" },
+      { speaker: "huatuo", line: "书能拼起，只是第一步。曹府会搜你的身，若要带走残术，还得让它先从他们眼前消失。" },
       { narration: true, line: "木盒正面有一枚钥匙孔，孔边刻着药囊纹。钥匙藏在盒中机关最深处。" },
       {
         game: {
@@ -39,10 +51,30 @@ export const STORY: Record<string, StoryChapter> = {
           reward: { item: "qingsang_fragment", skill: "asked_heart" },
         },
       },
-      { narration: true, line: '你获得“青囊残术”。\n它不是完整医书，而是接过医道的资格。' },
+      { narration: true, line: "钥匙入孔，木盒暗格弹开。\n你获得「青囊残术」。它不是完整医书，而是接过医道的资格。" },
       { speaker: "huatuo", line: "我不能把一生都塞进你一夜里。但你若记住为何救人，青囊便已有了归处。" },
-      { narration: true, line: "牢门外传来铁链拖地声。狱卒传令：曹府要提审华佗徒弟，即刻押走。" },
-      { narration: true, line: "阿吉不是自由离开大牢，而是在押解去曹府的途中，经过混乱的许昌街市。" },
+      { narration: true, line: "牢门外传来铁链拖地声。" },
+      { speaker: "soldier", line: "小郎中，起来。魏王要见你。" },
+      { speaker: "huatuo", line: "阿吉，别急着相信谁，也别急着恨谁。你一路看见的，都会变成答案。" },
+      // ── 搜身演出（依木盒夹层结果分支）──
+      {
+        ifKey: "boxCompartment",
+        ifVal: "found",
+        beats: [
+          { narration: true, line: "阿吉被拖出牢门。搜身时，木盒夹层擦过狱卒的手指，里面的残卷没有发出一点声响。" },
+        ],
+      },
+      {
+        ifKey: "boxCompartment",
+        ifVal: "missed",
+        beats: [
+          { narration: true, line: "阿吉被拖出牢门。搜身时，狱卒的手在木盒上停了一下——你的心提到嗓子眼。所幸他只当是寻常旧物，挥手放过。" },
+        ],
+      },
+      { narration: true, line: "阿吉第一次明白：传承不是“把书带走”这么简单。真正的问题是——书离开牢狱之后，要落到哪里，才不会再次死去？" },
+      // ── 转场伏笔：押解经街市，听见半句残歌（第四章回收）──
+      { narration: true, line: "押解的队伍向曹府去，途中要穿过刚刚天亮的许昌街市。人群嘈杂，阿吉忽然听见有人哼唱半句残缺的医诀——" },
+      { narration: true, line: '“头热惊，手足冷，莫乱灌，先……”\n歌声断在最要紧处，再没有下文。' },
       { gotoChapter: "ch2" },
     ],
   },
@@ -58,8 +90,12 @@ export const STORY: Record<string, StoryChapter> = {
     fullTitle: "第二章 · 押解街市 · 陈伯与民间验方",
     beats: [
       { narration: true, line: "天色刚亮，阿吉被狱卒押往曹府。街市因疫病和征发而混乱，药摊被翻倒，药包散落一地。" },
+      { narration: true, line: "人群中，一个孩子倒在母亲怀里，额头滚烫，手脚却冷得发青。" },
+      { speaker: "aj", line: "他像是高热惊厥，不能再拖。" },
+      { speaker: "soldier", line: "你自身难保，还想管别人？让开，曹府提审要紧！" },
+      { narration: true, line: "押解队伍被人群堵住。一个花白头发的老人蹲在翻倒的药摊旁，把散落的药渣一撮撮捡回粗布口袋。" },
       { speaker: "chenbo", line: "小郎中，别看了。这些草根不值钱，真到了断气时候，贵药未必比它们快。" },
-      { narration: true, line: "说话的是个花白头发的老人，蹲在翻倒的药摊旁，正把散落的药渣一撮撮捡回粗布口袋。他动作极稳，仿佛这兵荒马乱的街市与他无关。" },
+      { narration: true, line: "他动作极稳，仿佛这兵荒马乱的街市与他无关。" },
       { speaker: "aj", line: "老人家，你是大夫？" },
       { speaker: "chenbo", line: "不算。在药市摸了三十年，乡亲们信我的手。至于名号——没人在意。" },
       { narration: true, line: "他说着，顺手捏起一小撮药渣闻了闻，又摇了摇头扔到一边。那眼神像在辨认老熟人。" },
@@ -129,7 +165,12 @@ export const STORY: Record<string, StoryChapter> = {
         },
       },
       { speaker: "chenbo", line: "原来写下来，不是把饭碗交出去，是把救命的路留给旁人。" },
-      { narration: true, line: "陈伯把整理好的药签收进怀中，又郑重地还给你一枚残签。" },
+      { narration: true, line: "孩子的呼吸慢慢平稳下来。人群散开，押解队伍重新上路。陈伯把整理好的残签郑重塞回你手中。" },
+      { speaker: "chenbo", line: "曹府今日要审几份病案。我听药库的人说，案上有军士、孩童、老仆。小郎中，进了那扇门，别让他们按身份给人排命。" },
+      { narration: true, line: "阿吉握着残签，第一次明白：医术若只藏在手里，会随人老去；可若只写在纸上，也未必到得了穷人手里。" },
+      // ── ch2→ch3 转场：哼唱断歌，狱卒喝止（连接第四章伏笔）──
+      { narration: true, line: "押解队伍继续前行。将到曹府门前，墙角忽然有人低声哼唱起街市里断掉的那句医诀。" },
+      { speaker: "soldier", line: "不许唱！府中正在查这些乱传的华佗歌。" },
       { gotoChapter: "ch3" },
     ],
   },
@@ -144,7 +185,17 @@ export const STORY: Record<string, StoryChapter> = {
     title: "曹府问审",
     fullTitle: "第三章 · 曹府问审 · 王济与权力边界",
     beats: [
-      { narration: true, line: "阿吉被押入曹府。朱漆大堂，青铜灯树，三份病案压在案上：军士、孩童、老仆。" },
+      // ── 道具浮现转场：陈伯药签 ──
+      { narration: true, line: "踏入曹府前，怀中那枚陈伯的残签硌了一下。阿吉低头看它——这张残签上，也有一个高热惊厥的孩子。" },
+      // ── 木盒未藏好时的紧张演出 ──
+      {
+        ifKey: "boxCompartment",
+        ifVal: "missed",
+        beats: [
+          { narration: true, line: "他又摸了摸贴身的木盒。方才城门搜身那一下，青囊险些被搜出，此刻盒身还带着汗。" },
+        ],
+      },
+      { narration: true, line: "阿吉被押入曹府。朱漆大堂，青铜灯树，三份病案压在案上：军士、孩童、老仆。案旁还放着一只空药匣——显然有人已准备搜走华佗遗物。" },
       { speaker: "wangji", line: "你就是华佗的小徒弟？坐。不用怕——至少在审完这些病案之前。" },
       { narration: true, line: "说话的人穿着干净的文士袍，手指修长，案上笔墨摆放得一丝不苟。王济，曹府幕僚，掌管文书与医案归档。" },
       { speaker: "wangji", line: "一卷残术藏在你衣内，只能救一人。若入府库，或可救一城。" },
@@ -207,12 +258,24 @@ export const STORY: Record<string, StoryChapter> = {
           kind: "caseTriage",
           unlockItem: "case_record",
           nextBeatUnlocked: "病案顺序被重新排定。",
-          context: "三份病案，不问身份，只看谁更需要这双手。用青囊残术，重排轻重。",
+          context: "三份病案，不问身份，只看谁更需要这双手。陈伯的药签或许能帮你——用青囊残术，重排轻重。",
           reward: { item: "case_record", skill: "wangji_trust" },
         },
       },
+      { speaker: "wangji", line: "你没有按军功、年龄、身份排序。" },
+      { speaker: "aj", line: "病不会因为谁穿甲、谁穿布衣，就先退一步。" },
       { speaker: "wangji", line: "制度若不先受医德约束，确实会把医术变成另一道门槛。" },
-      { narration: true, line: "你带走了华佗留下的问诊录。字迹很轻，却比府中铜灯更亮。" },
+      { narration: true, line: "王济合上案卷，在归档页上写下一行小字：医术当以济世为先，不以权势为序。" },
+      { speaker: "wangji", line: "我可以把残术收进府库，也可以帮你离开。" },
+      { speaker: "aj", line: "你为什么帮我？" },
+      { speaker: "wangji", line: "因为我看见了你怎么给三个人排命。若青囊只能在曹府和你之间选，我宁愿让它再多走一段路。" },
+      // ── 假文书 + 天亮倒计时 ──
+      { narration: true, line: "王济递来一份文书，朱印未干。上面写着：华佗残卷，已于问审后焚毁归档。" },
+      { speaker: "wangji", line: "这份文书只能拖到天亮。天亮后，库房会点验。到那时，你若还没想好青囊归处，谁也救不了你。" },
+      { narration: true, line: "阿吉走出曹府时，怀里多了一份问诊录。那不是答案，而是另一个问题：若医书必须靠权力活下去，它还会不会记得自己原本要救谁？" },
+      // ── ch3→ch4 转场：唱错版医诀（回收伏笔，直引乐坊）──
+      { narration: true, line: "他从曹府侧门离开。巷口又传来白日里那半句歌诀——可这一次，词唱错了：" },
+      { narration: true, line: '“头热惊，手足冷，猛灌汤，压喉声……”\n阿吉猛地停住脚步。他知道，这一句若传开，会害人。' },
       { gotoChapter: "ch4" },
     ],
   },
@@ -227,14 +290,13 @@ export const STORY: Record<string, StoryChapter> = {
     title: "民间乐坊",
     fullTitle: "第四章 · 民间乐坊 · 玄音与知识传播",
     beats: [
-      { narration: true, line: "离开曹府后，市巷深处有人唱起残缺医理。曲调轻快，词句却断在最要紧处。" },
-      { speaker: "xuanyin", line: "字会被烧，简会被夺，曲子藏在人嘴里——谁也抢不走。" },
-      { narration: true, line: "唱歌的是个年轻女子，坐在乐坊门槛上，手里拨着一把旧琵琶。她唱的不是风月，是药名和脉象。" },
-      { speaker: "aj", line: "你在唱医理？" },
-      { speaker: "xuanyin", line: "对。上个月有个游方郎中路过，唱了几段治小儿惊风的方子。我记了下来，但词不全——你看，到这一句就断了。" },
-      { speaker: "aj", line: "若唱错一句，救人的方子也会害人。" },
-      { speaker: "xuanyin", line: "所以我等一个懂医理的人，把散句补齐。你身上有药味——你是学医的？" },
-      { narration: true, line: "她摊开几页残纸，上面有药名、脉象和不完整的韵脚。你忽然想起牢中竹简的顺序。" },
+      { narration: true, line: "循着歌声，阿吉推开乐坊半掩的门。唱到“猛灌汤”那一句时，他再也忍不住。" },
+      { speaker: "aj", line: "这句不能这么唱。高热惊厥不能乱灌汤，孩子可能被呛死。" },
+      { narration: true, line: "门槛上坐着个年轻女子，手里拨着一把旧琵琶。她唱的不是风月，是药名、脉象和民间救急的法子。" },
+      { speaker: "xuanyin", line: "你听得懂？" },
+      { speaker: "aj", line: "我学过医。方才那半句，是治小儿惊风的，可后半截唱反了。" },
+      { speaker: "xuanyin", line: "所以我一直在等一个懂医理的人。字会被烧，简会被夺，曲子藏在人嘴里，谁也抢不走。可曲子若错了，也会把错带到每一张嘴里。" },
+      { narration: true, line: "她摊开几页残纸，上面有药名、脉象和不完整的韵脚。阿吉忽然想起牢中竹简的顺序，也想起曹府正在追查这些“华佗歌”。" },
       {
         choices: [
           { label: "「歌诀传得广，但万一传错了呢？」", set: { ch4: "worry_errors" } },
@@ -284,7 +346,7 @@ export const STORY: Record<string, StoryChapter> = {
         ],
       },
       // ---- 收束 ----
-      { narration: true, line: "她摊开几页残纸，上面有药名、脉象和不完整的韵脚。" },
+      { narration: true, line: "玄音把残纸铺在案上，纸边压着一枚琵琶拨片。巷外远处，传来曹府巡卒的脚步声。" },
       {
         game: {
           id: "song_formula",
@@ -297,7 +359,15 @@ export const STORY: Record<string, StoryChapter> = {
         },
       },
       { speaker: "xuanyin", line: "能传开的，未必都该乱传。基础救急可入歌，复杂处方仍要交给医者。" },
-      { narration: true, line: "歌声从巷尾散开。你第一次觉得，纸以外也能有书。" },
+      { narration: true, line: "她重新拨弦。歌声从巷尾散开，这一次没有断在最要紧处，也没有越过不该越过的边界。" },
+      { narration: true, line: "王济假文书上的朱印在阿吉怀中被汗浸湿。天快亮了——文书天亮失效，库房一旦点验，谁也救不了你。" },
+      { narration: true, line: "假文书撑不到天亮。他必须在天亮前赶到旧祠。" },
+      { speaker: "xuanyin", line: "你要去哪里？" },
+      { speaker: "aj", line: "城外旧祠。师父以前在那里义诊。若青囊真有归处，我该在那里想明白。" },
+      { narration: true, line: "原来医术不是传得越远越好，而是要知道哪些能传，哪些必须停在医者手中。" },
+      // ── ch4→ch5 转场：巡卒搜查、玄音引开、带三件信物赶往旧祠 ──
+      { narration: true, line: "巷外的脚步声逼近——巡卒开始沿街搜查“唱华佗歌的人”。玄音拨响琵琶，引开了一部分巡卒。" },
+      { narration: true, line: "阿吉带着青囊残术、陈伯药签、曹府问诊录和玄音歌页，赶往城外旧祠。天亮之前，他必须作出选择。" },
       { gotoChapter: "ch5" },
     ],
   },
@@ -307,9 +377,13 @@ export const STORY: Record<string, StoryChapter> = {
     title: "青囊归处",
     fullTitle: "第五章 · 青囊归处 · 选择传承人",
     beats: [
-      { narration: true, line: "夜深后，阿吉带着青囊残术、药市残签、曹府病案和歌诀残页来到城外旧祠。" },
+      { narration: true, line: "夜深，阿吉来到城外旧祠。荒草没阶，墙上还留着当年义诊时贴过药方的痕迹。" },
+      { narration: true, line: "案前摆着三件信物：陈伯的药签、王济的问诊录、玄音的歌页。木盒中，青囊残术微微发亮。远处城门鼓声传来，天快亮了。" },
+      { speaker: "aj", line: "师父，我看过了。每一条路都能救人，也都会伤人。" },
+      { narration: true, line: "风穿过旧祠破窗，像牢中那盏将熄未熄的烛火。阿吉仿佛又听见华佗的声音。" },
       { speaker: "huatuo", line: "传承不是把书交给最聪明的人，而是把救人的方法交给最不容易断绝的路。" },
-      { narration: true, line: "三位候选人的信物摆在案前：陈伯的药签、王济的病案、玄音的歌页。" },
+      { speaker: "aj", line: "可没有一条路不会断。" },
+      { speaker: "huatuo", line: "所以这不是求一个完美答案。是你愿意替哪一种代价负责。" },
       { gotoTrust: true },
       { narration: true, line: "你已经做出选择。青囊残术在掌心微微发亮，像从千年后的某处传来回应。" },
       { speaker: "huatuo", line: "去吧，典故修补者。\n让后人知道：这世上曾有人想把医道留给人间。" },

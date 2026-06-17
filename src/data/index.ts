@@ -10,6 +10,7 @@ export {
   CLUES,
   ENDINGS,
   resolveEnding,
+  getEndingBody,
 } from "./dungeons/huatuo";
 
 export {

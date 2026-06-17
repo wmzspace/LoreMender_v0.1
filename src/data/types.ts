@@ -154,6 +154,9 @@ export interface GameState {
 
   classifyRetry: boolean | null; // true=分类后继续修正, false=直接退出, null=未决定
 
+  // 木盒夹层：困难难度高完成度="found"(藏卷成功)，其余完成="missed"(险些被搜出)
+  boxCompartment?: "found" | "missed" | null;
+
   firstChoice?: string | null;
   ch2?: string | null;
   ch3?: string | null;

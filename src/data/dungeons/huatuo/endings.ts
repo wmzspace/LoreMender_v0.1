@@ -6,8 +6,8 @@ export const ENDINGS: Record<string, Ending> = {
     name: "医者人间",
     rank: "典故修补",
     rankColor: "#2c6657",
-    epitaph: "书未全存，医道却入了人间。",
-    body: "你把残卷托给陈伯。药方没有被锁进高阁，而是在街巷之间一遍遍誊写、背诵、校正。许多内容终会散失，可有些用法变成乡间口耳相传的救急法门。华佗闭眼前，终于听见牢外有人仍在问药。",
+    epitaph: "书没有留下，医道留下了。",
+    body: "你把《青囊经》交给了陈伯。\n他不识字，却把方子一条条背下来，教给街市的百姓。\n千年后，那些方子化作无数药方，流散人间。\n华佗在牢中闭上了眼睛。嘴角，有一丝笑意。",
     glyph: "shoots",
   },
   xuanyin_fallback: {
@@ -15,8 +15,8 @@ export const ENDINGS: Record<string, Ending> = {
     name: "残卷余音",
     rank: "遗憾半修",
     rankColor: "#8f7846",
-    epitaph: "歌诀传得远，禁忌也一并留下。",
-    body: "你把残卷托给玄音。他把难懂的医理改作歌诀，带向乐坊与山门。后世未必能得到全卷，却能从曲调里记住该救什么、又该避开什么。残术不再完整，但没有完全失声。",
+    epitaph: "只有只言片语，流传于世。",
+    body: "你把《青囊经》交给了玄音。\n她带着医书入山，藏于道观深处。\n数百年后，战火烧毁山门，残卷不知所终。\n只有只言片语，流传于世。",
     glyph: "wall",
   },
   wangji_trap: {
@@ -24,8 +24,9 @@ export const ENDINGS: Record<string, Ending> = {
     name: "重锁深阁",
     rank: "遗憾未竟",
     rankColor: "#6e1f18",
-    epitaph: "卷入权门的书，终究少见天光。",
-    body: "你把残卷托给王济。他确有能力保下一部分内容，也确实让它进入曹府医案。可门第与功名会重新筛选文字，许多不合时宜的提醒被删去，许多民间经验被轻看。书活了下来，却又被锁住。",
+    epitaph: "大部分内容，被锁进曹氏秘库，再未见光。",
+    // 高信任版本（getEndingBody 会根据 wangji_trust 动态选择）
+    body: "你把《青囊经》交给了王济。\n他将医书献给曹操。曹营的医官抄录了部分方子。\n但大部分内容，被锁进曹氏秘库，再未见光。\n多年以后，有人从府库残页中读见华佗之名，却再难听见街市上的咳声与哭声。",
     glyph: "wall",
   },
   burn_ending: {
@@ -33,19 +34,41 @@ export const ENDINGS: Record<string, Ending> = {
     name: "青囊焚尽",
     rank: "遗憾焚绝",
     rankColor: "#b23a2c",
-    epitaph: "火光保住了秘密，也烧断了去路。",
-    body: "你点燃残卷。竹简在火里卷曲、发黑、化灰。无人能借它作恶，也无人能据它救人。华佗没有责怪你，只望着窗外很久。此后千年，人们只记得那本应当存在的书。",
+    epitaph: "外科之术，从此失传。",
+    body: "你拿起蜡烛，点燃了《青囊经》。\n竹简在火光中卷曲、变黑、化为灰烬。\n华佗没有看你。他望着窗外，很久很久。\n外科之术，从此失传。",
     glyph: "fire",
   },
 };
 
 export function resolveEnding(state: GameState): EndingId {
   const highCount = Object.values(state.gameResults ?? {}).filter(r => r.best === "high").length;
+  // 病案未按身份排序：孩童排首位即可（high=完全正确, mid=前两位正确，均以孩童领先）
+  const caseRank = state.gameResults?.["case_triage"]?.best;
+  const caseTriageOk = caseRank === "high" || caseRank === "mid";
 
-  if (state.finalChoice === "chenbo" && state.chenbo_trust >= 1 && highCount >= 2) return "chenbo_true";
+  // 真结局：托付陈伯 + 陈伯信任高(>=2) + 至少两个小游戏高完成度 + 病案未按身份排序
+  if (
+    state.finalChoice === "chenbo" &&
+    state.chenbo_trust >= 2 &&
+    highCount >= 2 &&
+    caseTriageOk
+  ) return "chenbo_true";
   if (state.finalChoice === "chenbo") return "xuanyin_fallback";
   if (state.finalChoice === "xuanyin") return "xuanyin_fallback";
   if (state.finalChoice === "wangji") return "wangji_trap";
   if (state.finalChoice === "burn") return "burn_ending";
   return "xuanyin_fallback";
+}
+
+/** 王济结局低信任版本 */
+const WANGJI_BODY_LOW = "你把《青囊经》交给了王济。\n他将医书献给曹操。曹营的医官抄录了部分方子。\n但大部分内容，被锁进曹氏秘库，再未见光。\n华佗在牢中听闻，沉默了很久。";
+
+/** 根据信任值动态返回结局正文；王济结局高信任用 ENDINGS 中的默认 body，低信任用遗憾版本 */
+export function getEndingBody(state: GameState, endId: EndingId): string {
+  if (endId === "wangji_trap") {
+    return (state.wangji_trust ?? 0) >= 2
+      ? ENDINGS.wangji_trap.body
+      : WANGJI_BODY_LOW;
+  }
+  return ENDINGS[endId]?.body ?? "";
 }

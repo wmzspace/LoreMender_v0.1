@@ -792,13 +792,14 @@ function HerbMemory({ finish }: { finish: (rank: GameResultRank) => void }) {
 }
 
 function SimpleOrderGame({
-  intro, items, correct, finishLabel, finish,
+  intro, items, correct, finishLabel, finish, hints,
 }: {
   intro: string;
   items: string[];
   correct: string[];
   finishLabel: string;
   finish: (rank: GameResultRank) => void;
+  hints?: Record<string, string>;
 }) {
   const [pool, setPool] = useState(items);
   const [answer, setAnswer] = useState<string[]>([]);
@@ -823,7 +824,22 @@ function SimpleOrderGame({
         <div>{answer.join(" → ") || "尚未选择"}</div>
       </div>
       <div style={{ display: "grid", gap: 8 }}>
-        {pool.map(item => <button key={item} className="choice press" onClick={() => choose(item)}><span className="choice-label">{item}</span></button>)}
+        {pool.map(item => (
+          <div key={item}>
+            <button className="choice press" onClick={() => choose(item)} style={{ width: "100%" }}>
+              <span className="choice-label">{item}</span>
+            </button>
+            {hints?.[item] && (
+              <div style={{
+                marginTop: 4, padding: "4px 10px",
+                fontSize: 11, fontStyle: "italic",
+                color: "rgba(200,168,88,0.85)",
+                letterSpacing: "0.03em", lineHeight: 1.6,
+                borderLeft: "2px solid rgba(200,168,88,0.5)",
+              }}>{hints[item]}</div>
+            )}
+          </div>
+        ))}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16 }}>
         <button className="btn-ghost press" onClick={reset}>重排</button>
@@ -856,10 +872,17 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
   const [toast, setToast] = useState("");
   const [localClassifyRetry, setLocalClassifyRetry] = useState<boolean | null>(state.classifyRetry);
   const [feedback, setFeedback] = useState<GameResultRank | null>(null);
-  const [retryKey, setRetryKey] = useState(0);
+  const [retryKey] = useState(0);
+
+  // 华容道难度：classifyRetry=true(继续修正) → 简单, classifyRetry=false(退出) → 中等
+  const woodenBoxHard = localClassifyRetry === false;
 
   const finish = (rank: GameResultRank) => {
-    const ns = applyResult(state, game, rank);
+    let ns = applyResult(state, game, rank);
+    // 木盒夹层：困难难度高完成度=藏卷成功(found)，其余完成=险些被搜出(missed)
+    if (game.kind === "woodenBox") {
+      ns = { ...ns, boxCompartment: woodenBoxHard && rank === "high" ? "found" : "missed" };
+    }
     setState(ns);
     saveState(ns);
     setFeedback(rank);
@@ -874,9 +897,7 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
   };
 
   const locked = game.requiredItem && !state.items.includes(game.requiredItem);
-
-  // 华容道难度：classifyRetry=true(继续修正) → 简单, classifyRetry=false(退出) → 中等
-  const woodenBoxHard = localClassifyRetry === false;
+  const gameCompleted = state.gameResults[game.id]?.completed;
 
   let body: React.ReactNode;
   if (locked) {
@@ -896,6 +917,11 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
         correct={["孩童：高热惊厥，需立刻处置", "军士：外伤失血，尚可止血", "老仆：久咳体虚，可稍后调养"]}
         finishLabel="提交病案"
         finish={finish}
+        hints={
+          state.gameResults["herb_memory"]?.best === "high"
+            ? { "孩童：高热惊厥，需立刻处置": "陈伯药签：此症先固住阳气，切忌猛灌汤药——街市上那个孩子，也是这样救回来的。" }
+            : undefined
+        }
       />
     );
   } else {
@@ -915,6 +941,33 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
       )}
     >
       {body}
+      {!locked && !gameCompleted && (
+        <div style={{
+          marginTop: 20, padding: "10px 0",
+          borderTop: "1px solid rgba(228,224,208,0.12)",
+          textAlign: "center",
+        }}>
+          <div style={{
+            fontSize: 9, color: "rgba(228,224,208,0.3)",
+            letterSpacing: "0.2em", marginBottom: 8,
+          }}>开 发 者 跳 过</div>
+          <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+            {(["high", "mid", "low"] as GameResultRank[]).map(r => (
+              <button
+                key={r}
+                className="btn-ghost press"
+                onClick={() => finish(r)}
+                style={{
+                  minWidth: 56, padding: "6px 14px",
+                  fontSize: 11, letterSpacing: "0.12em",
+                  borderColor: `${RANK_COLOR[r]}40`,
+                  color: RANK_COLOR[r],
+                }}
+              >{RANK_LABEL[r]}</button>
+            ))}
+          </div>
+        </div>
+      )}
     </Shell>
   );
 }

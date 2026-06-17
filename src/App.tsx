@@ -102,7 +102,7 @@ export default function App() {
       pageEl = <TrustRoutePage state={state} setState={setState} gotoPage={gotoPage}/>;
       break;
     case "map":
-      pageEl = <ProgressPage state={state} gotoPage={gotoPage}/>;
+      pageEl = <ProgressPage state={state} setState={setState} gotoPage={gotoPage}/>;
       break;
     case "ending":
       pageEl = <EndingPage state={state} setState={setState} gotoPage={gotoPage}/>;

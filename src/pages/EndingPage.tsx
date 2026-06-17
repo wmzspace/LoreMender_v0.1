@@ -3,7 +3,7 @@ import { GoldDivider, PaperPanel, SealTag } from "../components";
 import {
   Particles, SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
 } from "../components/art";
-import { ENDINGS, resolveEnding } from "../data";
+import { ENDINGS, resolveEnding, getEndingBody } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState } from "../lib/storage";
 import { playSfx, playDialogueAudio, stopDialogueAudio, useAudioMuted } from "../lib/audio";
@@ -250,7 +250,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
     if (!showVideo || !e?.body) return;
     setDisplayedBody("");
     let i = 0;
-    const body = e.body;
+    const body = getEndingBody(state, endId);
     let intervalId: ReturnType<typeof setInterval>;
     const narrationSrc = ENDING_NARRATION[endId];
     const timeoutId = setTimeout(() => {
@@ -534,7 +534,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
                 whiteSpace: "pre-line",
                 letterSpacing: "0.05em",
                 textAlign: "center",
-              }}>{e.body}</div>
+              }}>{getEndingBody(state, endId)}</div>
               <GoldDivider/>
               <div style={{
                 textAlign:"center",

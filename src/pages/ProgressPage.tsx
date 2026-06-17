@@ -1,11 +1,13 @@
 import { useState } from "react";
 import type { GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
+import { defaultState, saveState } from "../lib/storage";
 import { Topbar, BottomNav } from "../components";
 import { Particles } from "../components/art";
 
 interface ProgressPageProps {
   state: GameState;
+  setState: (s: GameState) => void;
   gotoPage: (p: PageKey) => void;
 }
 
@@ -295,11 +297,24 @@ function ExpandedCard({
 }
 
 // ── 主组件 ──────────────────────────────────────────────────────
-export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
+export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
   const cur = state.currentChapter || 1;
   const [expanded, setExpanded] = useState<number>(cur);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   const toggle = (num: number) => setExpanded(prev => (prev === num ? -1 : num));
+
+  const handleReset = () => {
+    if (!confirmReset) {
+      setConfirmReset(true);
+      return;
+    }
+    const ns = { ...defaultState(), unlockedEndings: state.unlockedEndings };
+    setState(ns);
+    saveState(ns);
+    setConfirmReset(false);
+    gotoPage("story");
+  };
 
   const NODE_COL = 64;
   const ZIGZAG = 32;
@@ -491,6 +506,37 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
               <div style={{ width: 4, height: 4, background: JADE, transform: "rotate(45deg)", opacity: 0.7 }} />
             </div>
           </div>
+        </div>
+
+        <div style={{ marginTop: 14, textAlign: "center" }}>
+          <button
+            onClick={handleReset}
+            style={{
+              background: confirmReset ? "rgba(180,60,44,0.15)" : "none",
+              border: `1px solid ${confirmReset ? "rgba(180,60,44,0.6)" : "rgba(228,224,208,0.22)"}`,
+              borderRadius: 3,
+              padding: "8px 18px",
+              cursor: "pointer",
+              color: confirmReset ? "rgba(225,110,90,0.9)" : `${PAPER}0.45)`,
+              fontSize: 11,
+              letterSpacing: "0.16em",
+              fontFamily: "inherit",
+              transition: "all 0.2s",
+            }}
+          >
+            {confirmReset ? "确 认 重 置 ？（再次点击确认）" : "重 置 进 度"}
+          </button>
+          {confirmReset && (
+            <button
+              onClick={() => setConfirmReset(false)}
+              style={{
+                background: "none", border: "1px solid rgba(228,224,208,0.15)",
+                borderRadius: 3, padding: "6px 14px", cursor: "pointer",
+                color: `${PAPER}0.38)`, fontSize: 10, letterSpacing: "0.12em",
+                fontFamily: "inherit", marginLeft: 10, transition: "all 0.2s",
+              }}
+            >取 消</button>
+          )}
         </div>
       </div>
 

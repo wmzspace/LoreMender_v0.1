@@ -43,11 +43,16 @@ export function calcScore(state: GameState): ScoreResult {
     (state.asked_heart || 0);
   const trustMax = 10;
 
-  let choiceScore = 0;
-  if (state.firstImpression) choiceScore++;
-  if (state.trust_huatuo) choiceScore++;
-  if (state.found_clue) choiceScore++;
-  const choiceMax = 3;
+  const CHOICE_SCORE: Record<string, Record<string, number>> = {
+    ch2: { agree_him: 3, urge_write: 2, worry_loss: 1 },
+    ch3: { warn_ethics: 3, doubt_system: 2, distrust_cao: 1 },
+    ch4: { worry_errors: 3, eager_help: 2, ask_danger: 1 },
+  };
+  const choiceMax = 9;
+  const choiceScore =
+    (CHOICE_SCORE.ch2[state.ch2 ?? ""] ?? 0) +
+    (CHOICE_SCORE.ch3[state.ch3 ?? ""] ?? 0) +
+    (CHOICE_SCORE.ch4[state.ch4 ?? ""] ?? 0);
 
   const finalMap: Record<string, number> = { chenbo: 3, xuanyin: 2, wangji: 1, burn: 0 };
   const finalScore = state.finalChoice ? (finalMap[state.finalChoice] ?? 0) : 0;

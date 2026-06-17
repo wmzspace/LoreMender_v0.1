@@ -13,8 +13,36 @@ interface TrustRoutePageProps {
 
 const BURN = "burn";
 
+// 四条归处的描述文案（对齐需求文档「最终抉择」）
+const ROUTE_DESC: Record<string, string> = {
+  chenbo: "民间经验之路。药方不锁进高阁，而在街巷间誊写、背诵、校正。可能散失，也可能因人而异，但它最接近真正需要救命的人。",
+  wangji: "制度府库之路。医书进入曹府医案，有制度保护，也有抄本流传的可能。但门第、功名与权力会重新筛选文字，不合时宜的提醒可能被删去，民间经验可能被轻看。",
+  xuanyin: "歌诀传播之路。医理被改成歌诀，带向乐坊、山门与村巷。后世未必能得到全卷，却能从曲调里记住该救什么、又该避开什么。残术不再完整，但没有完全失声。",
+};
+
+// 选择前提示：依信任最高者 / 低完成度数量，给一句情感旁白（轻量倾向）
+function preChoiceHint(state: GameState): string | null {
+  const lowGrades = Object.values(state.gameResults ?? {}).filter(r => r.best === "low").length;
+  const trusts = [
+    { v: state.chenbo_trust || 0, line: "你记得街市上那个孩子重新平稳的呼吸。" },
+    { v: state.wangji_trust || 0, line: "你记得问诊录上那行「医术当以济世为先」。" },
+    { v: state.xuanyin_trust || 0, line: "你记得巷尾那首终于唱对的歌。" },
+  ];
+  // 焚毁倾向：至少两个小游戏低完成度 + 至少一条信任为零 → 对传承之路失望
+  const burnishHint = lowGrades >= 2 && trusts.some(t => t.v === 0)
+    ? "你一路看见医术被私藏、被锁住、被唱错，也看见它可能造成的危险。"
+    : null;
+  const top = trusts.slice().sort((a, b) => b.v - a.v)[0];
+  if (top.v >= 2) return top.line; // 有明确的高信任 → 给对应回忆
+  if (burnishHint) return burnishHint; // 焚毁倾向优先于低完成度提醒
+  if (lowGrades >= 2) return "你还没有完全理解青囊，但天已经快亮了。";
+  if (top.v > 0) return top.line;
+  return null;
+}
+
 export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProps) {
   const [selected, setSelected] = useState<string | null>(state.finalChoice || null);
+  const hint = preChoiceHint(state);
 
   const confirm = () => {
     if (!selected) return;
@@ -25,7 +53,9 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
     };
     setState(ns);
     saveState(ns);
-    saveBeat(5, 4);
+    // 保存到 ch5 中 gotoTrust 之后的位置（"你已经做出选择..."）
+    // 需要根据 flattenBeats 动态计算，但 ch5 无条件分支，所以固定为 beat 8
+    saveBeat(5, 8);
     gotoPage("story");
   };
 
@@ -58,6 +88,24 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
           前四章所得道具、最佳成绩与信任，会影响后世怎样读到这卷残术。此刻不再考验手速，只考验托付。
         </div>
 
+        {hint && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 9,
+            padding: "10px 13px", marginBottom: 16,
+            border: "1px solid rgba(95,168,146,0.3)",
+            borderLeft: "3px solid var(--jade)",
+            borderRadius: 3,
+            background: "rgba(95,168,146,0.07)",
+          }}>
+            <div style={{ width: 4, height: 4, background: "var(--jade)", transform: "rotate(45deg)", flexShrink: 0, opacity: 0.8 }} />
+            <div style={{
+              fontSize: 12.5, fontStyle: "italic",
+              color: "rgba(166,220,203,0.9)",
+              lineHeight: 1.7, letterSpacing: "0.03em",
+            }}>{hint}</div>
+          </div>
+        )}
+
         <div style={{ display: "grid", gap: 10 }}>
           {TRUST_OPTIONS.map(c => {
             const selectedThis = selected === c.id;
@@ -82,7 +130,7 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
                     <div className="title-han" style={{ color: selectedThis ? "var(--jade-pale)" : "var(--gold-pale)", fontSize: 16 }}>{c.name}</div>
                   </div>
                 </div>
-                <div style={{ fontSize: 12, lineHeight: 1.65, opacity: 0.75, marginTop: 9 }}>{c.short}</div>
+                <div style={{ fontSize: 12, lineHeight: 1.65, opacity: 0.75, marginTop: 9 }}>{ROUTE_DESC[c.id] ?? c.short}</div>
               </button>
             );
           })}
@@ -101,7 +149,7 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
             }}
           >
             <div className="title-han" style={{ color: selected === BURN ? "#ffd0c0" : "var(--gold-pale)", fontSize: 16 }}>焚毁残卷</div>
-            <div style={{ fontSize: 12, lineHeight: 1.65, opacity: 0.75, marginTop: 7 }}>不托付任何人，让残术随此夜化灰。</div>
+            <div style={{ fontSize: 12, lineHeight: 1.65, opacity: 0.75, marginTop: 7 }}>火光保住了秘密，也烧断了去路。无人能借它作恶，也无人能据它救人。后世只记得那本应当存在的书。</div>
           </button>
         </div>
       </div>

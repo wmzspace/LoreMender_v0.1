@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BottomNav, ChoiceList, DialogueBox, ProgressDots, SceneFrame, SoundToggle, Toast, Topbar,
 } from "../components";
@@ -110,9 +110,14 @@ function isTransitionBeat(beat: Beat | undefined): boolean {
 }
 
 function flattenBeats(beats: Beat[], state: GameState): Beat[] {
+  const stateMap = state as unknown as Record<string, unknown>;
+  // boxCompartment 为 null 时视为 "missed"（未发现夹层的默认状态）
+  if (stateMap.boxCompartment === null || stateMap.boxCompartment === undefined) {
+    stateMap.boxCompartment = "missed";
+  }
   return beats.flatMap(beat => {
     if ("ifKey" in beat) {
-      return (state as Record<string, unknown>)[beat.ifKey] === beat.ifVal
+      return stateMap[beat.ifKey] === beat.ifVal
         ? flattenBeats(beat.beats, state)
         : [];
     }
@@ -124,19 +129,30 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const ch = state.currentChapter || 1;
   const chKey = "ch" + ch;
   const chapter = STORY[chKey];
-  const [beatIdx, setBeatIdx] = useState(() => loadBeat(ch));
+  const [beatIdx, setBeatIdx] = useState(() => {
+    const saved = loadBeat(ch);
+    return saved;
+  });
   const [toast, setToast] = useState("");
-
-  useEffect(() => {
-    saveBeat(ch, beatIdx);
-  }, [ch, beatIdx]);
 
   const rawBeats = chapter?.beats ?? [];
   const beats = useMemo(
     () => flattenBeats(rawBeats, state),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rawBeats, state.ch2, state.ch3, state.ch4]
+    [rawBeats, state.ch2, state.ch3, state.ch4, state.boxCompartment, state.medical_skill, state.classifyRetry]
   );
+
+  // beats 变化后，确保 beatIdx 不越界
+  useEffect(() => {
+    if (beatIdx >= beats.length && beats.length > 0) {
+      setBeatIdx(beats.length - 1);
+    }
+  }, [beats.length, beatIdx]);
+
+  useEffect(() => {
+    saveBeat(ch, beatIdx);
+  }, [ch, beatIdx]);
+
   const beat = beats[beatIdx];
   const gameNode = beat && "game" in beat ? beat.game : null;
   const gameDone = !!(gameNode && state.gameResults[gameNode.id]?.completed);
@@ -154,6 +170,11 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
       return true;
     }
     if ("gotoTrust" in b) {
+      // 如果已经做出了最终选择，跳过信任页，直接前进到下一个 beat
+      if (state.finalChoice) {
+        setBeatIdx(beatIdx + 1);
+        return true;
+      }
       gotoPage("trust");
       return true;
     }
