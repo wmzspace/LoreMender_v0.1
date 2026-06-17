@@ -899,7 +899,6 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
   };
 
   const locked = game.requiredItem && !state.items.includes(game.requiredItem);
-  const gameCompleted = state.gameResults[game.id]?.completed;
 
   let body: React.ReactNode;
   if (locked) {
@@ -943,7 +942,7 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
       )}
     >
       {body}
-      {!locked && !gameCompleted && (
+      {!locked && (
         <div style={{
           marginTop: 20, padding: "10px 0",
           borderTop: "1px solid rgba(228,224,208,0.12)",
