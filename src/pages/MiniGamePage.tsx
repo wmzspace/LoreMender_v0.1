@@ -37,8 +37,121 @@ function applyResult(state: GameState, game: GameNode, rank: GameResultRank): Ga
   };
 }
 
+// ── 游戏完成反馈数据 ───────────────────────────────────────────
+const GAME_FEEDBACK: Record<string, Record<GameResultRank, { title: string; text: string }>> = {
+  bambooPuzzle: {
+    high: { title: "竹简归位", text: "华佗说：「书能拼起，只是第一步。但你摸到了它的脉络——字句之间有一套活的逻辑。」" },
+    mid:  { title: "大半复原", text: "华佗说：「差一点。再想想字句背后的意思。医书不是目录，每一排都有它的位置。」" },
+    low:  { title: "残缺犹存", text: "华佗说：「这就是残卷为何难传的原因。能拼起的，不只是竹简，是看懂它的人。」" },
+  },
+  woodenBox: {
+    high: { title: "机关已解", text: "华佗说：「能用最少的代价解开困局，这才是医道——不浪费，不强求，走最短的路。」" },
+    mid:  { title: "峰回路转", text: "华佗说：「能出来就好。多走了些弯路，但弯路也是路，你走过了。」" },
+    low:  { title: "曲折出关", text: "华佗说：「步步错落，靠摸索才得出路。不要紧——每一次试探都刻进了手里。」" },
+  },
+  herbMemory: {
+    high: { title: "药案整理完备", text: "华佗说：「认药如识人，你记住了它们各自的模样。一味草药，背后是无数人的试验。」" },
+    mid:  { title: "大体整妥", text: "华佗说：「药名好记，药性需亲历方知。你记住了大半，剩下的靠经验来补。」" },
+    low:  { title: "药案残缺", text: "华佗说：「草药不认识你，你也需要先认识它们。不懂时，就先不用——这也是一条规矩。」" },
+  },
+  caseTriage: {
+    high: { title: "病案顺序正确", text: "华佗说：「医者不论贵贱，只看谁更需要这双手。你做到了这一点。」" },
+    mid:  { title: "轻重有序", text: "华佗说：「有时候，多看一眼就是多一条命。你快到了，下次再准一点。」" },
+    low:  { title: "顺序待正", text: "华佗说：「把人命排出轻重，这是医者最难过的关。规则只有一条：看谁更需要被救。」" },
+  },
+  songFormula: {
+    high: { title: "歌诀补全", text: "华佗说：「传得出去，才算活下来。好的歌诀，是让医道走进不识字的人家。」" },
+    mid:  { title: "歌诀大半传", text: "华佗说：「记七八分，也能帮到一些人。残缺本身，也是另一种面目。」" },
+    low:  { title: "歌诀残缺", text: "华佗说：「残缺也是一种面目，后人自会补上空白。重要的是，它被传了出去。」" },
+  },
+};
+
+// ── 等级圆形印章 ───────────────────────────────────────────────
+function RankSeal({ rank }: { rank: GameResultRank }) {
+  const c = rank === "high"
+    ? { ring: "#5fa892", text: "#a6dccb", glow: "rgba(95,168,146,0.45)" }
+    : rank === "mid"
+    ? { ring: "#cdb277", text: "#ecdca6", glow: "rgba(205,178,119,0.4)" }
+    : { ring: "rgba(228,224,208,0.5)", text: "rgba(228,224,208,0.75)", glow: "rgba(228,224,208,0.12)" };
+  const sz = 92, r = sz / 2;
+  return (
+    <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}
+      style={{ filter: `drop-shadow(0 0 16px ${c.glow})` }}>
+      <circle cx={r} cy={r} r={r - 2} fill="none" stroke={c.ring} strokeWidth="1" strokeOpacity="0.4" />
+      <circle cx={r} cy={r} r={r - 7} fill="#060d14" />
+      <circle cx={r} cy={r} r={r - 7} fill="none" stroke={c.ring} strokeWidth="1.8" />
+      <text x={r} y={r + 11} textAnchor="middle"
+        fontFamily="'ZCOOL XiaoWei', serif" fontSize="32" fill={c.text}>
+        { rank === "high" ? "优" : rank === "mid" ? "良" : "勉" }
+      </text>
+    </svg>
+  );
+}
+
+// ── 游戏完成反馈浮层（印章+旁白，轻触继续）─────────────────────
+function GameFeedbackOverlay({ rank, game, onDismiss }: {
+  rank: GameResultRank;
+  game: GameNode;
+  onDismiss: () => void;
+}) {
+  const fb = GAME_FEEDBACK[game.kind]?.[rank] ?? { title: "完成", text: "" };
+  return (
+    <div
+      role="dialog"
+      onClick={onDismiss}
+      style={{
+        position: "absolute", inset: 0, zIndex: 200,
+        background: "rgba(4,7,10,0.93)",
+        display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        padding: "0 28px",
+        animation: "fadeIn 0.35s ease both",
+        cursor: "pointer",
+      }}
+    >
+      <div style={{ animation: "sealStamp 0.55s cubic-bezier(0.2,0.8,0.3,1) 0.08s both", marginBottom: 22 }}>
+        <RankSeal rank={rank} />
+      </div>
+      <div className="title-han fade-in" style={{
+        fontSize: 19, color: "var(--gold-pale)",
+        letterSpacing: "0.22em", textAlign: "center",
+        marginBottom: 14, animationDelay: "180ms",
+      }}>{fb.title}</div>
+      <div className="fade-in" style={{
+        fontSize: 13, color: "rgba(228,224,208,0.78)",
+        lineHeight: 1.95, letterSpacing: "0.04em",
+        textAlign: "center", maxWidth: 292,
+        marginBottom: 40, fontStyle: "italic",
+        animationDelay: "320ms",
+      }}>{fb.text}</div>
+      <div className="fade-in" style={{
+        fontSize: 11, color: "rgba(228,224,208,0.35)",
+        letterSpacing: "0.35em", animationDelay: "550ms",
+      }}>轻 触 继 续</div>
+    </div>
+  );
+}
+
+const RANK_COLOR: Record<GameResultRank, string> = {
+  high: "#5fa892",
+  mid: "#cdb277",
+  low: "rgba(228,224,208,0.55)",
+};
+
+// 游戏说明文字样式（统一的美术风格）
+const instStyle: React.CSSProperties = {
+  fontSize: 12.5,
+  color: "rgba(228,224,208,0.58)",
+  lineHeight: 1.9,
+  letterSpacing: "0.04em",
+  textAlign: "center",
+  fontStyle: "italic",
+  margin: "0 0 16px",
+  padding: "0 4px",
+};
+
 function Shell({
-  game, state, gotoPage, children, toast, setToast,
+  game, state, gotoPage, children, toast, setToast, overlay,
 }: {
   game: GameNode;
   state: GameState;
@@ -46,23 +159,58 @@ function Shell({
   children: React.ReactNode;
   toast: string;
   setToast: (s: string) => void;
+  overlay?: React.ReactNode;
 }) {
-  const best = state.gameResults[game.id]?.best;
+  const result = state.gameResults[game.id];
+  const best = result?.best;
+  const attempts = result?.attempts ?? 0;
+
+  const rankBadge = best ? (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 5,
+      padding: "3px 9px", borderRadius: 2,
+      border: `1px solid ${RANK_COLOR[best]}50`,
+      background: `${RANK_COLOR[best]}1a`,
+    }}>
+      <span style={{ fontSize: 10, color: RANK_COLOR[best], letterSpacing: "0.15em" }}>
+        最 佳 · {RANK_LABEL[best]}
+      </span>
+      {attempts > 1 && (
+        <span style={{ fontSize: 9, color: "rgba(228,224,208,0.35)" }}>×{attempts}</span>
+      )}
+    </div>
+  ) : (
+    <span style={{ fontSize: 10, color: "rgba(228,224,208,0.3)", letterSpacing: "0.15em" }}>
+      初 次 挑 战
+    </span>
+  );
+
   return (
     <div className="page night-bg">
-      <Topbar title={game.name} onBack={() => gotoPage("story")} />
-      <div className="page-scroll" style={{ top: 58, padding: "0 16px calc(28px + var(--safe-bottom))" }}>
+      <Topbar title={game.name} onBack={() => gotoPage("story")} right={rankBadge} />
+
+      <div className="page-scroll" style={{
+        top: 58, bottom: 0,
+        padding: "14px 16px calc(20px + var(--safe-bottom))",
+      }}>
+        {game.context && (
+          <div style={{
+            textAlign: "center",
+            fontSize: 12.5, fontStyle: "italic",
+            color: "rgba(228,224,208,0.52)",
+            letterSpacing: "0.04em", lineHeight: 1.85,
+            padding: "4px 8px 16px",
+            borderBottom: "1px solid rgba(205,178,119,0.12)",
+            marginBottom: 16,
+          }}>{game.context}</div>
+        )}
         <div style={{ color: "var(--paper)", lineHeight: 1.7 }}>
-          <div className="title-han" style={{ color: "var(--gold-pale)", fontSize: 22, margin: "8px 0 6px" }}>
-            {game.name}
-          </div>
-          <div style={{ fontSize: 12, opacity: 0.72, marginBottom: 12 }}>
-            {best ? `当前最佳：完成度${RANK_LABEL[best]}` : "尚未完成"}
-          </div>
           {children}
         </div>
       </div>
+
       <Toast text={toast} onDone={() => setToast("")} />
+      {overlay}
     </div>
   );
 }
@@ -125,35 +273,63 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
     return null;
   }
 
+  // 三分类的色彩主题
+  const CAT_THEME: Record<string, { accent: string; bg: string; label: string; chip: string }> = {
+    病症: { accent: "#a04040", bg: "rgba(160,64,64,0.06)", label: "rgba(220,130,110,0.92)", chip: "rgba(180,80,60,0.2)" },
+    医理: { accent: "#3d8870", bg: "rgba(61,136,112,0.06)", label: "rgba(110,185,162,0.92)", chip: "rgba(60,130,110,0.2)" },
+    药方: { accent: "#8a6830", bg: "rgba(138,104,48,0.06)", label: "rgba(200,168,88,0.92)", chip: "rgba(130,100,40,0.2)" },
+  };
+
+  // 词语 chip 样式
+  const chipStyle = (isSelected: boolean): React.CSSProperties => ({
+    padding: "5px 12px",
+    fontSize: 13,
+    fontFamily: "ZCOOL XiaoWei, serif",
+    letterSpacing: "0.06em",
+    border: `1px solid ${isSelected ? "var(--jade)" : "rgba(205,178,119,0.32)"}`,
+    background: isSelected
+      ? "rgba(95,168,146,0.2)"
+      : "linear-gradient(135deg, rgba(205,178,119,0.07), rgba(205,178,119,0.03))",
+    borderRadius: 3,
+    color: isSelected ? "var(--jade)" : "rgba(228,224,208,0.9)",
+    cursor: "pointer",
+    boxShadow: isSelected ? "0 0 8px rgba(95,168,146,0.22)" : "none",
+    transition: "all 0.15s ease",
+    whiteSpace: "nowrap" as const,
+  });
+
   if (submitted && !allCorrect) {
     return (
       <>
-        <p>分类有 {mistakes.length} 个错误（红色标记）。你可以选择：</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+        <div style={{ ...instStyle, color: "rgba(205,100,80,0.85)", marginBottom: 14 }}>
+          有 {mistakes.length} 处归类有误（红色标出），请选择处理方式。
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
           {classifyCategories.map(cat => {
+            const theme = CAT_THEME[cat] ?? CAT_THEME["病症"];
             const catWords = Object.entries(placed).filter(([, v]) => v === cat).map(([k]) => k);
             return (
               <div key={cat} style={{
-                border: "1px solid rgba(205,178,119,0.35)",
-                borderRadius: 6,
-                padding: 8,
-                minHeight: 120,
-                background: "rgba(236,220,166,0.04)",
+                borderRadius: 6, padding: "11px 14px",
+                border: `1px solid ${theme.accent}33`,
+                borderLeft: `3px solid ${theme.accent}88`,
+                background: "rgba(8,12,14,0.3)",
               }}>
-                <div style={{ marginBottom: 6 }}>
-                  <span className="choice-label">{cat} · {catWords.length}/5</span>
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                <div style={{
+                  fontSize: 12, color: theme.label,
+                  letterSpacing: "0.18em", marginBottom: 8,
+                  fontFamily: "ZCOOL XiaoWei, serif",
+                }}>{cat} · {catWords.length}/5</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                   {catWords.map(w => {
                     const isCorrect = classifyWords[cat].includes(w);
                     return (
                       <span key={w} style={{
-                        fontSize: 11,
-                        border: "1px solid rgba(205,178,119,0.3)",
-                        background: isCorrect ? "rgba(95,168,146,0.25)" : "rgba(178,58,44,0.35)",
-                        padding: "2px 6px",
-                        borderRadius: 3,
-                        color: "var(--paper)",
+                        fontSize: 12, padding: "3px 10px", borderRadius: 3,
+                        fontFamily: "ZCOOL XiaoWei, serif",
+                        border: `1px solid ${isCorrect ? "rgba(95,168,146,0.5)" : "rgba(180,60,44,0.6)"}`,
+                        background: isCorrect ? "rgba(95,168,146,0.15)" : "rgba(180,60,44,0.2)",
+                        color: isCorrect ? "var(--jade)" : "rgba(225,110,90,0.92)",
                       }}>{w}</span>
                     );
                   })}
@@ -162,10 +338,9 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
             );
           })}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <button className="btn-primary press" onClick={() => {
             setSubmitted(false);
-            // 清除错误项，让玩家重新放置
             const toRemove: string[] = [];
             mistakes.forEach(([id]) => toRemove.push(id));
             setPlaced(prev => {
@@ -174,81 +349,111 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
               return next;
             });
             onClassifyRetry(true);
-          }} style={{ width: "100%" }}>
-            继续修正（华容道·简单）
-          </button>
+          }} style={{ width: "100%" }}>继续修正</button>
           <button className="btn-ghost press" onClick={() => {
             onClassifyRetry(false);
             finish("low");
-          }} style={{ width: "100%" }}>
-            退出（华容道·中等）
-          </button>
+          }} style={{ width: "100%" }}>接受结果</button>
         </div>
       </>
     );
   }
 
   const remaining = allWords.filter(w => !placed[w.id]);
+  const placedCount = allWords.length - remaining.length;
 
   return (
     <>
-      <p>将下方 15 个词语分类到对应的「病症 / 医理 / 药方」类别中。点击类别中的词语可移回待分类区。</p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "12px 0", maxHeight: 200, overflowY: "auto" }}>
+      <div style={instStyle}>先选中一个词（高亮），再点下方分类区归入——点击已放入的词可取回重排。</div>
+
+      {/* 词语池 */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
         {remaining.map(w => (
-          <button key={w.id} className="btn-ghost press" onClick={() => setSelected(w.id)}
-            style={{
-              padding: "6px 10px",
-              fontSize: 13,
-              borderColor: selected === w.id ? "var(--jade)" : undefined,
-              opacity: 1,
-            }}>{w.text}</button>
+          <button key={w.id} className="press"
+            onClick={() => setSelected(selected === w.id ? null : w.id)}
+            style={chipStyle(selected === w.id)}>
+            {w.text}
+          </button>
         ))}
+        {remaining.length === 0 && (
+          <div style={{ fontSize: 11.5, color: "rgba(228,224,208,0.38)", letterSpacing: "0.12em", fontStyle: "italic" }}>
+            · 所有词已归类 ·
+          </div>
+        )}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+
+      {/* 分类区（纵向堆叠，色彩编码） */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
         {classifyCategories.map(cat => {
+          const theme = CAT_THEME[cat] ?? CAT_THEME["病症"];
           const catWords = Object.entries(placed).filter(([, v]) => v === cat).map(([k]) => k);
-          const count = catWords.length;
+          const canDrop = !!selected;
           return (
-            <div key={cat} style={{
-              border: "1px solid rgba(205,178,119,0.35)",
-              borderRadius: 6,
-              padding: 8,
-              minHeight: 120,
-              background: "rgba(236,220,166,0.04)",
-            }}>
-              <button className="choice press" onClick={() => {
+            <div key={cat}
+              onClick={() => {
                 if (!selected) return;
-                setPlaced(prev => ({ ...prev, [selected!]: cat }));
+                setPlaced(prev => ({ ...prev, [selected]: cat }));
                 setSelected(null);
-              }} style={{ width: "100%", marginBottom: 6 }}>
-                <span className="choice-label">{cat} · {count}/5</span>
-              </button>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                {catWords.map(w => (
-                  <button key={w} onClick={() => {
-                    setPlaced(prev => {
-                      const next = { ...prev };
-                      delete next[w];
-                      return next;
-                    });
-                    setSelected(null);
-                  }} style={{
-                    fontSize: 11,
-                    cursor: "pointer",
-                    border: "1px solid rgba(205,178,119,0.3)",
-                    background: "rgba(236,220,166,0.10)",
-                    padding: "2px 6px",
-                    borderRadius: 3,
-                    color: "var(--paper)",
-                  }}>{w}</button>
-                ))}
+              }}
+              style={{
+                borderRadius: 6, padding: "11px 14px",
+                border: `1px solid ${canDrop ? theme.accent + "88" : theme.accent + "33"}`,
+                borderLeft: `3px solid ${canDrop ? theme.accent : theme.accent + "66"}`,
+                background: canDrop ? theme.bg : "rgba(8,12,14,0.3)",
+                cursor: canDrop ? "pointer" : "default",
+                transition: "border-color 0.18s, background 0.18s",
+                minHeight: 52,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: catWords.length > 0 ? 9 : 0 }}>
+                <span style={{
+                  fontSize: 13, color: theme.label,
+                  letterSpacing: "0.2em", fontFamily: "ZCOOL XiaoWei, serif",
+                }}>{cat}</span>
+                <span style={{
+                  fontSize: 10, letterSpacing: "0.04em",
+                  color: catWords.length > 0 ? theme.label + "99" : "rgba(228,224,208,0.22)",
+                }}>{catWords.length} / 5</span>
+                {canDrop && (
+                  <span style={{
+                    marginLeft: "auto", fontSize: 10,
+                    color: theme.label, opacity: 0.7, letterSpacing: "0.08em",
+                  }}>↓ 放入</span>
+                )}
               </div>
+              {catWords.length > 0 ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                  {catWords.map(w => (
+                    <button key={w} className="press"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPlaced(prev => { const n = { ...prev }; delete n[w]; return n; });
+                        setSelected(null);
+                      }}
+                      style={{
+                        fontSize: 12, padding: "3px 10px", borderRadius: 3,
+                        border: `1px solid ${theme.accent}66`,
+                        background: theme.chip,
+                        color: theme.label, cursor: "pointer",
+                        fontFamily: "ZCOOL XiaoWei, serif",
+                      }}>{w}</button>
+                  ))}
+                </div>
+              ) : (
+                <div style={{
+                  fontSize: 11, color: "rgba(228,224,208,0.18)",
+                  letterSpacing: "0.2em", fontStyle: "italic",
+                }}>· 暂无 ·</div>
+              )}
             </div>
           );
         })}
       </div>
-      <button className="btn-primary press" disabled={!allPlaced} onClick={() => setSubmitted(true)} style={{ width: "100%", marginTop: 16 }}>
-        完成分类
+
+      <button className="btn-primary press" disabled={!allPlaced}
+        onClick={() => setSubmitted(true)}
+        style={{ width: "100%" }}>
+        {allPlaced ? "完 成 分 类" : `完成分类（${placedCount}/${allWords.length}）`}
       </button>
     </>
   );
@@ -419,8 +624,8 @@ function WoodenBox({ finish, hardMode }: { finish: (rank: GameResultRank) => voi
 
   return (
     <>
-      <p>拖拽方块，将金色钥匙移到右下角出口解开木盒。（{diffLabel}）</p>
-      <div style={{ fontSize: 12, opacity: 0.65, marginBottom: 6 }}>步数：{steps}</div>
+      <div style={instStyle}>拖动方块，引导金钥匙抵达右下出口。步少者，医道精。</div>
+      <div style={{ fontSize: 11.5, color: "rgba(228,224,208,0.4)", letterSpacing: "0.12em", textAlign: "center", marginBottom: 8 }}>已走 {steps} 步 · {diffLabel}</div>
       <div
         ref={containerRef}
         onPointerMove={handlePointerMove}
@@ -522,8 +727,8 @@ function HerbMemory({ finish }: { finish: (rank: GameResultRank) => void }) {
   if (!started) {
     return (
       <>
-        <p>开始后有真实 60 秒记忆时间。时间结束后药方隐藏，再把药材整理到对应药方框内。</p>
-        <button className="btn-primary press" onClick={() => setStarted(true)} style={{ width: "100%" }}>开始记忆</button>
+        <div style={instStyle}>先记住三张药方与各自药材，计时结束后凭记忆归整。</div>
+        <button className="btn-primary press" onClick={() => setStarted(true)} style={{ width: "100%" }}>开 始 记 忆</button>
       </>
     );
   }
@@ -612,7 +817,7 @@ function SimpleOrderGame({
   };
   return (
     <>
-      <p>{intro}</p>
+      <div style={instStyle}>{intro}</div>
       <div className="dialogue" style={{ margin: "10px 0" }}>
         <div className="dialogue-name">你的排序</div>
         <div>{answer.join(" → ") || "尚未选择"}</div>
@@ -633,7 +838,7 @@ function SongFormula({ finish }: { finish: (rank: GameResultRank) => void }) {
   return (
     <>
       <SimpleOrderGame
-        intro="把残缺歌诀排成能传唱、也不误人的顺序。若删去禁忌提示，结算会降为低。"
+        intro="将残句排成能传唱、也不误人的顺序。禁忌提示不可删——传错了，害的是人命。"
         items={["急症先辨寒与热", "药入口前问禁忌", "轻症可歌传乡里", "重方仍须问医者"]}
         correct={["急症先辨寒与热", "药入口前问禁忌", "轻症可歌传乡里", "重方仍须问医者"]}
         finishLabel="补成歌诀"
@@ -650,12 +855,14 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
   const game = allGameNodes().find(g => g.id === state.activeGameId) || allGameNodes()[0];
   const [toast, setToast] = useState("");
   const [localClassifyRetry, setLocalClassifyRetry] = useState<boolean | null>(state.classifyRetry);
+  const [feedback, setFeedback] = useState<GameResultRank | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
+
   const finish = (rank: GameResultRank) => {
     const ns = applyResult(state, game, rank);
     setState(ns);
     saveState(ns);
-    setToast(`完成度${RANK_LABEL[rank]}，获得${game.unlockItem}`);
-    window.setTimeout(() => gotoPage("story"), 900);
+    setFeedback(rank);
   };
 
   const handleClassifyRetry = (retry: boolean) => {
@@ -675,15 +882,16 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
   if (locked) {
     body = <p>尚未获得进入此机关所需之物。</p>;
   } else if (game.kind === "bambooPuzzle") {
-    body = <BambooPuzzle finish={finish} onClassifyRetry={handleClassifyRetry} />;
+    body = <BambooPuzzle key={retryKey} finish={finish} onClassifyRetry={handleClassifyRetry} />;
   } else if (game.kind === "woodenBox") {
-    body = <WoodenBox finish={finish} hardMode={woodenBoxHard} />;
+    body = <WoodenBox key={retryKey} finish={finish} hardMode={woodenBoxHard} />;
   } else if (game.kind === "herbMemory") {
-    body = <HerbMemory finish={finish} />;
+    body = <HerbMemory key={retryKey} finish={finish} />;
   } else if (game.kind === "caseTriage") {
     body = (
       <SimpleOrderGame
-        intro="按病情急缓与可救概率排序，不按身份权势排序。"
+        key={retryKey}
+        intro="三人候诊，不论身份贵贱——只看谁更需要这双手，由急至缓排定顺序。"
         items={["军士：外伤失血，尚可止血", "孩童：高热惊厥，需立刻处置", "老仆：久咳体虚，可稍后调养"]}
         correct={["孩童：高热惊厥，需立刻处置", "军士：外伤失血，尚可止血", "老仆：久咳体虚，可稍后调养"]}
         finishLabel="提交病案"
@@ -691,11 +899,21 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
       />
     );
   } else {
-    body = <SongFormula finish={finish} />;
+    body = <SongFormula key={retryKey} finish={finish} />;
   }
 
   return (
-    <Shell game={game} state={state} gotoPage={gotoPage} toast={toast} setToast={setToast}>
+    <Shell
+      game={game} state={state} gotoPage={gotoPage}
+      toast={toast} setToast={setToast}
+      overlay={feedback !== null && (
+        <GameFeedbackOverlay
+          rank={feedback}
+          game={game}
+          onDismiss={() => gotoPage("story")}
+        />
+      )}
+    >
       {body}
     </Shell>
   );

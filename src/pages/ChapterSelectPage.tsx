@@ -50,7 +50,20 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
   ];
   return (
     <div className="page night-bg">
-      <Topbar title="副 本 · 典 籍" onBack={onBack}/>
+      <Topbar
+        title={
+          <div style={{ textAlign: "center", lineHeight: 1.3 }}>
+            <div>典 故 卷 宗</div>
+            <div style={{
+              fontSize: 10, letterSpacing: "0.28em",
+              color: "var(--gold-pale)", opacity: 0.78,
+              fontFamily: "ZCOOL XiaoWei, serif",
+              marginTop: 1,
+            }}>第 一 卷</div>
+          </div>
+        }
+        onBack={onBack}
+      />
       <Particles count={8}/>
 
       <div className="page-scroll" style={{top: 56, bottom: 0, padding: "0 16px calc(28px + var(--safe-bottom))"}}>

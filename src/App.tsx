@@ -51,7 +51,7 @@ export default function App() {
   switch (page) {
     case "cover":
       pageEl = <CoverPage
-        onStart={() => gotoPage("dungeon")}
+        onStart={() => gotoPage("chapters")}
         onWorld={() => gotoPage("world")}
         onShowcase={() => gotoPage("showcase")}
       />;
@@ -59,13 +59,13 @@ export default function App() {
     case "showcase":
       pageEl = <ShowcasePage
         onBack={() => gotoPage("cover")}
-        onEnter={() => gotoPage("dungeon")}
+        onEnter={() => gotoPage("chapters")}
       />;
       break;
     case "world":
       pageEl = <WorldPage
         onBack={() => gotoPage("cover")}
-        onEnter={() => gotoPage("dungeon")}
+        onEnter={() => gotoPage("chapters")}
       />;
       break;
     case "dungeon":
@@ -77,7 +77,7 @@ export default function App() {
     case "chapters":
       pageEl = <ChapterSelectPage
         state={state}
-        onBack={() => gotoPage("dungeon")}
+        onBack={() => gotoPage("cover")}
         onEnter={() => {
           if (!state.currentChapter) {
             const ns: GameState = { ...state, currentChapter: 1 };

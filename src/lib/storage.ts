@@ -27,6 +27,8 @@ export function defaultState(): GameState {
     classifyRetry: null,
     firstChoice: null,
     ch2: null,
+    ch3: null,
+    ch4: null,
     finalDecision: null,
   };
 }

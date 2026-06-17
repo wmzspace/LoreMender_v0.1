@@ -109,6 +109,17 @@ function isTransitionBeat(beat: Beat | undefined): boolean {
   return !!beat && ("gotoChapter" in beat || "gotoTrust" in beat || "gotoEnding" in beat);
 }
 
+function flattenBeats(beats: Beat[], state: GameState): Beat[] {
+  return beats.flatMap(beat => {
+    if ("ifKey" in beat) {
+      return (state as Record<string, unknown>)[beat.ifKey] === beat.ifVal
+        ? flattenBeats(beat.beats, state)
+        : [];
+    }
+    return [beat];
+  });
+}
+
 export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPageProps) {
   const ch = state.currentChapter || 1;
   const chKey = "ch" + ch;
@@ -120,7 +131,12 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
     saveBeat(ch, beatIdx);
   }, [ch, beatIdx]);
 
-  const beats = chapter?.beats || [];
+  const rawBeats = chapter?.beats ?? [];
+  const beats = useMemo(
+    () => flattenBeats(rawBeats, state),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rawBeats, state.ch2, state.ch3, state.ch4]
+  );
   const beat = beats[beatIdx];
   const gameNode = beat && "game" in beat ? beat.game : null;
   const gameDone = !!(gameNode && state.gameResults[gameNode.id]?.completed);
@@ -189,12 +205,9 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
     gotoPage("minigame");
   };
 
-  const onGameStoryClick = (e: MouseEvent<HTMLDivElement>) => {
+  const onGameStoryClick = () => {
     if (!gameNode || !gameDone) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const isLeft = e.clientX - rect.left < rect.width / 2;
-    if (isLeft) prev();
-    else next();
+    next();
   };
 
   const sceneEl = useMemo(() => {
@@ -228,7 +241,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
     <div className="page night-deep-bg" style={{ paddingBottom: 0 }}>
       <Topbar
         title="第一卷 · 青囊残卷"
-        onBack={() => gotoPage("dungeon")}
+        onBack={() => gotoPage("chapters")}
         right={
           <>
             <SoundToggle />
@@ -259,23 +272,48 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
 
       {gameNode && (
         <div style={{ padding: "10px 18px 0" }}>
-          <button
-            className={gameDone ? "btn-ghost press" : "btn-primary press"}
-            disabled={gameLocked}
-            onClick={enterGame}
-            style={{ width: "100%", minHeight: 46 }}
-          >
-            {gameNode.name}
-          </button>
-          {gameDone && (
-            <div style={{ textAlign: "center", fontSize: 11, opacity: 0.62, marginTop: 6 }}>
-              已完成，可重玩刷新最佳成绩。右侧继续剧情。
-            </div>
-          )}
-          {gameLocked && (
-            <div style={{ textAlign: "center", fontSize: 11, opacity: 0.62, marginTop: 6 }}>
-              尚缺少前置道具。
-            </div>
+          {gameDone ? (
+            <>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 8,
+                marginBottom: 10, padding: "5px 2px",
+              }}>
+                <span style={{
+                  fontSize: 11, color: "rgba(228,224,208,0.45)",
+                  letterSpacing: "0.12em",
+                }}>{gameNode.name}</span>
+                <span style={{
+                  fontSize: 10, color: "var(--jade)",
+                  letterSpacing: "0.1em", opacity: 0.9,
+                }}>· 已完成</span>
+              </div>
+              <button className="btn-primary press" onClick={next} style={{ width: "100%" }}>
+                继 续 剧 情
+              </button>
+              <button
+                className="btn-ghost press"
+                onClick={enterGame}
+                style={{ width: "100%", marginTop: 8, fontSize: 11, opacity: 0.55 }}
+              >
+                重 玩 · {gameNode.name}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className="btn-primary press"
+                disabled={gameLocked}
+                onClick={enterGame}
+                style={{ width: "100%", minHeight: 46 }}
+              >
+                {gameNode.name}
+              </button>
+              {gameLocked && (
+                <div style={{ textAlign: "center", fontSize: 11, opacity: 0.55, marginTop: 6 }}>
+                  尚缺少前置道具。
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -291,17 +329,34 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
               className="fade-in"
               onClick={onGameStoryClick}
               style={{
-                padding: "0 18px",
-                minHeight: 96,
-                display: "grid",
-                placeItems: "center",
+                padding: "12px 20px",
+                minHeight: 80,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
                 cursor: gameDone ? "pointer" : "default",
                 textAlign: "center",
-                color: "rgba(228,224,208,0.72)",
-                lineHeight: 1.7,
               }}
             >
-              {gameDone ? gameNode.nextBeatUnlocked : "机关未解，后文仍锁在此处。"}
+              {gameDone ? (
+                <div style={{
+                  fontSize: 13.5, color: "rgba(228,224,208,0.78)",
+                  lineHeight: 1.8, letterSpacing: "0.04em",
+                  fontStyle: "italic",
+                }}>{gameNode.nextBeatUnlocked}</div>
+              ) : gameNode.context ? (
+                <div style={{
+                  fontSize: 12.5, color: "rgba(228,224,208,0.45)",
+                  lineHeight: 1.85, letterSpacing: "0.04em",
+                  fontStyle: "italic",
+                }}>{gameNode.context}</div>
+              ) : (
+                <div style={{ fontSize: 12, color: "rgba(228,224,208,0.35)", letterSpacing: "0.1em" }}>
+                  · 机关未解，后文待启 ·
+                </div>
+              )}
             </div>
           ) : isTransition ? null : "choices" in beat ? (
             <div className="fade-in" style={{ padding: "12px 0" }}>
@@ -318,12 +373,11 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
               />
               <div style={{
                 textAlign: "center",
-                marginTop: 12,
-                fontFamily: "ZCOOL XiaoWei, serif",
-                fontSize: 11,
-                opacity: 0.5,
-                letterSpacing: "0.18em",
-              }}>左侧返回 · 右侧继续</div>
+                marginTop: 10,
+                fontSize: 10.5,
+                color: "rgba(228,224,208,0.28)",
+                letterSpacing: "0.22em",
+              }}>· 轻 触 继 续 ·</div>
             </div>
           )}
         </div>

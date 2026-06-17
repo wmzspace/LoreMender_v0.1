@@ -80,6 +80,7 @@ export interface GameNode {
   unlockItem: string;
   requiredItem?: string;
   nextBeatUnlocked: string;
+  context?: string;
   reward: GameReward;
 }
 
@@ -99,7 +100,8 @@ export type Beat =
   | { gotoChapter: string }
   | { gotoTrust: true }
   | { gotoEnding: true }
-  | { unlockEnding: string; generatePoster?: boolean };
+  | { unlockEnding: string; generatePoster?: boolean }
+  | { ifKey: string; ifVal: string; beats: Beat[] };
 
 export type SceneKind =
   | "xuchang_prison"
@@ -154,5 +156,7 @@ export interface GameState {
 
   firstChoice?: string | null;
   ch2?: string | null;
+  ch3?: string | null;
+  ch4?: string | null;
   finalDecision?: string | null;
 }

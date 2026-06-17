@@ -1,4 +1,4 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface DialogueBoxProps {
   speaker?: string | null;
@@ -9,35 +9,36 @@ interface DialogueBoxProps {
   onNext?: () => void;
 }
 
-export function DialogueBox({ speaker, text, isNarration, onTap, onPrev, onNext }: DialogueBoxProps) {
+export function DialogueBox({ speaker, text, isNarration, onTap, onNext }: DialogueBoxProps) {
   const [shown, setShown] = useState("");
   const [done, setDone] = useState(false);
+  const intervalRef = useRef<number>(0);
 
   useEffect(() => {
     setShown("");
     setDone(false);
     let i = 0;
-    const id = window.setInterval(() => {
+    intervalRef.current = window.setInterval(() => {
       i++;
       setShown(text.slice(0, i));
       if (i >= text.length) {
-        window.clearInterval(id);
+        window.clearInterval(intervalRef.current);
         setDone(true);
       }
     }, 26);
-    return () => window.clearInterval(id);
+    return () => window.clearInterval(intervalRef.current);
   }, [text]);
 
-  const onClick = (e: MouseEvent<HTMLDivElement>) => {
+  const onClick = () => {
     if (!done) {
+      // 动画进行中：清除 interval，直接显示完整文本
+      window.clearInterval(intervalRef.current);
       setShown(text);
       setDone(true);
       return;
     }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const isLeft = e.clientX - rect.left < rect.width / 2;
-    if (isLeft && onPrev) onPrev();
-    else if (!isLeft && onNext) onNext();
+    // 动画已完成：前进
+    if (onNext) onNext();
     else onTap?.();
   };
 

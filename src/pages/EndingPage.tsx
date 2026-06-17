@@ -7,6 +7,7 @@ import { ENDINGS, resolveEnding } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState } from "../lib/storage";
 import { playSfx, playDialogueAudio, stopDialogueAudio, useAudioMuted } from "../lib/audio";
+import { calcScore } from "../lib/score";
 import type { PageKey } from "../lib/routes";
 
 /** Map ending ID to narrator voiceover for the ending body text */
@@ -56,6 +57,132 @@ function EndingSceneImage({ endId }: { endId: string }) {
         pointerEvents: "none",
       }}
     />
+  );
+}
+
+// 分项颜色：医术(jade)、信任(gold)、情理(暖棕)、最终抉择(随结局色)
+const BREAKDOWN_COLORS = ["#2e7a62", "#8a6830", "#9e6e28"];
+
+// ── 一卷总评分数面板 ───────────────────────────────────────────
+function ScorePanel({ state }: { state: GameState }) {
+  const { total, maxTotal, pct, grade, gradeColor, breakdown } = calcScore(state);
+  const [visible, setVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  // r=30, center=(42,42), SVG 84×84
+  const R = 30, CX = 42, CY = 42;
+  const circ = Math.PI * 2 * R;
+
+  return (
+    <div ref={ref} style={{ margin: "0 18px 18px" }}>
+      <PaperPanel style={{ padding: "16px 20px 22px" }}>
+        <GoldDivider label="一 卷 总 评" labelStyle={{ fontSize: 17, opacity: 0.92 }} />
+
+        {/* 顶部：圆环（SVG内嵌文字）+ 等级/总分 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 18, margin: "14px 0 18px" }}>
+          {/* 所有文字都在 SVG 内，不依赖 position:absolute */}
+          <svg width="84" height="84" viewBox="0 0 84 84" style={{ display: "block", flexShrink: 0 }}>
+            <circle cx={CX} cy={CY} r={R} fill="none"
+              stroke="rgba(40,28,12,0.22)" strokeWidth="4.5" />
+            <circle cx={CX} cy={CY} r={R} fill="none"
+              stroke={gradeColor} strokeWidth="4.5"
+              strokeLinecap="round"
+              strokeDasharray={`${visible ? circ * pct / 100 : 0} ${circ}`}
+              transform={`rotate(-90 ${CX} ${CY})`}
+              style={{ transition: "stroke-dasharray 1.3s cubic-bezier(.4,0,.2,1) 0.2s" }}
+            />
+            <text x={CX} y={CY + 1}
+              textAnchor="middle" dominantBaseline="middle"
+              fontFamily="'ZCOOL XiaoWei', serif" fontSize="22" fill={gradeColor}>
+              {pct}
+            </text>
+            <text x={CX} y={CY + 17}
+              textAnchor="middle" dominantBaseline="middle"
+              fontFamily="sans-serif" fontSize="9" fill="rgba(40,28,12,0.55)">
+              %
+            </text>
+          </svg>
+
+          {/* 等级名 + 总分 */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontFamily: "'ZCOOL XiaoWei', serif",
+              fontSize: 21, color: gradeColor,
+              letterSpacing: "0.2em", textIndent: "0.2em",
+              lineHeight: 1.2, marginBottom: 8,
+            }}>{grade}</div>
+            <div style={{ fontSize: 13, color: "var(--ink)", letterSpacing: "0.04em", fontWeight: 500 }}>
+              {total}
+              <span style={{ opacity: 0.52, fontSize: 10 }}> / {maxTotal} 分</span>
+            </div>
+            <div style={{
+              fontSize: 9.5, color: "rgba(40,28,12,0.6)",
+              letterSpacing: "0.22em", marginTop: 4,
+            }}>玩法完成度</div>
+          </div>
+        </div>
+
+        {/* 分项进度条 */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+          {breakdown.map((item, i) => {
+            const color = BREAKDOWN_COLORS[i] ?? gradeColor;
+            const w = item.max > 0 ? (item.score / item.max) * 100 : 0;
+            return (
+              <div key={item.label}>
+                <div style={{
+                  display: "flex", justifyContent: "space-between",
+                  alignItems: "center", marginBottom: 6,
+                }}>
+                  <span style={{
+                    fontSize: 11.5, color: "rgba(30,20,8,0.88)",
+                    letterSpacing: "0.12em",
+                    display: "flex", alignItems: "center", gap: 6,
+                  }}>
+                    <span style={{
+                      display: "inline-block", width: 6, height: 6,
+                      borderRadius: "50%", background: color, flexShrink: 0,
+                    }} />
+                    {item.label}
+                    {item.detail && (
+                      <span style={{ opacity: 0.6, fontSize: 10 }}>（{item.detail}）</span>
+                    )}
+                  </span>
+                  <span style={{ fontSize: 11.5, color, flexShrink: 0, letterSpacing: "0.04em", fontWeight: 500 }}>
+                    {item.score}
+                    <span style={{ opacity: 0.5, fontSize: 9 }}> / {item.max}</span>
+                  </span>
+                </div>
+                <div style={{
+                  height: 5, background: "rgba(40,28,12,0.15)",
+                  borderRadius: 3, overflow: "hidden",
+                }}>
+                  <div style={{
+                    height: "100%",
+                    width: `${visible ? w : 0}%`,
+                    background: `linear-gradient(90deg, ${color}88, ${color})`,
+                    borderRadius: 3,
+                    transition: `width 1s cubic-bezier(.4,0,.2,1) ${0.3 + i * 0.15}s`,
+                  }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <GoldDivider />
+      </PaperPanel>
+    </div>
   );
 }
 
@@ -209,7 +336,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
       finalChoice: null,
       searchedClues: [],
       trustedPerson: null, currentChapter: 1, lastEnding: null,
-      firstChoice: null, ch2: null, finalDecision: null,
+      firstChoice: null, ch2: null, ch3: null, ch4: null, finalDecision: null,
     };
     setState(ns);
     saveState(ns);
@@ -330,102 +457,118 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
       )}
       <div className="page-scroll" style={{padding: 0}}>
         <div style={{position:"relative"}}>
-          <div style={{position:"relative", height: 280}}>
+
+          {/* ── 场景插图区 ── */}
+          <div style={{position:"relative", height: 300}}>
             {sceneFor(endId)}
-            {/* AI-generated ending illustration overlay */}
             {ENDING_IMAGES[endId] && <EndingSceneImage endId={endId} />}
             <div className="grain"/>
             <div className="vignette"/>
-            <Particles count={16}/>
+            <Particles count={18}/>
             <div className="en-small fade-in" style={{
               position:"absolute", top: 14, left: 18, zIndex: 2,
-              fontSize: 10, letterSpacing:"0.34em",
-              color:"var(--gold-pale)", opacity: 0.6,
+              fontSize: 9.5, letterSpacing:"0.38em",
+              color:"var(--gold-pale)", opacity: 0.5,
             }}>THE LOREMENDER</div>
+            {/* 向下渐变 */}
             <div style={{
-              position:"absolute", left:0, right:0, bottom: 0, height: 80,
-              background:"linear-gradient(180deg, transparent, rgba(7,11,14,0.98))",
+              position:"absolute", left:0, right:0, bottom: 0, height: 110,
+              background:"linear-gradient(180deg, transparent, rgba(5,8,10,0.99))",
               pointerEvents:"none",
             }}/>
           </div>
 
+          {/* ── 印章 + 标题区（浮在图上方） ── */}
           <div className="ink-in" style={{
             textAlign:"center", padding:"0 24px",
-            marginTop: -22, position:"relative", zIndex: 2,
+            marginTop: -36, position:"relative", zIndex: 2,
           }}>
             <div style={{
-              display:"inline-flex", flexDirection:"column", alignItems:"center", gap: 10,
+              display:"inline-flex", flexDirection:"column", alignItems:"center", gap: 12,
             }}>
+              {/* 印章 + 光晕 */}
               <div style={{position:"relative"}}>
                 <div style={{
-                  position:"absolute", inset: -16, borderRadius:"50%",
-                  background: e.rankColor, opacity: 0.5, filter:"blur(20px)",
-                  animation: "glowPulse 3s ease-in-out infinite",
+                  position:"absolute", inset: -20, borderRadius:"50%",
+                  background: e.rankColor, opacity: 0.42, filter:"blur(24px)",
+                  animation: "glowPulse 3.5s ease-in-out infinite",
                 }}/>
-                <div style={{
-                  position:"relative", animation: "sealStamp 700ms ease-out both",
-                }}>
+                <div style={{ position:"relative", animation: "sealStamp 700ms ease-out both" }}>
                   <SealTag size="lg" style={{
                     background: e.rankColor,
-                    borderRadius: 4,
-                    width: 84, height: 84, fontSize: 13,
+                    borderRadius: "50%",
+                    width: 90, height: 90,
                   }}>
-                    <div style={{lineHeight: 1.15, letterSpacing:"0.12em", textIndent:"0.12em"}}>
-                      <div style={{fontSize: 11, opacity: 0.85}}>结 局</div>
-                      <div style={{fontSize: 11, opacity: 0.85, marginTop: 2}}>{e.rank}</div>
+                    <div style={{ textAlign:"center" }}>
+                      <div style={{ fontFamily:"'ZCOOL XiaoWei', serif", fontSize: 10, opacity: 0.75, letterSpacing:"0.18em" }}>结 局</div>
+                      <div style={{ fontFamily:"'ZCOOL XiaoWei', serif", fontSize: 12, opacity: 0.92, marginTop: 3, letterSpacing:"0.1em" }}>{e.rank}</div>
                     </div>
                   </SealTag>
                 </div>
               </div>
+
+              {/* 结局名 */}
               <div className="title-han" style={{
-                fontSize: 26, color:"var(--gold-pale)",
-                letterSpacing:"0.3em", textIndent:"0.3em",
-                marginTop: 8,
-                textShadow: "0 0 20px rgba(236,220,166,0.4)",
+                fontSize: 28, color:"var(--gold-pale)",
+                letterSpacing:"0.32em", textIndent:"0.32em",
+                textShadow: "0 0 22px rgba(236,220,166,0.38), 0 2px 8px rgba(0,0,0,0.7)",
               }}>{e.name}</div>
+
+              {/* 墓志铭 */}
               <div style={{
-                fontSize: 12.5, color:"rgba(228,224,208,0.7)",
-                fontStyle:"italic", letterSpacing:"0.08em",
-                marginTop: -2,
+                fontSize: 13, color:"rgba(228,224,208,0.62)",
+                fontStyle:"italic", letterSpacing:"0.1em",
+                maxWidth: 260, lineHeight: 1.7,
+                marginTop: -4,
               }}>「{e.epitaph}」</div>
             </div>
           </div>
 
-          <div className="fade-up" style={{
-            margin: "24px 18px 18px",
-            animationDelay: "300ms",
-          }}>
-            <PaperPanel style={{padding:"18px 20px 22px"}}>
+          {/* ── 余音正文 ── */}
+          <div className="fade-up" style={{ margin: "26px 18px 0", animationDelay: "300ms" }}>
+            <PaperPanel style={{padding:"18px 22px 22px"}}>
               <GoldDivider label="余 音"/>
               <div style={{
-                fontSize: 14, lineHeight: 2,
+                fontSize: 14, lineHeight: 2.05,
                 color:"var(--ink-deep)",
                 whiteSpace: "pre-line",
-                letterSpacing: "0.04em",
-                textAlign:"center",
+                letterSpacing: "0.05em",
+                textAlign: "center",
               }}>{e.body}</div>
               <GoldDivider/>
               <div style={{
                 textAlign:"center",
                 fontFamily:"ZCOOL XiaoWei, serif",
-                fontSize: 11, color:"rgba(70,62,38,0.65)",
-                letterSpacing:"0.4em", textIndent:"0.4em",
+                fontSize: 11, color:"rgba(70,62,38,0.6)",
+                letterSpacing:"0.42em", textIndent:"0.42em",
                 marginTop: 4,
               }}>· 全 章 终 ·</div>
             </PaperPanel>
           </div>
 
-          <div style={{
-            display:"flex", flexDirection:"column", gap: 10,
-            padding: "0 20px calc(28px + var(--safe-bottom))",
-          }}>
-            <button className="btn-primary press" onClick={() => gotoPage("gallery")}>
+          {/* ── 一卷总评 ── */}
+          <ScorePanel state={state} />
+
+          {/* ── 操作按钮区 ── */}
+          <div style={{ padding: "0 20px calc(32px + var(--safe-bottom))" }}>
+            <div style={{
+              textAlign:"center", fontSize: 10.5,
+              color:"rgba(228,224,208,0.28)", letterSpacing:"0.3em",
+              marginBottom: 14,
+            }}>· · ·</div>
+            <button className="btn-primary press" onClick={() => gotoPage("gallery")}
+              style={{ width:"100%", marginBottom: 10 }}>
               查 看 结 局 图 鉴
             </button>
             <div style={{display:"grid", gridTemplateColumns: "1fr 1fr", gap: 10}}>
               <button className="btn-ghost press" onClick={replay}>重 新 选 择</button>
               <button className="btn-ghost press" onClick={reset}>青 史 空 间</button>
             </div>
+            <div style={{
+              textAlign:"center", fontSize: 10,
+              color:"rgba(228,224,208,0.22)", letterSpacing:"0.22em",
+              marginTop: 16,
+            }}>典故修补者 · 第一卷</div>
           </div>
         </div>
       </div>
