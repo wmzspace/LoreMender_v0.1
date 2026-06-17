@@ -26,7 +26,7 @@ export function SceneFinal() {
           )}
         </g>
         <rect x="200" y="68" width="36" height="36" fill="#b23a2c" opacity="0.92"/>
-        <text x="218" y="93" textAnchor="middle" fontFamily="ZCOOL XiaoWei, serif"
+        <text x="218" y="93" textAnchor="middle" fontFamily="var(--font-han)"
               fontSize="22" fill="#fbe3c2">青</text>
       </g>
 

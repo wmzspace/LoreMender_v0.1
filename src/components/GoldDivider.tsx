@@ -10,7 +10,7 @@ export function GoldDivider({ label, labelStyle }: GoldDividerProps) {
     <div className="gold-divider" style={{margin: "12px 0"}}>
       <span className="mark"></span>
       {label && <span style={{
-        fontFamily: "ZCOOL XiaoWei, serif",
+        fontFamily: "var(--font-han)",
         fontSize: 13, letterSpacing: "0.3em", textIndent: "0.3em",
         ...labelStyle,
       }}>{label}</span>}

@@ -10,6 +10,8 @@ export interface VoiceSetting {
   rate?: string;
   /** 音调调整，如 "-8Hz"，省略表示默认音调 */
   pitch?: string;
+  /** 音量调整，如 "+15%"，省略表示默认音量 */
+  volume?: string;
 }
 
 /** 旁白音色 */
@@ -25,5 +27,5 @@ export const CHARACTER_VOICES: Record<string, VoiceSetting> = {
   wangji: { voice: "zh-CN-YunyangNeural" },                               // 王济 · 油滑门客
   chenbo: { voice: "zh-CN-YunjianNeural", rate: "-15%" },                 // 陈伯 · 朴实乡野郎中
   xuanyin: { voice: "zh-CN-YunjianNeural", rate: "-25%", pitch: "-12Hz" }, // 玄音道人 · 得道高人
-  soldier: { voice: "zh-CN-YunxiaNeural" },                               // 士卒 · 龙套
+  soldier: { voice: "zh-CN-YunjianNeural", rate: "+18%", pitch: "+8Hz", volume: "+20%" }, // 士卒 · 铿锵有士气的成年兵卒
 };

@@ -202,7 +202,7 @@ function ExpandedCard({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <div style={{
-              fontSize: 20, fontFamily: "'ZCOOL XiaoWei', serif",
+              fontSize: 20, fontFamily: "var(--font-han)",
               color: isCurrent ? JADE_PALE : GOLD_PALE,
               letterSpacing: "0.18em", textIndent: "0.18em",
               textShadow: isCurrent
@@ -444,7 +444,7 @@ export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 17, fontFamily: "'ZCOOL XiaoWei', serif",
+                      fontSize: 17, fontFamily: "var(--font-han)",
                       color: titleColor,
                       letterSpacing: "0.14em", textIndent: "0.14em",
                       textShadow: isCurrent ? "0 0 10px rgba(166,220,203,0.35)" : "none",

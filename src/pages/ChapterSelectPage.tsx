@@ -57,7 +57,7 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
             <div style={{
               fontSize: 10, letterSpacing: "0.28em",
               color: "var(--gold-pale)", opacity: 0.78,
-              fontFamily: "ZCOOL XiaoWei, serif",
+              fontFamily: "var(--font-han)",
               marginTop: 1,
             }}>第 一 卷</div>
           </div>
@@ -81,7 +81,7 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
               <Particles count={12}/>
               <div style={{
                 position:"absolute", left: 16, top: 14,
-                fontFamily:"ZCOOL XiaoWei, serif",
+                fontFamily:"var(--font-han)",
                 fontSize: 12, color:"var(--gold-pale)",
                 letterSpacing:"0.4em", opacity: 0.85,
               }}>EPISODE · 壹</div>
@@ -120,7 +120,7 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
 
         <div style={{
           textAlign:"center", marginBottom: 12,
-          fontFamily:"ZCOOL XiaoWei, serif",
+          fontFamily:"var(--font-han)",
           fontSize: 12, color:"rgba(236,220,166,0.5)",
           letterSpacing:"0.5em", textIndent:"0.5em",
         }}>· 未 启 之 卷 ·</div>

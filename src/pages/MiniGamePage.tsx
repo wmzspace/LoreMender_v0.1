@@ -3,6 +3,7 @@ import { STORY } from "../data";
 import type { GameNode, GameResultRank, GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
 import { saveState } from "../lib/storage";
+import { playSfx } from "../lib/audio";
 import { Toast, Topbar } from "../components";
 
 interface MiniGamePageProps {
@@ -81,7 +82,7 @@ function RankSeal({ rank }: { rank: GameResultRank }) {
       <circle cx={r} cy={r} r={r - 7} fill="#060d14" />
       <circle cx={r} cy={r} r={r - 7} fill="none" stroke={c.ring} strokeWidth="1.8" />
       <text x={r} y={r + 11} textAnchor="middle"
-        fontFamily="'ZCOOL XiaoWei', serif" fontSize="32" fill={c.text}>
+        fontFamily="var(--font-han)" fontSize="32" fill={c.text}>
         { rank === "high" ? "优" : rank === "mid" ? "良" : "勉" }
       </text>
     </svg>
@@ -284,7 +285,7 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
   const chipStyle = (isSelected: boolean): React.CSSProperties => ({
     padding: "5px 12px",
     fontSize: 13,
-    fontFamily: "ZCOOL XiaoWei, serif",
+    fontFamily: "var(--font-han)",
     letterSpacing: "0.06em",
     border: `1px solid ${isSelected ? "var(--jade)" : "rgba(205,178,119,0.32)"}`,
     background: isSelected
@@ -318,7 +319,7 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
                 <div style={{
                   fontSize: 12, color: theme.label,
                   letterSpacing: "0.18em", marginBottom: 8,
-                  fontFamily: "ZCOOL XiaoWei, serif",
+                  fontFamily: "var(--font-han)",
                 }}>{cat} · {catWords.length}/5</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                   {catWords.map(w => {
@@ -326,7 +327,7 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
                     return (
                       <span key={w} style={{
                         fontSize: 12, padding: "3px 10px", borderRadius: 3,
-                        fontFamily: "ZCOOL XiaoWei, serif",
+                        fontFamily: "var(--font-han)",
                         border: `1px solid ${isCorrect ? "rgba(95,168,146,0.5)" : "rgba(180,60,44,0.6)"}`,
                         background: isCorrect ? "rgba(95,168,146,0.15)" : "rgba(180,60,44,0.2)",
                         color: isCorrect ? "var(--jade)" : "rgba(225,110,90,0.92)",
@@ -408,7 +409,7 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: catWords.length > 0 ? 9 : 0 }}>
                 <span style={{
                   fontSize: 13, color: theme.label,
-                  letterSpacing: "0.2em", fontFamily: "ZCOOL XiaoWei, serif",
+                  letterSpacing: "0.2em", fontFamily: "var(--font-han)",
                 }}>{cat}</span>
                 <span style={{
                   fontSize: 10, letterSpacing: "0.04em",
@@ -435,7 +436,7 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
                         border: `1px solid ${theme.accent}66`,
                         background: theme.chip,
                         color: theme.label, cursor: "pointer",
-                        fontFamily: "ZCOOL XiaoWei, serif",
+                        fontFamily: "var(--font-han)",
                       }}>{w}</button>
                   ))}
                 </div>
@@ -878,6 +879,7 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
   const woodenBoxHard = localClassifyRetry === false;
 
   const finish = (rank: GameResultRank) => {
+    playSfx("unlock"); // 完成机关/游戏的成功音（优先级高于点击 tap，会在 30ms 内胜出）
     let ns = applyResult(state, game, rank);
     // 木盒夹层：困难难度高完成度=藏卷成功(found)，其余完成=险些被搜出(missed)
     if (game.kind === "woodenBox") {

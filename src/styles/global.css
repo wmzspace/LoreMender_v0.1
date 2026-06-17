@@ -55,13 +55,19 @@
   /* UI */
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --phone-w: 390px;
+
+  /* Typography — 统一 fallback 链避免缺字时字体不统一 */
+  --font-han: "ZCOOL XiaoWei", "Noto Serif SC", serif;
+  --font-deco: "Ma Shan Zheng", "Noto Serif SC", serif;
+  --font-en: "Cormorant Garamond", "EB Garamond", serif;
+  --font-body: "Noto Serif SC", "Songti SC", "STSong", serif;
 }
 
 /* ---------- Reset / base ---------- */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
 html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; }
 body {
-  font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+  font-family: var(--font-body);
   color: var(--paper);
   background: #04070a;
   min-height: 100vh;
@@ -253,14 +259,14 @@ button { font-family: inherit; }
    Typography
    ============================================================ */
 .title-han {
-  font-family: "ZCOOL XiaoWei", "Ma Shan Zheng", "Noto Serif SC", serif;
+  font-family: var(--font-han);
   letter-spacing: 0.18em;
 }
 .title-deco {
-  font-family: "Ma Shan Zheng", "ZCOOL XiaoWei", serif;
+  font-family: var(--font-deco);
 }
 .en-small {
-  font-family: "Cormorant Garamond", "EB Garamond", serif;
+  font-family: var(--font-en);
   letter-spacing: 0.32em;
   text-transform: uppercase;
   font-style: italic;
@@ -304,7 +310,7 @@ button { font-family: inherit; }
   color: #121b20;
   border: 1px solid #5a4d2c;
   border-radius: 2px;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-han);
   font-size: 17px;
   letter-spacing: 0.3em;
   text-indent: 0.3em;
@@ -338,7 +344,7 @@ button { font-family: inherit; }
   color: var(--paper);
   border: 1px solid var(--gold-deep);
   border-radius: 2px;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-han);
   font-size: 15px;
   letter-spacing: 0.3em;
   text-indent: 0.3em;
@@ -389,7 +395,7 @@ button { font-family: inherit; }
   width: 44px; height: 44px;
   background: var(--vermillion);
   color: #fbe3c2;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-han);
   font-size: 13px;
   line-height: 1.05;
   text-align: center;
@@ -427,7 +433,7 @@ button { font-family: inherit; }
   z-index: 3;
 }
 .topbar-title {
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-han);
   font-size: 16px;
   letter-spacing: 0.28em;
   text-indent: 0.28em;
@@ -472,7 +478,7 @@ button { font-family: inherit; }
   background: none;
   border: 0;
   color: rgba(228,224,208,0.45);
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-han);
   font-size: 11px;
   letter-spacing: 0.25em;
   text-indent: 0.25em;
@@ -514,7 +520,7 @@ button { font-family: inherit; }
 }
 .dialogue-name {
   display: inline-block;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-han);
   font-size: 14px;
   color: var(--gold-pale);
   letter-spacing: 0.25em;
@@ -576,7 +582,7 @@ button { font-family: inherit; }
   display: inline-flex; align-items: center; justify-content: center;
   background: linear-gradient(150deg, var(--jade-pale), var(--jade) 75%);
   color: var(--ink-deep);
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-han);
   font-size: 14px;
   font-weight: 700;
   border-radius: 3px 8px 5px 8px;
@@ -597,7 +603,7 @@ button { font-family: inherit; }
 .choice-mark {
   position: absolute; right: -6px; bottom: -20px;
   font-size: 78px; line-height: 1;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-han);
   color: transparent;
   -webkit-text-stroke: 1px var(--jade);
   opacity: 0.18;
@@ -643,7 +649,7 @@ button { font-family: inherit; }
   background: linear-gradient(180deg, rgba(9,14,17,0.96), rgba(30,20,12,0.96));
   border: 1px solid var(--gold-pale);
   color: var(--gold-pale);
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-han);
   font-size: 14px;
   letter-spacing: 0.18em;
   padding: 10px 18px;
@@ -721,7 +727,7 @@ button { font-family: inherit; }
   width: 56px; height: 56px;
   background: var(--vermillion);
   color: #fbe3c2;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-han);
   font-size: 26px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%;

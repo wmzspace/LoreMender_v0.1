@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import {
   CoverPage, WorldPage, VolumeSelectPage, ChapterSelectPage,
   ShowcasePage,
@@ -8,10 +8,13 @@ import {
 import { resolveEnding } from "./data";
 import type { GameState } from "./data/types";
 import { loadState, saveState } from "./lib/storage";
-import { playSfx, primeAudio, type SfxName } from "./lib/audio";
+import { bgmPath, playBgm, playSfx, primeAudio, stopBgm, type SfxName } from "./lib/audio";
 import type { PageKey } from "./lib/routes";
 
 const SFX_SELECTOR = "[data-sfx], .press, .choice, .navitem, .btn-primary, .btn-ghost, .icon-btn";
+
+/** Pages that share the same chapter BGM — switching among them keeps the music playing. */
+const BGM_PAGES: PageKey[] = ["story", "minigame"];
 
 /** Delegated click sound: plays the target's `data-sfx`, or "tap" for any other pressable element. */
 function handleScreenClick(e: MouseEvent<HTMLDivElement>) {
@@ -25,6 +28,16 @@ export default function App() {
   const [state, setState] = useState<GameState>(() => loadState());
   const [page, setPage] = useState<PageKey>("cover");
   const [transKey, setTransKey] = useState(0);
+
+  // 章节 BGM 由 App 统一管理，跨越剧情↔小游戏的页面切换持续播放（同源 src 时 playBgm 为 no-op）。
+  useEffect(() => {
+    if (BGM_PAGES.includes(page)) {
+      const src = bgmPath(state.currentChapter || 1);
+      if (src) playBgm(src);
+    } else {
+      stopBgm();
+    }
+  }, [page, state.currentChapter]);
 
   const gotoPage = (p: PageKey) => {
     setPage(p);

@@ -23,7 +23,7 @@ export function SceneTrust() {
       ))}
 
       <text x="195" y="150" textAnchor="middle"
-            fontFamily="ZCOOL XiaoWei, serif"
+            fontFamily="var(--font-han)"
             fontSize="120"
             fill="#ecdca6"
             opacity="0.08">托</text>

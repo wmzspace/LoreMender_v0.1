@@ -104,7 +104,7 @@ function ScorePanel({ state }: { state: GameState }) {
             />
             <text x={CX} y={CY + 1}
               textAnchor="middle" dominantBaseline="middle"
-              fontFamily="'ZCOOL XiaoWei', serif" fontSize="22" fill={gradeColor}>
+              fontFamily="var(--font-han)" fontSize="22" fill={gradeColor}>
               {pct}
             </text>
             <text x={CX} y={CY + 17}
@@ -117,7 +117,7 @@ function ScorePanel({ state }: { state: GameState }) {
           {/* 等级名 + 总分 */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontFamily: "'ZCOOL XiaoWei', serif",
+              fontFamily: "var(--font-han)",
               fontSize: 21, color: gradeColor,
               letterSpacing: "0.2em", textIndent: "0.2em",
               lineHeight: 1.2, marginBottom: 8,
@@ -446,7 +446,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             pointerEvents:"none",
           }}>
             <div style={{
-              fontFamily:"ZCOOL XiaoWei, serif",
+              fontFamily:"var(--font-han)",
               fontSize:18, color:"rgba(236,220,166,0.92)",
               letterSpacing:"0.25em", textIndent:"0.25em",
               textShadow:"0 0 16px rgba(0,0,0,0.95), 0 2px 4px rgba(0,0,0,0.9)",
@@ -500,8 +500,8 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
                     width: 90, height: 90,
                   }}>
                     <div style={{ textAlign:"center" }}>
-                      <div style={{ fontFamily:"'ZCOOL XiaoWei', serif", fontSize: 10, opacity: 0.75, letterSpacing:"0.18em" }}>结 局</div>
-                      <div style={{ fontFamily:"'ZCOOL XiaoWei', serif", fontSize: 12, opacity: 0.92, marginTop: 3, letterSpacing:"0.1em" }}>{e.rank}</div>
+                      <div style={{ fontFamily:"var(--font-han)", fontSize: 10, opacity: 0.75, letterSpacing:"0.18em" }}>结 局</div>
+                      <div style={{ fontFamily:"var(--font-han)", fontSize: 12, opacity: 0.92, marginTop: 3, letterSpacing:"0.1em" }}>{e.rank}</div>
                     </div>
                   </SealTag>
                 </div>
@@ -538,7 +538,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
               <GoldDivider/>
               <div style={{
                 textAlign:"center",
-                fontFamily:"ZCOOL XiaoWei, serif",
+                fontFamily:"var(--font-han)",
                 fontSize: 11, color:"rgba(70,62,38,0.6)",
                 letterSpacing:"0.42em", textIndent:"0.42em",
                 marginTop: 4,

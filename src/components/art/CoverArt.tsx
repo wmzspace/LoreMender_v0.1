@@ -37,7 +37,7 @@ export function CoverArt() {
 
       {/* large faint 史 watermark seated behind the moon */}
       <text x="195" y="468" textAnchor="middle"
-            fontFamily="ZCOOL XiaoWei, serif" fontSize="280"
+            fontFamily="var(--font-han)" fontSize="280"
             fill="#ecdca6" opacity="0.05">史</text>
 
       {/* moon + halo, seated in the open band between subtitle and synopsis */}

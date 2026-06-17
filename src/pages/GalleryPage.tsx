@@ -127,7 +127,7 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
                       {/* play hint */}
                       <div style={{
                         position:"absolute", bottom: 10, left: 12,
-                        fontFamily:"ZCOOL XiaoWei, serif",
+                        fontFamily:"var(--font-han)",
                         fontSize: 11, color:"rgba(205,178,119,0.65)",
                         letterSpacing:"0.18em", textIndent:"0.18em",
                         zIndex: 2,
@@ -162,7 +162,7 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
 
         <div style={{
           textAlign:"center", padding: "12px 0 20px",
-          fontFamily:"ZCOOL XiaoWei, serif",
+          fontFamily:"var(--font-han)",
           fontSize: 11, opacity: 0.45,
           letterSpacing:"0.4em",
         }}>· 收 卷 ·</div>

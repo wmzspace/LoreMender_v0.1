@@ -9,7 +9,7 @@ export function WorldIcon({ type }: WorldIconProps) {
       <circle cx="30" cy="30" r="22" fill="none" stroke="#cdb277" strokeWidth="0.8"/>
       <circle cx="30" cy="30" r="14" fill="none" stroke="#cdb277" strokeWidth="0.6" strokeDasharray="2 4"/>
       <circle cx="30" cy="30" r="6" fill="#cdb277" opacity="0.6"/>
-      <text x="30" y="35" textAnchor="middle" fontFamily="ZCOOL XiaoWei, serif" fontSize="16" fill="#06090b">史</text>
+      <text x="30" y="35" textAnchor="middle" fontFamily="var(--font-han)" fontSize="16" fill="#06090b">史</text>
     </svg>
   );
   if (type === "pollution") return (
@@ -38,7 +38,7 @@ export function WorldIcon({ type }: WorldIconProps) {
     <svg {...props}>
       <circle cx="30" cy="30" r="20" fill="none" stroke="#cdb277" strokeWidth="0.8"/>
       <rect x="22" y="22" width="16" height="16" fill="#b23a2c" opacity="0.85"/>
-      <text x="30" y="34" textAnchor="middle" fontFamily="ZCOOL XiaoWei, serif" fontSize="11" fill="#fbe3c2">补</text>
+      <text x="30" y="34" textAnchor="middle" fontFamily="var(--font-han)" fontSize="11" fill="#fbe3c2">补</text>
     </svg>
   );
   return null;

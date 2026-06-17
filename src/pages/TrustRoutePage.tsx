@@ -154,7 +154,7 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
         </div>
       </div>
       <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "12px 18px calc(16px + var(--safe-bottom))", background: "linear-gradient(180deg, transparent, rgba(7,11,14,0.96) 30%)" }}>
-        <button className="btn-primary press" disabled={!selected} onClick={confirm} style={{ width: "100%" }}>
+        <button className="btn-primary press" data-sfx="confirm" disabled={!selected} onClick={confirm} style={{ width: "100%" }}>
           确认归处
         </button>
       </div>

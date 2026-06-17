@@ -45,7 +45,7 @@ export function ShowcasePage({ onBack, onEnter }: ShowcasePageProps) {
           <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
             <div>
               <div style={{
-                fontFamily: "ZCOOL XiaoWei, serif",
+                fontFamily: "var(--font-han)",
                 fontSize: 18,
                 letterSpacing: "0.18em",
                 color: "#2a1e13",
@@ -65,7 +65,7 @@ export function ShowcasePage({ onBack, onEnter }: ShowcasePageProps) {
         <div style={{
           margin: "18px 0 10px",
           textAlign: "center",
-          fontFamily: "ZCOOL XiaoWei, serif",
+          fontFamily: "var(--font-han)",
           fontSize: 13,
           color: "var(--gold-pale)",
           letterSpacing: "0.34em",
@@ -78,7 +78,7 @@ export function ShowcasePage({ onBack, onEnter }: ShowcasePageProps) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{
-                    fontFamily: "ZCOOL XiaoWei, serif",
+                    fontFamily: "var(--font-han)",
                     fontSize: 16,
                     color: "#2a1e13",
                     letterSpacing: "0.12em",
@@ -131,7 +131,7 @@ export function ShowcasePage({ onBack, onEnter }: ShowcasePageProps) {
         <div style={{
           margin: "20px 0 10px",
           textAlign: "center",
-          fontFamily: "ZCOOL XiaoWei, serif",
+          fontFamily: "var(--font-han)",
           fontSize: 13,
           color: "var(--gold-pale)",
           letterSpacing: "0.34em",
@@ -142,7 +142,7 @@ export function ShowcasePage({ onBack, onEnter }: ShowcasePageProps) {
           {AI_WORKFLOW_RECORDS.map((record, i) => (
             <PaperPanel key={record.title} className="fade-up" style={{ animationDelay: `${i * 45}ms`, padding: 14 }}>
               <div style={{
-                fontFamily: "ZCOOL XiaoWei, serif",
+                fontFamily: "var(--font-han)",
                 fontSize: 15,
                 color: "#2a1e13",
                 letterSpacing: "0.12em",

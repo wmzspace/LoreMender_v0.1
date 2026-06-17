@@ -28,7 +28,7 @@ export function SceneEndingAsh() {
                 r={1+Math.random()*2} fill="#ffd081" opacity={0.4+Math.random()*0.5}/>
       ))}
 
-      <text x="195" y="220" textAnchor="middle" fontFamily="ZCOOL XiaoWei, serif"
+      <text x="195" y="220" textAnchor="middle" fontFamily="var(--font-han)"
             fontSize="160" fill="#3a1208" opacity="0.6">焚</text>
     </svg>
   );
@@ -74,7 +74,7 @@ export function SceneEndingSealed() {
                 r={0.6+Math.random()*1} fill="#c5a06a" opacity={0.3+Math.random()*0.4}/>
       ))}
 
-      <text x="195" y="220" textAnchor="middle" fontFamily="ZCOOL XiaoWei, serif"
+      <text x="195" y="220" textAnchor="middle" fontFamily="var(--font-han)"
             fontSize="160" fill="#5a4520" opacity="0.16">封</text>
     </svg>
   );
@@ -121,7 +121,7 @@ export function SceneEndingLiving() {
         <circle cx="0" cy="55" r="45" fill="#06090b"/>
       </g>
 
-      <text x="195" y="220" textAnchor="middle" fontFamily="ZCOOL XiaoWei, serif"
+      <text x="195" y="220" textAnchor="middle" fontFamily="var(--font-han)"
             fontSize="160" fill="#3a5238" opacity="0.18">传</text>
     </svg>
   );

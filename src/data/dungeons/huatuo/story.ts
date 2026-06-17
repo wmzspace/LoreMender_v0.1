@@ -10,8 +10,8 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "aj", line: "这里是……哪里？头好痛。" },
       { narration: true, line: "烛火摇曳中，隔壁囚室里有一个苍老身影，膝前散落着断裂竹简。" },
       { speaker: "huatuo", line: "醒了？过来。那些竹筒，散了。" },
-      { speaker: "aj", line: "师父……这写的是《青囊经》？" },
-      { speaker: "huatuo", line: "是一生所学，也只是一点残术。今夜之后，它能不能留下，我不知道。" },
+      { speaker: "aj", line: "师父……这写的是？" },
+      { speaker: "huatuo", line: "《青囊经》。此乃一生行医所得，可放眼苍生，不过微薄残术。长夜将尽，此书是湮灭还是流传，我心中仍无定数。" },
       { speaker: "aj", line: "我带它走。只要我还活着，就不会让它落进曹府手里。" },
       { speaker: "huatuo", line: "不。你要记住，守住一本书，不等于守住医道。" },
       { speaker: "aj", line: "那我该怎么做？" },
@@ -292,11 +292,11 @@ export const STORY: Record<string, StoryChapter> = {
     beats: [
       { narration: true, line: "循着歌声，阿吉推开乐坊半掩的门。唱到“猛灌汤”那一句时，他再也忍不住。" },
       { speaker: "aj", line: "这句不能这么唱。高热惊厥不能乱灌汤，孩子可能被呛死。" },
-      { narration: true, line: "门槛上坐着个年轻女子，手里拨着一把旧琵琶。她唱的不是风月，是药名、脉象和民间救急的法子。" },
+      { narration: true, line: "门槛上坐着个年轻道人，手里拨着一把旧琵琶。他唱的不是风月，是药名、脉象和民间救急的法子。" },
       { speaker: "xuanyin", line: "你听得懂？" },
       { speaker: "aj", line: "我学过医。方才那半句，是治小儿惊风的，可后半截唱反了。" },
       { speaker: "xuanyin", line: "所以我一直在等一个懂医理的人。字会被烧，简会被夺，曲子藏在人嘴里，谁也抢不走。可曲子若错了，也会把错带到每一张嘴里。" },
-      { narration: true, line: "她摊开几页残纸，上面有药名、脉象和不完整的韵脚。阿吉忽然想起牢中竹简的顺序，也想起曹府正在追查这些“华佗歌”。" },
+      { narration: true, line: "他摊开几页残纸，上面有药名、脉象和不完整的韵脚。阿吉忽然想起牢中竹简的顺序，也想起曹府正在追查这些\u201C华佗歌\u201D。" },
       {
         choices: [
           { label: "「歌诀传得广，但万一传错了呢？」", set: { ch4: "worry_errors" } },
@@ -323,7 +323,7 @@ export const STORY: Record<string, StoryChapter> = {
         beats: [
           { speaker: "aj", line: "你不怕唱这些被人抓起来吗？师父就是因为医书被……" },
           { speaker: "xuanyin", line: "抓我？抓一个唱歌的？" },
-          { narration: true, line: "她笑了一下，但那笑容里没有轻浮。她拨了一下琴弦，琴声在巷子里弹了两弹才散。" },
+          { narration: true, line: "他笑了一下，但那笑容里没有轻浮。他拨了一下琴弦，琴声在巷子里弹了两弹才散。" },
           { speaker: "xuanyin", line: "小郎中，曹府可以禁书、烧简、锁库房。但他们禁不了一首歌。你今天在巷尾唱一句，明天它就跑到隔壁镇上去了。" },
           { speaker: "xuanyin", line: "你师父的事我听说过。正因如此，我才觉得——纸上的东西太容易被一把火烧干净。但人嘴里的东西，烧不掉。" },
           { speaker: "aj", line: "可是……你不怕吗？" },
@@ -342,7 +342,7 @@ export const STORY: Record<string, StoryChapter> = {
           { speaker: "xuanyin", line: "能唱的是：受了风寒喝什么、肚子疼揉哪里、小儿惊风怎么办——这些家家户户都用得上的。" },
           { speaker: "aj", line: "所以你传的不是医术，是急救常识。" },
           { speaker: "xuanyin", line: "对。真正的大病，还得找你们这些学医的。我只是让更多人活到能找到大夫的时候。" },
-          { narration: true, line: "她低头看了看自己拨琴弦的手指——指尖有茧，和你的针茧位置不一样，但同样结实。" },
+          { narration: true, line: "他低头看了看自己拨琴弦的手指——指尖有茧，和你的针茧位置不一样，但同样结实。" },
         ],
       },
       // ---- 收束 ----
@@ -359,7 +359,7 @@ export const STORY: Record<string, StoryChapter> = {
         },
       },
       { speaker: "xuanyin", line: "能传开的，未必都该乱传。基础救急可入歌，复杂处方仍要交给医者。" },
-      { narration: true, line: "她重新拨弦。歌声从巷尾散开，这一次没有断在最要紧处，也没有越过不该越过的边界。" },
+      { narration: true, line: "他重新拨弦。歌声从巷尾散开，这一次没有断在最要紧处，也没有越过不该越过的边界。" },
       { narration: true, line: "王济假文书上的朱印在阿吉怀中被汗浸湿。天快亮了——文书天亮失效，库房一旦点验，谁也救不了你。" },
       { narration: true, line: "假文书撑不到天亮。他必须在天亮前赶到旧祠。" },
       { speaker: "xuanyin", line: "你要去哪里？" },

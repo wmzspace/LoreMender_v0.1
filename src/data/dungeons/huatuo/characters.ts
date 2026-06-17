@@ -43,7 +43,7 @@ export const CHARACTERS: Record<string, Character> = {
     role: "民间乐坊歌者",
     tag: "传唱",
     short: "能把医理改成孩童也能记住的曲调。",
-    detail: "玄音相信字会被烧、简会被夺，曲子却能藏在人嘴里。她能让知识流动，也必须守住医理边界。",
+    detail: "玄音相信字会被烧、简会被夺，曲子却能藏在人嘴里。他能让知识流动，也必须守住医理边界。",
     silhouette: "songbird",
     portrait: "/images/levels/1/characters/xuanyin_square.webp",
   },

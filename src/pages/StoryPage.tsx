@@ -4,8 +4,9 @@ import {
 } from "../components";
 import { SceneClinic, SceneFinal, SceneRaid } from "../components/art";
 import { CHARACTERS, LEVEL_ASSET_PLANS, STORY } from "../data";
+import { buildAudioIndex } from "../data/dungeons/huatuo/audioIndex";
 import type { Beat, Choice, GameState } from "../data/types";
-import { bgmPath, dialogueAudioPath, playBgm, playDialogueAudio, stopBgm, stopDialogueAudio } from "../lib/audio";
+import { dialogueAudioPath, playDialogueAudio, stopDialogueAudio } from "../lib/audio";
 import { loadBeat, saveBeat, saveState } from "../lib/storage";
 import type { PageKey } from "../lib/routes";
 
@@ -154,6 +155,10 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   }, [ch, beatIdx]);
 
   const beat = beats[beatIdx];
+  // 配音稳定下标：与 TTS 生成脚本共用 buildAudioIndex，按原始 beat 树的全量 DFS 编号，
+  // 不随 flattenBeats 的展开/剔除而漂移（修复小游戏后配音错位）。
+  const audioIndexMap = useMemo(() => buildAudioIndex(rawBeats), [rawBeats]);
+  const audioIdx = beat ? audioIndexMap.get(beat) : undefined;
   const gameNode = beat && "game" in beat ? beat.game : null;
   const gameDone = !!(gameNode && state.gameResults[gameNode.id]?.completed);
   const gameLocked = !!(gameNode?.requiredItem && !state.items.includes(gameNode.requiredItem));
@@ -244,19 +249,13 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const isNarration = !!(beat && "narration" in beat && beat.narration);
 
   useEffect(() => {
-    if (!beat || isTransition || gameNode) {
+    if (!beat || isTransition || gameNode || audioIdx === undefined) {
       stopDialogueAudio();
       return;
     }
-    playDialogueAudio(dialogueAudioPath(ch, beatIdx));
+    playDialogueAudio(dialogueAudioPath(ch, audioIdx));
     return () => stopDialogueAudio();
-  }, [beat, ch, beatIdx, isTransition, gameNode]);
-
-  useEffect(() => {
-    const src = bgmPath(ch);
-    if (src) playBgm(src);
-    return () => stopBgm();
-  }, [ch]);
+  }, [beat, ch, audioIdx, isTransition, gameNode]);
 
   return (
     <div className="page night-deep-bg" style={{ paddingBottom: 0 }}>

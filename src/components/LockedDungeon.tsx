@@ -33,7 +33,7 @@ export function LockedDungeon({ title, subtitle, comingSoon }: LockedDungeonProp
         }}>{comingSoon ? "待" : "封"}</div>
       </div>
       <div style={{flex: 1, opacity: comingSoon ? 0.75 : 0.55}}>
-        <div style={{fontFamily:"ZCOOL XiaoWei, serif", fontSize: 16, letterSpacing:"0.16em", color: comingSoon ? "var(--gold-pale)" : "#8f7846"}}>
+        <div style={{fontFamily:"var(--font-han)", fontSize: 16, letterSpacing:"0.16em", color: comingSoon ? "var(--gold-pale)" : "#8f7846"}}>
           {title}
         </div>
         <div style={{fontSize: 11, opacity: 0.7, marginTop: 4, letterSpacing:"0.12em"}}>{subtitle}</div>

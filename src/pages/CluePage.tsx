@@ -87,7 +87,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
                     <ClueIcon type={c.icon}/>
                   </div>
                   <div style={{
-                    fontFamily:"ZCOOL XiaoWei, serif",
+                    fontFamily:"var(--font-han)",
                     fontSize: 14, letterSpacing:"0.16em",
                     color:"var(--ink-deep)",
                   }}>{c.name}</div>
@@ -120,7 +120,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
         }}>
           {enoughClues ? (
             <div style={{
-              fontFamily:"ZCOOL XiaoWei, serif",
+              fontFamily:"var(--font-han)",
               fontSize: 14, color:"var(--gold-pale)",
               letterSpacing:"0.18em", lineHeight: 1.7,
               textShadow:"0 0 12px rgba(236,220,166,0.3)",
@@ -185,7 +185,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
                 fontSize: 12.5, color:"var(--vermillion-deep)",
                 lineHeight: 1.7,
               }}>
-                <strong style={{fontFamily:"ZCOOL XiaoWei, serif", marginRight: 8}}>批注</strong>
+                <strong style={{fontFamily:"var(--font-han)", marginRight: 8}}>批注</strong>
                 {c.note}
               </div>
             </div>
