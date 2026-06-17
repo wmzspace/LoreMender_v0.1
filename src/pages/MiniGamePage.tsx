@@ -269,6 +269,72 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
     }
   }, [submitted, allCorrect]);
 
+  // ── 拖拽分类（Pointer Events，触屏/鼠标通用；与点选并存）──
+  type Drag = { id: string; text: string; startX: number; startY: number; x: number; y: number; moved: boolean };
+  const [drag, setDrag] = useState<Drag | null>(null);
+  const dragRef = useRef<Drag | null>(null);
+  dragRef.current = drag;
+  const selectedRef = useRef(selected);
+  selectedRef.current = selected;
+
+  // 轻点（未移动）时的行为：池中词 → 切换选中；已归类词 → 有选中则归入此类，否则取回
+  const handleTap = (id: string, from: string | null) => {
+    if (from === null) {
+      setSelected(s => (s === id ? null : id));
+    } else if (selectedRef.current) {
+      const sel = selectedRef.current;
+      setPlaced(prev => ({ ...prev, [sel]: from }));
+      setSelected(null);
+    } else {
+      setPlaced(prev => { const n = { ...prev }; delete n[id]; return n; });
+    }
+  };
+  const handleTapRef = useRef(handleTap);
+  handleTapRef.current = handleTap;
+
+  const startDrag = (e: React.PointerEvent, id: string, text: string) => {
+    setDrag({ id, text, startX: e.clientX, startY: e.clientY, x: e.clientX, y: e.clientY, moved: false });
+  };
+
+  useEffect(() => {
+    if (!drag) return;
+    const onMove = (e: PointerEvent) => {
+      setDrag(d => d && ({
+        ...d, x: e.clientX, y: e.clientY,
+        moved: d.moved || Math.hypot(e.clientX - d.startX, e.clientY - d.startY) > 6,
+      }));
+    };
+    const onUp = (e: PointerEvent) => {
+      const d = dragRef.current;
+      if (d) {
+        if (d.moved) {
+          // 落点所在的分类区（data-cat），__pool__ 表示拖回词语池
+          const cat = (document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)
+            ?.closest("[data-cat]")?.getAttribute("data-cat") ?? null;
+          if (cat === "__pool__") {
+            setPlaced(prev => { const n = { ...prev }; delete n[d.id]; return n; });
+            setSelected(null);
+          } else if (cat) {
+            setPlaced(prev => ({ ...prev, [d.id]: cat }));
+            setSelected(null);
+          }
+        } else {
+          handleTapRef.current(d.id, placed[d.id] ?? null);
+        }
+      }
+      setDrag(null);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drag !== null]);
+
   // 提交后全部正确，渲染 null（等待 useEffect 触发跳转）
   if (submitted && allCorrect) {
     return null;
@@ -365,14 +431,14 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
 
   return (
     <>
-      <div style={instStyle}>先选中一个词（高亮），再点下方分类区归入——点击已放入的词可取回重排。</div>
+      <div style={instStyle}>拖动词语到下方分类区归入；也可先点选词语再点分类区。点击或拖回已放入的词可取回重排。</div>
 
-      {/* 词语池 */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+      {/* 词语池（也是拖拽的「取回」落区） */}
+      <div data-cat="__pool__" style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14, minHeight: 30 }}>
         {remaining.map(w => (
           <button key={w.id} className="press"
-            onClick={() => setSelected(selected === w.id ? null : w.id)}
-            style={chipStyle(selected === w.id)}>
+            onPointerDown={(e) => startDrag(e, w.id, w.text)}
+            style={{ ...chipStyle(selected === w.id), touchAction: "none", opacity: drag?.id === w.id && drag.moved ? 0.4 : 1 }}>
             {w.text}
           </button>
         ))}
@@ -388,9 +454,10 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
         {classifyCategories.map(cat => {
           const theme = CAT_THEME[cat] ?? CAT_THEME["病症"];
           const catWords = Object.entries(placed).filter(([, v]) => v === cat).map(([k]) => k);
-          const canDrop = !!selected;
+          const canDrop = !!selected || !!drag?.moved;
           return (
             <div key={cat}
+              data-cat={cat}
               onClick={() => {
                 if (!selected) return;
                 setPlaced(prev => ({ ...prev, [selected]: cat }));
@@ -426,17 +493,14 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                   {catWords.map(w => (
                     <button key={w} className="press"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPlaced(prev => { const n = { ...prev }; delete n[w]; return n; });
-                        setSelected(null);
-                      }}
+                      onPointerDown={(e) => { e.stopPropagation(); startDrag(e, w, w); }}
                       style={{
                         fontSize: 12, padding: "3px 10px", borderRadius: 3,
                         border: `1px solid ${theme.accent}66`,
                         background: theme.chip,
                         color: theme.label, cursor: "pointer",
-                        fontFamily: "var(--font-han)",
+                        fontFamily: "var(--font-han)", touchAction: "none",
+                        opacity: drag?.id === w && drag.moved ? 0.4 : 1,
                       }}>{w}</button>
                   ))}
                 </div>
@@ -456,6 +520,19 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
         style={{ width: "100%" }}>
         {allPlaced ? "完 成 分 类" : `完成分类（${placedCount}/${allWords.length}）`}
       </button>
+
+      {/* 拖拽时跟随指针的浮层 */}
+      {drag?.moved && (
+        <div style={{
+          position: "fixed", left: drag.x, top: drag.y,
+          transform: "translate(-50%, -135%)", zIndex: 100, pointerEvents: "none",
+          padding: "5px 12px", fontSize: 13, fontFamily: "var(--font-han)",
+          letterSpacing: "0.06em", borderRadius: 3,
+          border: "1px solid var(--jade)", background: "rgba(95,168,146,0.3)",
+          color: "var(--paper-bright)", boxShadow: "0 4px 14px rgba(0,0,0,0.55)",
+          whiteSpace: "nowrap",
+        }}>{drag.text}</div>
+      )}
     </>
   );
 }

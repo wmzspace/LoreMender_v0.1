@@ -100,7 +100,9 @@ export function SoundSettings() {
         <div
           onClick={() => setOpen(false)}
           style={{
-            position: "absolute", inset: 0, zIndex: 50,
+            // fixed 而非 absolute：.topbar 是定位祖先，absolute 只会覆盖顶栏一条，
+            // 导致点击下方内容区无法命中遮罩。fixed 铺满整屏（移动端即整个手机屏）。
+            position: "fixed", inset: 0, zIndex: 50,
             background: "rgba(7,11,14,0.55)",
             display: "flex", alignItems: "flex-start", justifyContent: "flex-end",
             padding: "calc(8px + var(--safe-top, 0px)) 12px 0",
