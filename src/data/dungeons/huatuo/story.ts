@@ -350,11 +350,11 @@ export const STORY: Record<string, StoryChapter> = {
       {
         game: {
           id: "song_formula",
-          name: "歌诀补全",
+          name: "残歌定界",
           kind: "songFormula",
           unlockItem: "song_page",
-          nextBeatUnlocked: "残缺歌诀终于补成一页可以传唱的医理。",
-          context: "玄音的残纸摊开，韵脚断在最要紧处。补全它——但禁忌提示不可删，传错了，害的是人命。",
+          nextBeatUnlocked: "能救急的句子排成了歌，重方与禁忌被留在了纸上。",
+          context: "玄音的残纸摊开，救急常识与重方细节混在一处。先划清哪些能传唱、哪些必须留给医者，再把能入歌的句子排成歌诀。",
           reward: { item: "song_page", skill: "xuanyin_trust" },
         },
       },

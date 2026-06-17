@@ -61,9 +61,9 @@ const GAME_FEEDBACK: Record<string, Record<GameResultRank, { title: string; text
     low:  { title: "顺序待正", text: "华佗说：「把人命排出轻重，这是医者最难过的关。规则只有一条：看谁更需要被救。」" },
   },
   songFormula: {
-    high: { title: "歌诀补全", text: "华佗说：「传得出去，才算活下来。好的歌诀，是让医道走进不识字的人家。」" },
-    mid:  { title: "歌诀大半传", text: "华佗说：「记七八分，也能帮到一些人。残缺本身，也是另一种面目。」" },
-    low:  { title: "歌诀残缺", text: "华佗说：「残缺也是一种面目，后人自会补上空白。重要的是，它被传了出去。」" },
+    high: { title: "歌成定界", text: "玄音看着你划去的几句重方，轻轻点头。「原来传医理，不是唱得越多越好。能救急的，让百姓记住；会误人的，留给医者。」歌声从巷尾散开——你第一次觉得，纸以外也能有书。" },
+    mid:  { title: "界限微差", text: "玄音哼了两句又停下。「大体能传，可还有一两句拿不准。歌可以快，医理不能乱——再想想哪些该留下。」" },
+    low:  { title: "界限未明", text: "玄音刚拨响琴弦，又按住了弦。「这一句若传开，怕是会有人照着乱用。小郎中，歌可以快，医理不能乱。」" },
   },
 };
 
@@ -850,21 +850,163 @@ function SimpleOrderGame({
   );
 }
 
-function SongFormula({ finish }: { finish: (rank: GameResultRank) => void }) {
-  const [keepWarning, setKeepWarning] = useState(true);
+// 残歌定界：能救急、可传唱的安全歌诀（阶段一按此顺序排列）
+const SONG_SAFE = ["急症先看神与息", "寒热未明莫乱投", "轻症可记寻常法", "重病仍须问医者"];
+// 夹在残纸里、不该乱传的重方细节（阶段二须划入「不可入歌」）
+const SONG_DANGER = ["三钱半夏急煎服", "针入寸半可回阳", "乌头入酒止痛快", "孩童高热强灌汤"];
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/**
+ * 残歌定界 —— 两步式玩法（第四章「知识传播的边界」主题）：
+ *  ① 残歌定界：把混入的重方/禁忌划入「不可入歌」，安全句留在「可入歌」。
+ *  ② 补全歌诀：把留下能入歌的安全残句排成可传唱的次序。
+ * 评级：8 句全部归类正确且排序正确 → 高；归类错 ≤2 → 中；否则 → 低。
+ */
+function SongBoundary({ finish }: { finish: (rank: GameResultRank) => void }) {
+  const [phase, setPhase] = useState<"classify" | "order">("classify");
+  const classErrorsRef = useRef(0);
+
+  // —— 阶段一：残歌定界（分类）——
+  const allVerses = useMemo(() => shuffle([...SONG_SAFE, ...SONG_DANGER]), []);
+  const [bins, setBins] = useState<Record<string, "in" | "out">>({});
+  const unassigned = allVerses.filter(v => !bins[v]);
+  const inList = allVerses.filter(v => bins[v] === "in");
+  const outList = allVerses.filter(v => bins[v] === "out");
+  // 必须可入歌、不可入歌各 4 句才能进入下一步
+  const binsBalanced = inList.length === SONG_SAFE.length && outList.length === SONG_DANGER.length;
+  const assign = (v: string, bin: "in" | "out") => setBins(b => ({ ...b, [v]: bin }));
+  const unassign = (v: string) => setBins(b => { const n = { ...b }; delete n[v]; return n; });
+  const submitClassify = () => {
+    let errors = 0;
+    for (const v of SONG_SAFE) if (bins[v] !== "in") errors++;
+    for (const v of SONG_DANGER) if (bins[v] !== "out") errors++;
+    classErrorsRef.current = errors;
+    // 用玩家选入「可入歌」的 4 句作为排序素材
+    setPool(shuffle(inList));
+    setAnswer([]);
+    setPhase("order");
+  };
+
+  // —— 阶段二：补全歌诀（用玩家选的可入歌 4 句排序）——
+  const [pool, setPool] = useState<string[]>([]);
+  const [answer, setAnswer] = useState<string[]>([]);
+  const chooseOrder = (v: string) => { setPool(p => p.filter(x => x !== v)); setAnswer(a => [...a, v]); };
+  const resetOrder = () => { setPool(shuffle(inList)); setAnswer([]); };
+  const submitOrder = () => {
+    const orderExact = answer.every((x, i) => x === SONG_SAFE[i]);
+    const errors = classErrorsRef.current;
+    const rank: GameResultRank =
+      orderExact && errors === 0 ? "high" : errors <= 2 ? "mid" : "low";
+    finish(rank);
+  };
+
+  if (phase === "classify") {
+    return (
+      <>
+        <div style={instStyle}>
+          玄音的残纸上，救急常识与重方细节混在一处。把能传唱的 4 句放入「可入歌」，危险的剂量、针法、毒药 4 句放入「不可入歌」。
+        </div>
+        <div className="dialogue" style={{ margin: "10px 0" }}>
+          <div className="dialogue-name">你的判断</div>
+          <div>{`可入歌 ${inList.length} / ${SONG_SAFE.length} · 不可入歌 ${outList.length} / ${SONG_DANGER.length}`}</div>
+        </div>
+
+        {unassigned.length > 0 && (
+          <div style={{ display: "grid", gap: 8 }}>
+            {unassigned.map(v => (
+              <div key={v} style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "8px 10px",
+                background: "linear-gradient(180deg, rgba(34,30,22,0.7), rgba(20,18,14,0.7))",
+                border: "1px solid rgba(205,178,119,0.28)", borderRadius: 2,
+              }}>
+                <span style={{ flex: 1, fontSize: 14, color: "var(--paper)", letterSpacing: "0.04em" }}>{v}</span>
+                <button className="press" onClick={() => assign(v, "in")} style={{
+                  padding: "5px 12px", fontSize: 12, letterSpacing: "0.08em",
+                  border: "1px solid var(--gold-deep)", borderRadius: 2,
+                  background: "rgba(205,178,119,0.12)", color: "var(--gold-pale)",
+                }}>入歌</button>
+                <button className="press" onClick={() => assign(v, "out")} style={{
+                  padding: "5px 12px", fontSize: 12, letterSpacing: "0.08em",
+                  border: "1px solid #6e1f18", borderRadius: 2,
+                  background: "rgba(110,31,24,0.18)", color: "#d98a7e",
+                }}>封存</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
+          <SongBin title="可 入 歌" accent="var(--gold-pale)" border="var(--gold-deep)" list={inList} onTap={unassign} empty="可传唱的句子" />
+          <SongBin title="不 可 入 歌" accent="#d98a7e" border="#6e1f18" list={outList} onTap={unassign} empty="须留给医者" />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16 }}>
+          <button className="btn-ghost press" onClick={() => setBins({})}>重新分拣</button>
+          <button className="btn-primary press" disabled={!binsBalanced} onClick={submitClassify}>完成定界</button>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-      <SimpleOrderGame
-        intro="将残句排成能传唱、也不误人的顺序。禁忌提示不可删——传错了，害的是人命。"
-        items={["急症先辨寒与热", "药入口前问禁忌", "轻症可歌传乡里", "重方仍须问医者"]}
-        correct={["急症先辨寒与热", "药入口前问禁忌", "轻症可歌传乡里", "重方仍须问医者"]}
-        finishLabel="补成歌诀"
-        finish={(rank) => finish(keepWarning ? rank : "low")}
-      />
-      <button className="btn-ghost press" onClick={() => setKeepWarning(v => !v)} style={{ width: "100%", marginTop: 10 }}>
-        {keepWarning ? "已保留禁忌提示" : "已删去禁忌提示"}
-      </button>
+      <div style={instStyle}>
+        边界已划定。把留下能入歌的句子，排成顺口能传的次序，让它真正被传唱。
+      </div>
+      <div className="dialogue" style={{ margin: "10px 0" }}>
+        <div className="dialogue-name">歌诀</div>
+        <div>{answer.join(" → ") || "尚未排定"}</div>
+      </div>
+      <div style={{ display: "grid", gap: 8 }}>
+        {pool.map(v => (
+          <button key={v} className="choice press" onClick={() => chooseOrder(v)} style={{ width: "100%" }}>
+            <span className="choice-label">{v}</span>
+          </button>
+        ))}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16 }}>
+        <button className="btn-ghost press" onClick={resetOrder}>重排</button>
+        <button className="btn-primary press" disabled={answer.length !== inList.length} onClick={submitOrder}>
+          定稿传唱
+        </button>
+      </div>
     </>
+  );
+}
+
+/** 残歌定界的「可入歌 / 不可入歌」分区；点击已归类的句子可退回待判区。 */
+function SongBin({ title, accent, border, list, onTap, empty }: {
+  title: string; accent: string; border: string;
+  list: string[]; onTap: (v: string) => void; empty: string;
+}) {
+  return (
+    <div style={{
+      minHeight: 96, padding: "8px 8px 10px",
+      border: `1px solid ${border}`, borderRadius: 3,
+      background: `${border}14`,
+    }}>
+      <div style={{ fontSize: 11, letterSpacing: "0.2em", color: accent, textAlign: "center", marginBottom: 8 }}>{title}</div>
+      <div style={{ display: "grid", gap: 6 }}>
+        {list.length === 0
+          ? <div style={{ fontSize: 11, color: "rgba(228,224,208,0.3)", textAlign: "center", padding: "10px 0", fontStyle: "italic" }}>{empty}</div>
+          : list.map(v => (
+            <button key={v} className="press" onClick={() => onTap(v)} style={{
+              width: "100%", padding: "6px 8px", fontSize: 12.5,
+              border: `1px solid ${border}`, borderRadius: 2,
+              background: "rgba(20,18,14,0.5)", color: "var(--paper)", textAlign: "left",
+            }}>{v}</button>
+          ))}
+      </div>
+    </div>
   );
 }
 
@@ -926,7 +1068,7 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
       />
     );
   } else {
-    body = <SongFormula key={retryKey} finish={finish} />;
+    body = <SongBoundary key={retryKey} finish={finish} />;
   }
 
   return (
