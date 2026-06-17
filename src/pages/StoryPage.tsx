@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  BottomNav, ChoiceList, DialogueBox, ProgressDots, SceneFrame, SoundToggle, Toast, Topbar,
+  BottomNav, ChoiceList, DialogueBox, ProgressDots, SceneFrame, SoundSettings, Toast, Topbar,
 } from "../components";
 import { SceneClinic, SceneFinal, SceneRaid } from "../components/art";
 import { CHARACTERS, LEVEL_ASSET_PLANS, STORY } from "../data";
@@ -264,7 +264,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
         onBack={() => gotoPage("chapters")}
         right={
           <>
-            <SoundToggle />
+            <SoundSettings />
             <button className="icon-btn press" onClick={() => gotoPage("map")} aria-label="第一卷进程">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M2 3 H12 M2 7 H12 M2 11 H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
