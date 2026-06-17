@@ -281,17 +281,13 @@ function ExpandedCard({
         </div>
       </div>
 
-      <div style={{ marginTop: 14, position: "relative", zIndex: 1 }}>
-        {isCurrent ? (
+      {isCurrent && (
+        <div style={{ marginTop: 14, position: "relative", zIndex: 1 }}>
           <button className="btn-primary press" onClick={onEnter} style={{ width: "100%", minHeight: 46 }}>
             进 入 此 卷
           </button>
-        ) : (
-          <button className="btn-ghost press" onClick={onEnter} style={{ width: "100%", minHeight: 44 }}>
-            重 温 此 卷
-          </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
