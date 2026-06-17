@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
-import { defaultState, saveState } from "../lib/storage";
+import { defaultState, saveBeat, saveState } from "../lib/storage";
 import { Topbar, BottomNav } from "../components";
 import { Particles } from "../components/art";
 
@@ -312,6 +312,7 @@ export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
     const ns = { ...defaultState(), unlockedEndings: state.unlockedEndings };
     setState(ns);
     saveState(ns);
+    saveBeat(1, 0);
     setConfirmReset(false);
     gotoPage("story");
   };
