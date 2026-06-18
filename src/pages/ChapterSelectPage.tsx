@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { PageShell } from "../components";
-import { bgmPath, playBgm, stopBgm } from "../lib/audio";
+import { PageShell, SoundSettings } from "../components";
+import { bgmPath, playBgm, stopBgm, playDialogueAudio, stopDialogueAudio } from "../lib/audio";
 import type { GameState } from "../data/types";
+
+/** 第一卷起播时同步朗读的正文旁白（云希音色）。 */
+const VOLUME1_NARRATION = "/audio/levels/1/narration/volume_intro.mp3";
 
 interface ChapterSelectPageProps {
   onBack: () => void;
@@ -42,6 +45,8 @@ function CoverMedia({ audible }: { audible: boolean }) {
   // hasPlayed 只在「视频真正播完」时翻转,不受 StrictMode 双调用 effect 影响,
   // 保证首轮图片停留 1s、之后每轮 2.5s。
   const [hasPlayed, setHasPlayed] = useState(false);
+  // 旁白只在第一卷首次起播时朗读一次,切走再切回不重复。
+  const narratedRef = useRef(false);
 
   useEffect(() => {
     if (showVideo) {
@@ -58,12 +63,18 @@ function CoverMedia({ audible }: { audible: boolean }) {
 
   // BGM 仅在第一卷可见、且封面视频已开始播放时响起；切到其它卷（audible=false）即停。
   // 图片/视频交替间隙不打断（playBgm 同源幂等；hasPlayed 后切回也立即续上）。
+  // 同一时机同步朗读一次正文旁白（dialogue 声道，narratedRef 守卫只播一次）。
   useEffect(() => {
     if (audible && (showVideo || hasPlayed)) {
       const src = bgmPath(1);
       if (src) playBgm(src);
+      if (!narratedRef.current) {
+        narratedRef.current = true;
+        playDialogueAudio(VOLUME1_NARRATION);
+      }
     } else if (!audible) {
       stopBgm();
+      stopDialogueAudio();
     }
   }, [audible, showVideo, hasPlayed]);
 
@@ -143,8 +154,8 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
   const [active, setActive] = useState(0);
   const panels = useRef<(HTMLDivElement | null)[]>([]);
 
-  // 离开典故卷宗即停止 BGM（封面视频起的曲子不应延续到其它界面）。
-  useEffect(() => () => stopBgm(), []);
+  // 离开典故卷宗即停止 BGM 与旁白（封面视频起的曲子/旁白不应延续到其它界面）。
+  useEffect(() => () => { stopBgm(); stopDialogueAudio(); }, []);
 
   useEffect(() => {
     const root = panels.current[0]?.parentElement ?? null;
@@ -169,6 +180,7 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
       title="典 故 卷 宗"
       subtitle={VOLUMES[active].num}
       onBack={onBack}
+      right={<SoundSettings />}
       wrap={false}
       bodyPadding="0"
       bodyClassName="volume-scroll"
