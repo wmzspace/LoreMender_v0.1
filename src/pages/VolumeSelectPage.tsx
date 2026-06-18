@@ -1,4 +1,4 @@
-import { Topbar } from "../components";
+import { PageShell } from "../components";
 
 interface VolumeSelectPageProps {
   onBack: () => void;
@@ -22,16 +22,8 @@ const VOLUMES = [
 
 export function VolumeSelectPage({ onBack, onEnterFirst }: VolumeSelectPageProps) {
   return (
-    <div className="page night-bg">
-      <Topbar title="典故卷宗" onBack={onBack} />
-      <div className="vignette" />
-      <div className="page-scroll" style={{ top: 56, bottom: 0, padding: "0 16px calc(24px + var(--safe-bottom))" }}>
-        <div style={{ textAlign: "center", margin: "8px 0 16px" }}>
-          <div className="en-small" style={{ color: "var(--gold-pale)", opacity: 0.62, letterSpacing: "0.28em" }}>LORE VOLUMES</div>
-          <div className="title-han" style={{ color: "var(--gold-pale)", fontSize: 24, marginTop: 7 }}>五卷待修</div>
-        </div>
-
-        <div style={{ display: "grid", gap: 12 }}>
+    <PageShell eyebrow="LORE VOLUMES" title="典 故 卷 宗" subtitle="五 卷 待 修" onBack={onBack}>
+        <div className="grid-auto-fill">
           {VOLUMES.map((vol) => (
             <button
               key={vol.num}
@@ -73,7 +65,6 @@ export function VolumeSelectPage({ onBack, onEnterFirst }: VolumeSelectPageProps
             </button>
           ))}
         </div>
-      </div>
-    </div>
+    </PageShell>
   );
 }

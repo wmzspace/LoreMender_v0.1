@@ -2,8 +2,7 @@ import { useState } from "react";
 import type { GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
 import { defaultState, saveBeat, saveState } from "../lib/storage";
-import { Topbar, BottomNav } from "../components";
-import { Particles } from "../components/art";
+import { PageShell, BottomNav } from "../components";
 
 interface ProgressPageProps {
   state: GameState;
@@ -317,46 +316,16 @@ export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
   const ZIGZAG = 32;
 
   return (
-    <div className="page night-bg">
-      <Topbar title="副 本 进 程" onBack={() => gotoPage("story")} />
-      <Particles count={7} />
-
-      <div className="vignette" />
-
-      <svg style={{ position: "absolute", right: 0, top: 40, opacity: 0.06, pointerEvents: "none" }}
-        width="124" height="280" viewBox="0 0 124 280">
-        <path d="M14 72 L62 36 L110 72 L114 72 L62 27 L10 72 Z" fill={GOLD_PALE} />
-        <rect x="34" y="72" width="56" height="104" fill={GOLD_PALE} opacity="0.5" />
-        <path d="M0 138 L62 94 L124 138 L124 141 L62 86 L0 141 Z" fill={GOLD_PALE} />
-        <rect x="15" y="141" width="94" height="139" fill={GOLD_PALE} opacity="0.3" />
-        {[0, 1, 2, 3].map(i => (
-          <line key={i} x1={26 + i * 20} y1="160" x2={26 + i * 20} y2="268" stroke={GOLD_PALE} strokeWidth="1.1" />
-        ))}
-      </svg>
-
-      <div className="page-scroll" style={{ top: 56, bottom: 74, padding: "0 16px calc(28px + var(--safe-bottom))" }}>
-        <div className="fade-in" style={{ textAlign: "center", margin: "4px 0 18px" }}>
-          <div className="en-small" style={{
-            fontSize: 10, letterSpacing: "0.36em", color: GOLD_PALE, opacity: 0.6,
-          }}>DUNGEON · PROGRESS</div>
-          <div className="title-han" style={{
-            fontSize: 22, color: GOLD_PALE, marginTop: 7,
-            letterSpacing: "0.3em", textIndent: "0.3em",
-            textShadow: "0 0 14px rgba(236,220,166,0.28)",
-          }}>华 佗 · 青 囊 残 卷</div>
-          <div style={{ display: "flex", justifyContent: "center", marginTop: 9 }}>
-            <span style={{
-              width: 44, height: 1,
-              background: `linear-gradient(90deg, transparent, ${GOLD_PALE}, transparent)`,
-            }} />
-          </div>
-          <div style={{
-            fontSize: 11.5, marginTop: 11, color: `${PAPER}0.7)`,
-            letterSpacing: "0.12em",
-          }}>典故修补者 · 一夜五章</div>
-        </div>
-
-        <div style={{ position: "relative" }}>
+    <PageShell
+      eyebrow="DUNGEON · PROGRESS"
+      title="副 本 进 程"
+      subtitle="华 佗 · 青 囊 残 卷"
+      onBack={() => gotoPage("story")}
+      footer={<BottomNav active="map" onNav={gotoPage} />}
+    >
+        <div className="progress-split">
+          {/* 左列:节点连线 + 章节节点列表 */}
+          <div style={{ position: "relative" }}>
           <div style={{
             position: "absolute", left: NODE_COL / 2, top: 24, bottom: 24,
             width: 1.5, transform: "translateX(-50%)",
@@ -424,17 +393,6 @@ export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
                           </svg>
                         </div>
                       )}
-                      {locked && (
-                        <div style={{
-                          position: "absolute", inset: 0,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                        }}>
-                          <svg width="15" height="17" viewBox="0 0 15 17" fill="none">
-                            <rect x="2" y="7.5" width="11" height="8.5" rx="1.5" fill={INK_DEEP} stroke={`${PAPER}0.5)`} strokeWidth="1" />
-                            <path d="M4.5 7.5 V5 a3 3 0 0 1 6 0 V7.5" stroke={`${PAPER}0.5)`} strokeWidth="1" />
-                          </svg>
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -466,19 +424,38 @@ export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
                     }}>▶</div>
                   )}
                 </div>
-
-                {isExpanded && (
-                  <ExpandedCard
-                    ch={ch}
-                    isCurrent={isCurrent}
-                    isDone={isDone}
-                    onEnter={() => gotoPage("story")}
-                    onCollapse={() => setExpanded(-1)}
-                  />
-                )}
               </div>
             );
           })}
+          </div>
+
+          {/* 右列:展开的章节详情卡(点击节点时显示) */}
+          <div>
+            {expanded !== -1 && (() => {
+              const ch = ALL_CHAPTERS.find(c => c.num === expanded);
+              if (!ch) return <div style={{ opacity: 0.4, textAlign: "center", padding: 40, fontFamily: "var(--font-han)", color: `${PAPER}0.5)` }}>· 选 择 一 章 ·</div>;
+              const unlocked = ch.num <= cur;
+              const isCurrent = unlocked && ch.num === cur;
+              const isDone = unlocked && ch.num < cur;
+              return (
+                <ExpandedCard
+                  ch={ch}
+                  isCurrent={isCurrent}
+                  isDone={isDone}
+                  onEnter={() => gotoPage("story")}
+                  onCollapse={() => setExpanded(-1)}
+                />
+              );
+            })()}
+            {expanded === -1 && (
+              <div style={{
+                opacity: 0.45, textAlign: "center", padding: "48px 24px",
+                fontFamily: "var(--font-han)", color: `${PAPER}0.5)`,
+                letterSpacing: "0.22em", lineHeight: 1.9,
+                border: "1px dashed rgba(205,178,119,0.2)", borderRadius: 4,
+              }}>· 点 选 左 侧 章 节 查 看 详 情 ·</div>
+            )}
+          </div>
         </div>
 
         <div style={{ marginTop: 18 }}>
@@ -535,11 +512,6 @@ export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
             >取 消</button>
           )}
         </div>
-      </div>
-
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
-        <BottomNav active="map" onNav={gotoPage} />
-      </div>
 
       <style>{`
         @keyframes expandCard {
@@ -547,6 +519,6 @@ export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
           to   { opacity: 1; transform: translateY(0)   scaleY(1); }
         }
       `}</style>
-    </div>
+    </PageShell>
   );
 }
