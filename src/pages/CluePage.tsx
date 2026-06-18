@@ -31,7 +31,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
 
   return (
     <div className="page night-deep-bg">
-      <Topbar title="线 索 板" onBack={() => gotoPage("story")}/>
+      <Topbar title="线 索 板" onBack={() => gotoPage("story")} />
 
       <div className="page-scroll" style={{top: 56, bottom: 64, padding: "0 14px"}}>
         <PageHeader
@@ -45,10 +45,7 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
           border: "1px dashed rgba(205,178,119,0.25)",
           borderRadius: 2,
         }}>
-          <div style={{
-            display:"grid", gridTemplateColumns:"1fr 1fr",
-            gap: 12, padding: 12,
-          }}>
+          <div className="clue-grid">
             {CLUES.map((c, i) => {
               const has = collected.includes(c.id);
               const rot = (i % 2 === 0 ? -2 : 2) + (i % 3 === 0 ? -1 : 1);
@@ -138,10 +135,12 @@ export function CluePage({ state, setState, gotoPage }: CluePageProps) {
           )}
         </div>
 
-        <button className="btn-primary press" style={{width:"100%", marginTop: 6}}
-          onClick={() => gotoPage("story")}>
-          回 到 医 馆
-        </button>
+        <div style={{ textAlign: "center", marginTop: 6 }}>
+          <button className="btn-primary press" style={{ minWidth: 240 }}
+            onClick={() => gotoPage("story")}>
+            回 到 医 馆
+          </button>
+        </div>
       </div>
 
       <BottomSheet open={!!active} onClose={() => setActive(null)}>

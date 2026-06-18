@@ -3,7 +3,7 @@ import { TRUST_OPTIONS } from "../data";
 import type { GameState } from "../data/types";
 import { saveBeat, saveState } from "../lib/storage";
 import type { PageKey } from "../lib/routes";
-import { Topbar } from "../components";
+import { PageShell } from "../components";
 
 interface TrustRoutePageProps {
   state: GameState;
@@ -60,12 +60,20 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
   };
 
   return (
-    <div className="page night-deep-bg">
-      <Topbar title="青囊归处" onBack={() => gotoPage("story")} />
-      <div className="vignette" />
-      <div className="page-scroll" style={{ top: 56, bottom: 96, padding: "0 16px" }}>
+    <PageShell
+      bg="night-deep-bg"
+      title="青 囊 归 处"
+      onBack={() => gotoPage("story")}
+      footer={
+        <div style={{ padding: "12px 18px calc(16px + var(--safe-bottom))", background: "linear-gradient(180deg, transparent, rgba(7,11,14,0.96) 30%)" }}>
+          <button className="btn-primary press" data-sfx="confirm" disabled={!selected} onClick={confirm} style={{ width: "100%" }}>
+            确认归处
+          </button>
+        </div>
+      }
+    >
         <div style={{
-          height: 170,
+          height: "clamp(170px, 28vh, 280px)",
           position: "relative",
           overflow: "hidden",
           border: "1px solid rgba(205,178,119,0.30)",
@@ -106,7 +114,7 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
           </div>
         )}
 
-        <div style={{ display: "grid", gap: 10 }}>
+        <div className="grid-2">
           {TRUST_OPTIONS.map(c => {
             const selectedThis = selected === c.id;
             return (
@@ -136,11 +144,12 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
           })}
 
           <button
-            className="press"
+            className="press span-all"
             onClick={() => setSelected(BURN)}
             style={{
               width: "100%",
               textAlign: "left",
+              gridColumn: "1 / -1",
               border: `1px solid ${selected === BURN ? "#b23a2c" : "rgba(178,58,44,0.35)"}`,
               background: selected === BURN ? "rgba(178,58,44,0.18)" : "rgba(20,9,7,0.62)",
               borderRadius: 4,
@@ -152,12 +161,6 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
             <div style={{ fontSize: 12, lineHeight: 1.65, opacity: 0.75, marginTop: 7 }}>火光保住了秘密，也烧断了去路。无人能借它作恶，也无人能据它救人。后世只记得那本应当存在的书。</div>
           </button>
         </div>
-      </div>
-      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "12px 18px calc(16px + var(--safe-bottom))", background: "linear-gradient(180deg, transparent, rgba(7,11,14,0.96) 30%)" }}>
-        <button className="btn-primary press" data-sfx="confirm" disabled={!selected} onClick={confirm} style={{ width: "100%" }}>
-          确认归处
-        </button>
-      </div>
-    </div>
+    </PageShell>
   );
 }

@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  BottomNav, ChoiceList, DialogueBox, ProgressDots, SceneFrame, SoundSettings, Toast, Topbar,
+  ChoiceList, DialogueBox, ProgressDots, SoundSettings, Toast,
 } from "../components";
-import { SceneClinic, SceneFinal, SceneRaid } from "../components/art";
+import { Particles, SceneClinic, SceneFinal, SceneRaid } from "../components/art";
 import { CHARACTERS, LEVEL_ASSET_PLANS, STORY } from "../data";
 import { buildAudioIndex } from "../data/dungeons/huatuo/audioIndex";
 import type { Beat, Choice, GameState } from "../data/types";
@@ -135,6 +135,12 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
     return saved;
   });
   const [toast, setToast] = useState("");
+  const [autoplay, setAutoplay] = useState(false);
+  const [logOpen, setLogOpen] = useState(false);
+  const autoTimer = useRef<number>(0);
+  const clearAuto = () => {
+    if (autoTimer.current) { window.clearTimeout(autoTimer.current); autoTimer.current = 0; }
+  };
 
   const rawBeats = chapter?.beats ?? [];
   const beats = useMemo(
@@ -244,169 +250,191 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
     return <SceneClinic />;
   }, [chapter]);
 
-  const speakerName = beat && "speaker" in beat ? (CHARACTERS[beat.speaker]?.name ?? null) : null;
+  const speaker = beat && "speaker" in beat ? CHARACTERS[beat.speaker] : undefined;
+  const speakerName = speaker?.name ?? null;
+  const speakerPortrait = speaker?.portrait ?? null;
   const lineText = beat && "line" in beat ? beat.line : "";
   const isNarration = !!(beat && "narration" in beat && beat.narration);
 
+  // 历史记录:从开篇到当前 beat 的全部对白/旁白。
+  const history = useMemo(() => {
+    const out: { name: string | null; line: string; narration: boolean }[] = [];
+    for (let i = 0; i <= beatIdx && i < beats.length; i++) {
+      const b = beats[i];
+      if (b && "line" in b) {
+        const narration = "narration" in b && !!b.narration;
+        const name = !narration && "speaker" in b ? (CHARACTERS[b.speaker]?.name ?? null) : null;
+        out.push({ name, line: b.line, narration });
+      }
+    }
+    return out;
+  }, [beats, beatIdx]);
+
+  // 自动播放:需「打字机显示完毕」且「配音读完」后再推进。
+  const [typingDone, setTypingDone] = useState(false);
+  const [audioDone, setAudioDone] = useState(false);
+  const handleTypingDone = () => setTypingDone(true);
+
+  useEffect(() => clearAuto, []);
+
+  // 配音:每个 beat 重置进度。有配音则等 onended,无配音视为「已读完」。
   useEffect(() => {
+    setTypingDone(false);
     if (!beat || isTransition || gameNode || audioIdx === undefined) {
       stopDialogueAudio();
+      setAudioDone(true);
       return;
     }
-    playDialogueAudio(dialogueAudioPath(ch, audioIdx));
+    setAudioDone(false);
+    playDialogueAudio(dialogueAudioPath(ch, audioIdx), () => setAudioDone(true));
     return () => stopDialogueAudio();
   }, [beat, ch, audioIdx, isTransition, gameNode]);
 
+  // 「打字机完成 + 配音读完」后延时推进;开关打开时若当前句已读完立即生效。
+  useEffect(() => {
+    clearAuto();
+    if (!autoplay || logOpen) return;
+    if (!beat || isTransition || gameNode || "choices" in beat) return;
+    if (typingDone && audioDone) {
+      autoTimer.current = window.setTimeout(() => { next(); }, 700);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoplay, logOpen, typingDone, audioDone, beat, isTransition, gameNode]);
+
   return (
-    <div className="page night-deep-bg" style={{ paddingBottom: 0 }}>
-      <Topbar
-        title="第一卷 · 青囊残卷"
-        onBack={() => gotoPage("chapters")}
-        right={
-          <>
-            <SoundSettings />
-            <button className="icon-btn press" onClick={() => gotoPage("map")} aria-label="第一卷进程">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 3 H12 M2 7 H12 M2 11 H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
-            </button>
-          </>
-        }
-      />
-      <ProgressDots total={5} current={ch} />
-
-      <div className="fade-in" style={{ textAlign: "center", padding: "2px 16px 10px" }}>
-        <div className="title-han" style={{
-          fontSize: 17,
-          color: "var(--gold-pale)",
-          letterSpacing: "0.22em",
-          textIndent: "0.22em",
-          textShadow: "0 0 10px rgba(236,220,166,0.4)",
-        }}>{chapter?.title}</div>
-      </div>
-
-      <SceneFrame height={220}>
+    <div className="page" style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      {/* ── 全屏场景背景 ── */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
         {sceneEl}
         <AiSceneImage chapter={ch} beatIdx={beatIdx} />
-      </SceneFrame>
+        <div className="grain" />
+        <div className="vignette" />
+        <Particles count={16} />
+        {/* 上下压暗,保证顶部浮层与底部对白可读 */}
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          background: "linear-gradient(180deg, rgba(5,8,11,0.78) 0%, rgba(5,8,11,0.18) 14%, rgba(5,8,11,0.04) 38%, rgba(5,8,11,0.45) 64%, rgba(5,8,11,0.96) 100%)",
+        }} />
+      </div>
 
-      {gameNode && (
-        <div style={{ padding: "10px 18px 0" }}>
-          {gameDone ? (
-            <>
-              <div style={{
-                display: "flex", alignItems: "center", gap: 8,
-                marginBottom: 10, padding: "5px 2px",
-              }}>
-                <span style={{
-                  fontSize: 11, color: "rgba(228,224,208,0.45)",
-                  letterSpacing: "0.12em",
-                }}>{gameNode.name}</span>
-                <span style={{
-                  fontSize: 10, color: "var(--jade)",
-                  letterSpacing: "0.1em", opacity: 0.9,
-                }}>· 已完成</span>
-              </div>
-              <button className="btn-primary press" onClick={next} style={{ width: "100%" }}>
-                继 续 剧 情
-              </button>
-              <button
-                className="btn-ghost press"
-                onClick={enterGame}
-                style={{ width: "100%", marginTop: 8, fontSize: 11, opacity: 0.55 }}
-              >
-                重 玩 · {gameNode.name}
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                className="btn-primary press"
-                disabled={gameLocked}
-                onClick={enterGame}
-                style={{ width: "100%", minHeight: 46 }}
-              >
-                {gameNode.name}
-              </button>
-              {gameLocked && (
-                <div style={{ textAlign: "center", fontSize: 11, opacity: 0.55, marginTop: 6 }}>
-                  尚缺少前置道具。
-                </div>
-              )}
-            </>
-          )}
+      {/* ── 顶部浮层:居中竖排标题 · 右(音量+菜单)。左上角收/展侧栏由全局按钮承担。 ── */}
+      <div className="scene-overlay-top story-top">
+        <div className="story-top-titles">
+          <div className="en-small story-top-vol" style={{
+            fontSize: 12, letterSpacing: "0.34em",
+            color: "var(--gold-pale)", opacity: 0.82,
+            textShadow: "0 0 12px rgba(0,0,0,0.9)",
+          }}>第 一 卷 · 青 囊 残 卷</div>
+          <ProgressDots total={5} current={ch} />
+          <div className="title-han story-top-chapter" style={{
+            fontSize: 20, color: "var(--gold-pale)",
+            letterSpacing: "0.3em", textIndent: "0.3em",
+            textShadow: "0 0 16px rgba(0,0,0,0.92), 0 0 12px rgba(236,220,166,0.38)",
+          }}>{chapter?.title}</div>
         </div>
-      )}
 
-      <div style={{
-        flex: 1,
-        overflowY: "auto",
-        paddingBottom: "calc(20px + var(--safe-bottom) + 64px)",
-      }} className="no-scrollbar">
-        <div style={{ padding: "18px 0 0" }}>
+        <div className="story-top-actions">
+          <SoundSettings />
+          <button className="icon-btn press" onClick={() => gotoPage("map")} aria-label="副本进程">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 3 H12 M2 7 H12 M2 11 H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* ── 底部浮层:对白 / 选项 / 小游戏入口 ── */}
+      <div className="story-bottom" style={{
+        position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 3,
+        display: "flex", flexDirection: "column", alignItems: "stretch",
+        paddingBottom: "calc(18px + env(safe-area-inset-bottom, 0px))",
+      }}>
+        <div className="story-stage" style={{
+          width: "100%",
+          padding: "0 24px",
+          display: "flex", flexDirection: "column", alignItems: "center",
+        }}>
           {gameNode ? (
-            <div
-              className="fade-in"
-              onClick={onGameStoryClick}
-              style={{
-                padding: "12px 20px",
-                minHeight: 80,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                cursor: gameDone ? "pointer" : "default",
-                textAlign: "center",
-              }}
-            >
+            <div className="galgame-dialogue story-action fade-in">
               {gameDone ? (
-                <div style={{
-                  fontSize: 13.5, color: "rgba(228,224,208,0.78)",
-                  lineHeight: 1.8, letterSpacing: "0.04em",
-                  fontStyle: "italic",
-                }}>{gameNode.nextBeatUnlocked}</div>
-              ) : gameNode.context ? (
-                <div style={{
-                  fontSize: 12.5, color: "rgba(228,224,208,0.45)",
-                  lineHeight: 1.85, letterSpacing: "0.04em",
-                  fontStyle: "italic",
-                }}>{gameNode.context}</div>
+                <>
+                  <div className="story-action-text" onClick={onGameStoryClick} style={{ cursor: "pointer" }}>
+                    {gameNode.nextBeatUnlocked}
+                  </div>
+                  <div className="story-action-btns">
+                    <button className="btn-primary press" onClick={next}>继 续 剧 情</button>
+                    <button className="btn-ghost press" onClick={enterGame} style={{ minHeight: 44, fontSize: 13 }}>重 玩</button>
+                  </div>
+                </>
               ) : (
-                <div style={{ fontSize: 12, color: "rgba(228,224,208,0.35)", letterSpacing: "0.1em" }}>
-                  · 机关未解，后文待启 ·
-                </div>
+                <>
+                  {gameNode.context && <div className="story-action-text">{gameNode.context}</div>}
+                  <div className="story-action-btns">
+                    <button className="btn-primary press" disabled={gameLocked} onClick={enterGame} style={{ minHeight: 48 }}>
+                      {gameNode.name}
+                    </button>
+                  </div>
+                  {gameLocked && (
+                    <div style={{ textAlign: "center", fontSize: 11, opacity: 0.55, marginTop: 6 }}>尚缺少前置道具。</div>
+                  )}
+                </>
               )}
             </div>
           ) : isTransition ? null : "choices" in beat ? (
-            <div className="fade-in" style={{ padding: "12px 0" }}>
+            <div className="fade-in story-choices">
               <ChoiceList choices={beat.choices} onChoose={handleChoice} />
             </div>
           ) : (
-            <div className="fade-in">
-              <DialogueBox
-                speaker={speakerName}
-                text={lineText}
-                isNarration={isNarration}
-                onPrev={prev}
-                onNext={next}
-              />
-              <div style={{
-                textAlign: "center",
-                marginTop: 10,
-                fontSize: 10.5,
-                color: "rgba(228,224,208,0.28)",
-                letterSpacing: "0.22em",
-              }}>· 轻 触 继 续 ·</div>
-            </div>
+            <DialogueBox
+              speaker={speakerName}
+              portrait={speakerPortrait}
+              text={lineText}
+              isNarration={isNarration}
+              canPrev={beatIdx > 0}
+              onPrev={prev}
+              onNext={next}
+              autoOn={autoplay}
+              onToggleAuto={() => setAutoplay(a => !a)}
+              onOpenLog={() => setLogOpen(true)}
+              onMenu={() => gotoPage("map")}
+              onTypingDone={handleTypingDone}
+            />
           )}
         </div>
       </div>
 
+      {/* ── 历史记录浮层 ── */}
+      {logOpen && (
+        <>
+          <div className="sheet-backdrop" onClick={() => setLogOpen(false)} />
+          <div className="sheet">
+            <div className="history-log">
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                marginBottom: 14, paddingBottom: 10,
+                borderBottom: "1px solid rgba(205,178,119,0.22)",
+              }}>
+                <span className="title-han" style={{ fontSize: 16, color: "var(--gold-pale)", letterSpacing: "0.2em" }}>历 史 记 录</span>
+                <button className="icon-btn press" onClick={() => setLogOpen(false)} aria-label="关闭">
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                    <path d="M2 2 L11 11 M11 2 L2 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
+              {history.length === 0 ? (
+                <div style={{ opacity: 0.5, fontSize: 13, textAlign: "center", padding: "20px 0" }}>暂无对白</div>
+              ) : history.map((h, i) => (
+                <div key={i} className="history-log-item">
+                  {h.name && <div className="hl-name">{h.name}</div>}
+                  <div className={"hl-line" + (h.narration ? " narration" : "")}>{h.line}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
       <Toast text={toast} onDone={() => setToast("")} />
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
-        <BottomNav active="story" onNav={gotoPage} />
-      </div>
     </div>
   );
 }

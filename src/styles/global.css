@@ -54,7 +54,6 @@
 
   /* UI */
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --phone-w: 390px;
 
   /* Typography — 统一 fallback 链避免缺字时字体不统一 */
   --font-han: "ZCOOL XiaoWei", "Noto Serif SC", serif;
@@ -79,68 +78,28 @@ img { display: block; max-width: 100%; }
 button { font-family: inherit; }
 
 /* ============================================================
-   Desktop: dark stage with phone preview centered
+   Full-screen app — fills the entire viewport edge-to-edge (no
+   centered phone frame, no letterbox bars). Pages fill the screen;
+   inner reading content is centered via .content-wrap.
    ============================================================ */
 .stage {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  /* 中性冷墨黑:去绿光晕,仅顶部极淡暖金 */
   background:
-    radial-gradient(ellipse at 50% 28%, rgba(95,168,146,0.08), transparent 60%),
-    radial-gradient(ellipse at 30% 82%, rgba(205,178,119,0.06), transparent 55%),
-    #04070a;
+    radial-gradient(ellipse at 50% 0%, rgba(205,178,119,0.05), transparent 56%),
+    linear-gradient(180deg, #0b0e12, #07090c);
   position: relative;
   overflow: hidden;
-}
-.stage::before {
-  content: "";
-  position: absolute; inset: 0;
-  background-image:
-    radial-gradient(1px 1px at 10% 20%, rgba(236,220,166,0.25), transparent 60%),
-    radial-gradient(1px 1px at 70% 40%, rgba(236,220,166,0.15), transparent 60%),
-    radial-gradient(1px 1px at 30% 80%, rgba(236,220,166,0.2), transparent 60%),
-    radial-gradient(1px 1px at 85% 75%, rgba(236,220,166,0.18), transparent 60%);
-  pointer-events: none;
 }
 
-/* Phone shell */
+/* The app surface fills the whole stage/viewport. */
 .phone {
-  position: relative;
-  width: 100%;
-  max-width: var(--phone-w);
-  height: min(844px, calc(100vh - 32px));
-  height: min(844px, calc(100dvh - 32px));
-  background: var(--ink-deepest);
-  border-radius: 44px;
+  position: absolute;
+  inset: 0;
+  background: var(--ink-deep);
   overflow: hidden;
-  box-shadow:
-    0 0 0 2px #0a1014,
-    0 0 0 10px #06090b,
-    0 30px 80px rgba(0,0,0,0.7),
-    0 0 120px rgba(205,178,119,0.08);
-}
-@media (max-width: 480px) {
-  /* Lock the outer document so the whole UI can't be dragged/overflow when the
-     mobile URL bar shows or hides — only inner .page-scroll regions scroll. */
-  html, body { height: 100dvh; overflow: hidden; }
-  .stage {
-    padding: 0;
-    background: #04070a;
-    min-height: 0;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
-  }
-  .phone {
-    max-width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    border-radius: 0;
-    box-shadow: none;
-  }
 }
 
 /* Inner screen */
@@ -149,6 +108,19 @@ button { font-family: inherit; }
   overflow: hidden;
   background: var(--ink-deep);
 }
+
+/* Lock the outer document so the whole UI can't be dragged/overflow when a
+   mobile URL bar shows or hides — only inner .page-scroll regions scroll. */
+html, body { height: 100dvh; overflow: hidden; }
+
+/* Centered reading band for full-bleed pages — fills the screen background
+   while keeping content at a comfortable desktop width. */
+.content-wrap {
+  width: 100%;
+  max-width: var(--content-w, 1080px);
+  margin-inline: auto;
+}
+.content-wrap--narrow { --content-w: 760px; }
 
 /* ============================================================
    Page transitions (each page is absolute-filled)
@@ -229,16 +201,15 @@ button { font-family: inherit; }
   color: var(--ink-deep);
 }
 .night-bg {
+  /* 中性冷墨黑:去绿,顶部极淡暖金,底部自然压暗 */
   background:
-    radial-gradient(ellipse at 50% -5%, rgba(95,168,146,0.12), transparent 55%),
-    radial-gradient(ellipse at 50% 105%, rgba(205,178,119,0.07), transparent 55%),
-    linear-gradient(180deg, #0a141a, #0a1014 62%, #05080a);
+    radial-gradient(ellipse at 50% -8%, rgba(205,178,119,0.06), transparent 52%),
+    linear-gradient(180deg, #0b0e12 0%, #090b0f 60%, #07090c 100%);
 }
 .night-deep-bg {
   background:
-    radial-gradient(ellipse at 28% 12%, rgba(205,178,119,0.08), transparent 60%),
-    radial-gradient(ellipse at 80% 88%, rgba(95,168,146,0.07), transparent 55%),
-    #06090b;
+    radial-gradient(ellipse at 30% 8%, rgba(205,178,119,0.05), transparent 60%),
+    linear-gradient(180deg, #090c10, #06080b);
 }
 
 /* Grain overlay */
@@ -452,6 +423,88 @@ button { font-family: inherit; }
 .icon-btn:active { background: rgba(205,178,119,0.15); }
 
 /* ============================================================
+   PageShell — 统一二级页外壳(顶栏 + 滚动主体 + 底部固定区)
+   ============================================================ */
+.page-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
+  position: relative;
+  z-index: 3;
+  border-bottom: 1px solid rgba(205,178,119,0.16);
+  background: linear-gradient(180deg, rgba(7,11,14,0.5), transparent);
+}
+.page-head-back {
+  flex: 0 0 38px;
+  width: 38px; height: 38px;
+}
+.page-head-back--spacer {
+  background: none;
+  border: 0;
+  pointer-events: none;
+}
+.page-head-titles {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+  line-height: 1.25;
+}
+.page-head-eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.34em;
+  color: var(--gold-pale);
+  opacity: 0.55;
+  margin-bottom: 3px;
+}
+.page-head-title {
+  font-size: 17px;
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;
+  color: var(--gold-pale);
+  text-shadow: 0 0 12px rgba(236,220,166,0.35);
+}
+.page-head-sub {
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  color: rgba(228,224,208,0.62);
+  font-family: var(--font-han);
+  margin-top: 3px;
+}
+.page-head-right {
+  flex: 0 0 auto;
+  min-width: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.page-shell-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.page-shell-body {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.page-shell-body::-webkit-scrollbar { width: 0; }
+.page-shell-footer {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 3;
+}
+
+/* ============================================================
    Bottom nav (in-story)
    ============================================================ */
 .bottomnav {
@@ -540,6 +593,124 @@ button { font-family: inherit; }
   color: var(--gold-pale);
   font-style: normal;
 }
+
+/* ============================================================
+   Galgame dialogue panel (StoryPage) — 内聚半透明对话框
+   ============================================================ */
+.galgame-dialogue {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  position: relative;
+  padding: 14px 18px 11px;
+  /* 磨砂玻璃:大幅降低不透明度,靠 blur 维持可读,减少对画面的遮挡 */
+  background:
+    linear-gradient(180deg, rgba(8,12,16,0.30) 0%, rgba(6,9,12,0.48) 58%, rgba(5,8,11,0.60) 100%);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  backdrop-filter: blur(10px) saturate(1.05);
+  border: 1px solid rgba(205,178,119,0.16);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(236,220,166,0.12),
+    0 8px 40px rgba(0,0,0,0.42);
+}
+.galgame-dialogue::before {
+  content: ""; position: absolute;
+  top: -1px; left: 18px; right: 18px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(236,220,166,0.6), transparent);
+}
+.gd-namebar {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+.gd-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(236,220,166,0.7);
+  box-shadow: 0 0 10px rgba(236,220,166,0.28);
+}
+.gd-name {
+  font-family: var(--font-han);
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: var(--gold-pale);
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(205,178,119,0.45);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+}
+.gd-body { min-height: 3.4em; }
+.gd-text {
+  font-size: 15.5px;
+  line-height: 1.85;
+  letter-spacing: 0.03em;
+  text-wrap: pretty;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.75), 0 0 2px rgba(0,0,0,0.6);
+}
+.gd-text em { color: var(--gold-pale); font-style: normal; }
+.gd-caret {
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--gold-pale);
+  animation: glowPulse 1.4s ease-in-out infinite;
+}
+.gd-ctrl {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(205,178,119,0.12);
+}
+.gd-btn {
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: rgba(228,224,208,0.58);
+  cursor: pointer;
+  transition: color 160ms ease, background 200ms ease, border-color 200ms ease, transform 120ms ease;
+}
+.gd-btn:active { transform: scale(0.9); }
+.gd-btn.active {
+  color: var(--jade-pale);
+  border-color: rgba(95,168,146,0.5);
+  background: rgba(95,168,146,0.12);
+}
+.gd-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+@media (hover: hover) {
+  .gd-btn:hover { color: var(--gold-pale); background: rgba(205,178,119,0.08); }
+  .gd-btn.active:hover { color: var(--jade-pale); }
+}
+
+/* —— 历史浮层 —— */
+.history-log {
+  padding: 18px 18px calc(18px + var(--safe-bottom));
+  background: linear-gradient(180deg, rgba(10,15,18,0.98), rgba(5,8,11,0.99));
+  border-top: 1px solid rgba(205,178,119,0.4);
+  border-radius: 14px 14px 0 0;
+  max-height: 78vh;
+  overflow-y: auto;
+}
+.history-log-item { margin-bottom: 14px; }
+.history-log-item .hl-name {
+  font-family: var(--font-han);
+  font-size: 13px;
+  color: var(--gold-pale);
+  letter-spacing: 0.18em;
+  margin-bottom: 4px;
+}
+.history-log-item .hl-line {
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(228,224,208,0.86);
+}
+.history-log-item .hl-line.narration { font-style: italic; color: rgba(228,224,208,0.62); }
 
 /* ============================================================
    Choice cards
@@ -812,6 +983,48 @@ button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
   box-shadow: none;
 }
 
+/* ============================================================
+   Desktop refinements — the wide single column gets larger reading
+   sizes, a visible scrollbar and roomier controls. Applies above the
+   mobile breakpoint (which forces full-bleed full-screen).
+   ============================================================ */
+@media (min-width: 700px) {
+  /* Visible, themed scrollbar (hidden on mobile, expected on desktop) */
+  .page-scroll { scrollbar-width: thin; scrollbar-color: rgba(205,178,119,0.32) transparent; }
+  .page-scroll::-webkit-scrollbar { width: 9px; }
+  .page-scroll::-webkit-scrollbar-thumb {
+    background: rgba(205,178,119,0.26);
+    border-radius: 9px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .page-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(205,178,119,0.45);
+    background-clip: padding-box;
+  }
+
+  /* Larger reading sizes for the wider column */
+  .dialogue-text { font-size: 18px; line-height: 1.95; }
+  .dialogue-name { font-size: 15px; }
+  .topbar-title { font-size: 18px; }
+  .choice-label { font-size: 16.5px; }
+  .btn-primary, .btn-ghost { font-size: 15px; }
+
+  /* PageShell 主体在桌面/平板显示主题滚动条 */
+  .page-shell-body { scrollbar-width: thin; scrollbar-color: rgba(205,178,119,0.32) transparent; }
+  .page-shell-body::-webkit-scrollbar { width: 9px; }
+  .page-shell-body::-webkit-scrollbar-thumb {
+    background: rgba(205,178,119,0.26);
+    border-radius: 9px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .page-shell-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(205,178,119,0.45);
+    background-clip: padding-box;
+  }
+}
+
 /* Respect users who reduce motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -820,4 +1033,802 @@ button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ============================================================
+   Split-view 默认(移动端)样式
+   — StoryPage 场景+对白分栏,移动端退化为上下堆叠。
+   桌面端(≥1024px)在下方 @media 块覆盖为左右 grid。
+   ============================================================ */
+.split-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.split-scene {
+  position: relative;
+  overflow: hidden;
+  flex: 1 1 50%;
+  min-height: 200px;
+}
+.split-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow-y: auto;
+  flex: 0 0 auto;
+  max-height: 50vh;
+  background: linear-gradient(180deg, rgba(8,12,15,0.96), rgba(5,8,11,0.99));
+  border-top: 1px solid rgba(205,178,119,0.3);
+}
+.scene-overlay-top {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  background: linear-gradient(180deg, rgba(5,8,11,0.78) 0%, rgba(5,8,11,0.28) 60%, transparent 100%);
+  pointer-events: none;
+}
+.scene-overlay-top > * { pointer-events: auto; }
+
+/* —— StoryPage 顶部:左返回 · 居中竖排标题 · 右(音量+菜单) ——
+   用双类选择器(.scene-overlay-top.story-top)提高特异度,覆盖桌面端
+   .scene-overlay-top 的 justify-content:space-between。返回/动作绝对定位,
+   保证中间标题始终精确居中。 */
+.scene-overlay-top.story-top {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+}
+.story-top-back {
+  position: absolute;
+  left: 18px;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  pointer-events: auto;
+}
+.story-top-actions {
+  position: absolute;
+  right: 18px;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+.story-top-titles {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.story-top-titles .progress-dots { padding: 2px 0; }
+
+/* ============================================================
+   典故卷宗 — 全屏分卷 scroll-snap(每卷独占一屏,上下切换)
+   冷净电影感配色,替代原先偏「土暗」的褐色重底。
+   ============================================================ */
+.volume-scroll {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.volume-scroll::-webkit-scrollbar { width: 0 !important; }
+
+.volume-panel {
+  position: relative;
+  min-height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+.volume-bg { position: absolute; inset: 0; }
+.volume-bg img, .volume-bg video { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* 未启之卷:封面图压暗、轻微去色,表达「尚未开启」 */
+.volume-img--locked { filter: grayscale(0.35) brightness(0.6) contrast(0.96); }
+.volume-bg--locked {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 26% 22%, rgba(95,168,146,0.14), transparent 58%),
+    radial-gradient(ellipse at 80% 84%, rgba(205,178,119,0.10), transparent 55%),
+    linear-gradient(155deg, #102029 0%, #0a151b 46%, #060d11 100%);
+}
+.volume-watermark {
+  position: absolute;
+  right: 5%; top: 46%;
+  transform: translateY(-50%);
+  font-family: var(--font-deco);
+  font-size: clamp(170px, 36vh, 380px);
+  line-height: 1;
+  color: rgba(166,220,203,0.07);
+  pointer-events: none; user-select: none;
+}
+.volume-scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(5,8,11,0.30) 0%, rgba(5,8,11,0.03) 24%,
+    rgba(5,8,11,0.40) 60%, rgba(4,7,10,0.82) 84%, rgba(3,6,9,0.96) 100%);
+}
+.volume-lock-wash {
+  position: absolute; inset: 0; pointer-events: none;
+  background: rgba(5,9,12,0.30);
+}
+.volume-content {
+  position: relative; z-index: 2;
+  width: 100%;
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 0 clamp(22px, 5vw, 60px) clamp(40px, 9vh, 84px);
+}
+.volume-eyebrow {
+  font-family: var(--font-han);
+  font-size: clamp(11px, 1.3vw, 13px);
+  letter-spacing: 0.4em;
+  color: var(--gold-pale);
+  opacity: 0.78;
+  margin-bottom: 12px;
+}
+.volume-title {
+  font-family: var(--font-han);
+  font-size: clamp(28px, 4.4vw, 50px);
+  letter-spacing: 0.1em;
+  color: var(--gold-pale);
+  line-height: 1.18;
+  text-shadow: 0 2px 18px rgba(0,0,0,0.6), 0 0 26px rgba(236,220,166,0.22);
+}
+.volume-title.is-locked {
+  color: rgba(214,226,226,0.84);
+  text-shadow: 0 2px 14px rgba(0,0,0,0.6);
+}
+.volume-accent {
+  width: 64px; height: 2px;
+  background: linear-gradient(90deg, var(--gold), rgba(95,168,146,0.55), transparent);
+  margin: 16px 0 18px;
+}
+.volume-desc {
+  color: rgba(238,232,216,0.92);
+  font-size: clamp(13px, 1.4vw, 16px);
+  line-height: 2;
+  letter-spacing: 0.04em;
+  max-width: 620px;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.7);
+  margin-bottom: 24px;
+}
+.volume-cta { max-width: 440px; }
+.volume-pending {
+  display: inline-block;
+  font-family: var(--font-han);
+  font-size: 16px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  color: var(--jade-pale);
+  border: 1px solid rgba(166,220,203,0.5);
+  border-radius: 999px;
+  padding: 12px 32px;
+  background: rgba(95,168,146,0.12);
+  box-shadow: 0 0 18px rgba(95,168,146,0.18), inset 0 0 18px rgba(95,168,146,0.06);
+  text-shadow: 0 0 12px rgba(95,168,146,0.4);
+}
+.volume-pager {
+  position: fixed;
+  right: 20px; top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.vp-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(205,178,119,0.5);
+  background: transparent;
+  padding: 0; cursor: pointer;
+  transition: all 240ms ease;
+}
+.vp-dot:hover { border-color: var(--gold-pale); background: rgba(205,178,119,0.3); }
+.vp-dot.active {
+  height: 22px;
+  border-radius: 5px;
+  background: var(--jade-pale);
+  border-color: var(--jade-pale);
+  box-shadow: 0 0 10px var(--jade);
+}
+@media (max-width: 700px) {
+  .volume-pager { right: 10px; gap: 10px; }
+}
+
+/* ============================================================
+   线索板(DungeonStatusPage)— 三态色阶卡片
+   当前=青 / 已推进=金 / 未解=暗,提高对比、去闷
+   ============================================================ */
+.clue-legend {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  margin: 2px 0 18px; padding-bottom: 14px;
+  border-bottom: 1px solid rgba(205,178,119,0.12);
+}
+.clue-legend-item {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; letter-spacing: 0.08em;
+  color: rgba(232,228,214,0.74);
+}
+.clue-legend .dot { width: 9px; height: 9px; border-radius: 50%; }
+.clue-legend .dot.is-current { background: var(--jade-pale); box-shadow: 0 0 8px var(--jade); }
+.clue-legend .dot.is-done { background: var(--gold-pale); }
+.clue-legend .dot.is-locked { background: rgba(214,224,224,0.3); }
+.clue-legend-tip {
+  margin-left: auto;
+  font-size: 11.5px; letter-spacing: 0.06em;
+  color: rgba(214,224,224,0.44);
+}
+
+/* 全屏氛围背景:暗化场景图 + 暗角 */
+.clue-bg-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: brightness(0.34) saturate(0.92) blur(1px);
+}
+.clue-bg-scrim {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 26%, rgba(5,8,11,0.18), rgba(4,7,10,0.86) 82%),
+    linear-gradient(180deg, rgba(4,7,10,0.72) 0%, rgba(4,7,10,0.4) 38%, rgba(4,7,10,0.94) 100%);
+}
+
+/* 单列居中列表 */
+.clue-list {
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.clue-card {
+  position: relative;
+  border-radius: 14px;
+  padding: 16px 20px 16px 22px;
+  border: 1px solid rgba(205,178,119,0.18);
+  /* 磨砂玻璃:半透明 + 模糊,让氛围背景透出,营造层次 */
+  background: linear-gradient(158deg, rgba(16,24,29,0.52) 0%, rgba(8,13,17,0.46) 100%);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  backdrop-filter: blur(10px) saturate(1.05);
+  box-shadow: 0 10px 34px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+.clue-card-eyebrow {
+  font-family: var(--font-han);
+  font-size: 11px;
+  letter-spacing: 0.26em; text-indent: 0.26em;
+  color: rgba(236,220,166,0.55);
+  margin-bottom: 8px;
+}
+.clue-card--current .clue-card-eyebrow { color: rgba(166,220,203,0.7); }
+.clue-card--locked .clue-card-eyebrow { color: rgba(214,224,224,0.34); }
+.clue-card::before {
+  content: ""; position: absolute;
+  left: 0; top: 0; bottom: 0; width: 3px;
+  background: transparent;
+}
+.clue-card--current {
+  border-color: rgba(95,168,146,0.5);
+  background: linear-gradient(158deg, rgba(24,46,44,0.52) 0%, rgba(11,22,24,0.46) 100%);
+  box-shadow: 0 0 0 1px rgba(95,168,146,0.14), 0 14px 40px rgba(0,0,0,0.46), inset 0 0 60px rgba(95,168,146,0.07);
+}
+.clue-card--current::before { background: linear-gradient(180deg, var(--jade-pale), var(--jade)); box-shadow: 0 0 14px rgba(95,168,146,0.6); }
+.clue-card--done {
+  border-color: rgba(205,178,119,0.3);
+  background: linear-gradient(158deg, rgba(30,26,18,0.46) 0%, rgba(13,13,12,0.42) 100%);
+}
+.clue-card--done::before { background: linear-gradient(180deg, var(--gold-pale), var(--gold-deep)); }
+.clue-card--locked {
+  border-color: rgba(205,178,119,0.12);
+  background: linear-gradient(158deg, rgba(12,16,20,0.4) 0%, rgba(7,11,15,0.34) 100%);
+}
+.clue-card--locked::before { background: transparent; }
+
+.clue-card-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 8px;
+}
+.clue-card-title {
+  font-family: var(--font-han);
+  font-size: 18px; letter-spacing: 0.16em; text-indent: 0.16em;
+  color: var(--gold-pale);
+}
+.clue-card--current .clue-card-title { color: var(--jade-pale); text-shadow: 0 0 12px rgba(95,168,146,0.35); }
+.clue-card--locked .clue-card-title { color: rgba(214,224,224,0.5); letter-spacing: 0.22em; }
+
+.clue-chip {
+  flex-shrink: 0;
+  font-size: 11px; letter-spacing: 0.14em; text-indent: 0.14em;
+  padding: 3px 11px; border-radius: 999px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.clue-chip.is-current { color: var(--jade-pale); background: rgba(95,168,146,0.14); }
+.clue-chip.is-done { color: var(--gold-pale); background: rgba(205,178,119,0.1); }
+.clue-chip.is-locked { color: rgba(214,224,224,0.42); background: transparent; }
+
+.clue-card-brief {
+  font-size: 12.5px; line-height: 1.75;
+  color: rgba(234,229,216,0.74);
+  letter-spacing: 0.03em;
+}
+.clue-card--locked .clue-card-brief { color: rgba(214,224,224,0.42); }
+
+.clue-games { display: flex; flex-direction: column; gap: 8px; margin-top: 13px; }
+.clue-game-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 13px; border-radius: 8px;
+  background: rgba(236,229,212,0.05);
+  border: 1px solid rgba(236,229,212,0.08);
+}
+.clue-game-name { font-size: 13px; color: var(--paper); letter-spacing: 0.04em; }
+.clue-rank { font-size: 11.5px; letter-spacing: 0.12em; white-space: nowrap; }
+.clue-rank.is-high { color: var(--jade-pale); }
+.clue-rank.is-mid { color: var(--gold-pale); }
+.clue-rank.is-low { color: rgba(214,224,224,0.7); }
+.clue-rank.is-todo { color: rgba(214,224,224,0.56); }
+.clue-rank.is-dim { color: rgba(214,224,224,0.32); }
+
+/* ============================================================
+   封面弹层(典籍设定 / 参赛档案)— 居中对话框 + 深色卡片
+   ============================================================ */
+.cover-modal-backdrop {
+  position: absolute; inset: 0; z-index: 60;
+  background: rgba(3,5,8,0.7);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  display: flex; align-items: center; justify-content: center;
+  padding: clamp(14px, 4vh, 48px);
+  animation: fadeIn 240ms ease both;
+}
+.cover-modal-dialog {
+  position: relative;
+  width: min(96%, 1000px);
+  height: min(88vh, 780px);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(205,178,119,0.3);
+  box-shadow: 0 28px 90px rgba(0,0,0,0.72), 0 0 0 1px rgba(236,220,166,0.08);
+  animation: fadeInUp 300ms cubic-bezier(.2,.8,.3,1) both;
+}
+.cover-modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  z-index: 5;
+  width: 38px; height: 38px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(11,15,20,0.7);
+  border: 1px solid rgba(205,178,119,0.45);
+  color: var(--gold-pale);
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  transition: background 200ms ease, border-color 200ms ease, transform 120ms ease;
+}
+.cover-modal-close:hover { background: rgba(205,178,119,0.16); border-color: var(--gold-pale); }
+
+/* 垂直居中短内容(典籍设定),内容多时正常滚动 */
+.lore-center {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* —— 通用深色卡片(替代米色 PaperPanel) —— */
+.lore-card {
+  position: relative;
+  border-radius: 12px;
+  padding: 16px 18px;
+  border: 1px solid rgba(205,178,119,0.2);
+  background: linear-gradient(158deg, rgba(20,28,34,0.62) 0%, rgba(10,15,19,0.56) 100%);
+}
+.lore-card-title {
+  font-family: var(--font-han);
+  font-size: 17px; letter-spacing: 0.16em; text-indent: 0.16em;
+  color: var(--gold-pale);
+}
+.lore-card-line { font-size: 13px; line-height: 1.75; color: rgba(232,228,214,0.74); letter-spacing: 0.03em; }
+
+/* 典籍设定:圆形宣纸印章(让浅底图标在深色卡上仍清晰) */
+.lore-medallion {
+  width: 56px; height: 56px; flex-shrink: 0;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  padding: 12px;
+  background: radial-gradient(circle at 50% 38%, #ece5d4, #cebf9f 88%);
+  border: 1px solid rgba(205,178,119,0.6);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* 参赛档案:分区标题、状态丸、路径码 */
+.lore-section {
+  text-align: center;
+  font-family: var(--font-han);
+  font-size: 13px;
+  color: var(--gold-pale);
+  letter-spacing: 0.34em; text-indent: 0.34em;
+  margin: 22px 0 12px;
+}
+.lore-status {
+  flex-shrink: 0;
+  font-size: 10.5px; letter-spacing: 0.1em;
+  padding: 3px 9px; border-radius: 999px;
+  color: var(--candle); border: 1px solid rgba(217,138,63,0.4);
+  background: rgba(217,138,63,0.1);
+}
+.lore-code {
+  font-size: 10.5px;
+  color: rgba(236,229,212,0.78);
+  background: rgba(0,0,0,0.32);
+  border: 1px solid rgba(205,178,119,0.18);
+  padding: 2px 6px; border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+.lore-summary {
+  cursor: pointer;
+  font-size: 11px; letter-spacing: 0.08em;
+  color: var(--jade-pale);
+}
+
+/* —— StoryPage 小游戏/动作面板(沿用 galgame 面板外框) —— */
+.story-action { text-align: center; }
+.story-action-text {
+  font-size: 14px;
+  line-height: 1.85;
+  letter-spacing: 0.04em;
+  font-style: italic;
+  color: rgba(228,224,208,0.82);
+}
+.story-action-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 12px;
+}
+.story-action-btns .btn-primary { min-width: 200px; }
+.story-choices {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.split-panel-header {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(205,178,119,0.18);
+}
+
+/* —— MiniGame 网格工具类(移动端默认纵向,桌面端多列) —— */
+.mg-classify-grid { display: flex; flex-direction: column; gap: 8px; }
+.mg-grid-3 { display: flex; flex-direction: column; gap: 10px; }
+.mg-grid-2 { display: flex; flex-direction: column; gap: 8px; }
+
+/* —— 通用网格工具类(移动端默认单列,桌面端 @media≥1024 内多列) —— */
+.grid-2 { display: flex; flex-direction: column; gap: 14px; }
+.grid-3 { display: flex; flex-direction: column; gap: 14px; }
+.grid-auto-fill { display: flex; flex-direction: column; gap: 12px; }
+.span-all { grid-column: auto; }
+
+/* —— CluePage 线索网格(移动端 2 列,桌面端 auto-fill 3-4 列) —— */
+.clue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; }
+
+/* —— ProgressPage 节点+展开卡(移动端纵向堆叠,桌面端 2 列) —— */
+.progress-split { display: flex; flex-direction: column; gap: 16px; }
+
+/* ============================================================
+   Desktop layout (≥1024px) — 沉浸式全屏舞台
+   - 持久左侧 SideNav,隐藏 BottomNav
+   - StoryPage 左场景右对白分栏
+   - 设定/图鉴等用多列网格
+   - BottomSheet 改右侧抽屉
+   ============================================================ */
+
+/* 默认(移动端):app-shell 退化为单列,SideNav 隐藏,由 Topbar+BottomNav 承担导航 */
+.app-shell {
+  display: block;
+  height: 100%;
+}
+.app-main {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+.sidenav { display: none; }
+/* 展开按钮默认隐藏(移动端无持久侧栏);桌面端在 @media≥1024 内显示 */
+.nav-expand-btn { display: none; }
+
+/* 移动端默认:ending-actions 为主按钮全宽 + 2 副按钮 2 列(桌面端在 @media 内覆盖为 3 列) */
+.ending-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ending-actions .btn-primary { margin-bottom: 0; }
+.ending-actions .btn-ghost:nth-last-child(-n+2) {
+  /* 桌面端由 grid 自动排,移动端用 flex wrap 模拟 2 列 */
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    height: 100%;
+  }
+  /* 沉浸页(封面/结局):无 SideNav,单列全宽 */
+  .app-shell--immersive {
+    grid-template-columns: 1fr;
+  }
+  /* 收起态展开按钮:仅桌面端浮于左上角(移动端无持久侧栏) */
+  .nav-expand-btn {
+    position: absolute;
+    top: 16px; left: 16px;
+    z-index: 20;
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: rgba(11,15,20,0.66);
+    border: 1px solid rgba(205,178,119,0.4);
+    color: var(--gold-pale);
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    transition: background 200ms ease, border-color 200ms ease, transform 120ms ease;
+  }
+  .nav-expand-btn:hover { background: rgba(205,178,119,0.16); border-color: var(--gold-pale); }
+  .app-main {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    min-width: 0; /* 防 grid 子项溢出 */
+  }
+  .sidenav { display: flex; }
+
+  /* —— SideNav —— */
+  .sidenav {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-right: 1px solid rgba(205,178,119,0.22);
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(205,178,119,0.05), transparent 60%),
+      #080b0f;
+    padding: 18px 0 14px;
+  }
+  .sidenav-logo {
+    padding: 4px 22px 18px;
+    border-bottom: 1px solid rgba(205,178,119,0.15);
+    margin-bottom: 10px;
+  }
+  .sidenav-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+  }
+  .sidenav-nav::-webkit-scrollbar { width: 0; }
+  .sidenav .navitem {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 12px 22px;
+    font-size: 14px;
+    min-height: 44px;
+    border-left: 3px solid transparent;
+    border-radius: 0;
+  }
+  .sidenav .navitem .navdot { margin-bottom: 0; width: 6px; height: 6px; }
+  .sidenav .navitem:hover { background: rgba(205,178,119,0.06); }
+  .sidenav .navitem.active {
+    color: var(--jade-pale);
+    background: linear-gradient(90deg, rgba(95,168,146,0.12), transparent 70%);
+    border-left-color: var(--jade);
+  }
+  .sidenav .navitem.active .navdot {
+    background: var(--jade);
+    box-shadow: 0 0 10px var(--jade);
+  }
+  .sidenav-footer {
+    padding: 12px 22px 4px;
+    border-top: 1px solid rgba(205,178,119,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .sidenav-save-hint {
+    font-family: var(--font-han);
+    font-size: 10px;
+    color: rgba(228,224,208,0.35);
+    letter-spacing: 0.18em;
+  }
+
+  /* —— Page title bar (替代 Topbar,无返回按钮) —— */
+  .page-title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px 14px;
+    border-bottom: 1px solid rgba(205,178,119,0.18);
+    position: relative;
+    z-index: 2;
+  }
+  .page-title-bar .title {
+    font-family: var(--font-han);
+    font-size: 22px;
+    letter-spacing: 0.28em;
+    text-indent: 0.28em;
+    color: var(--gold-pale);
+    text-shadow: 0 0 12px rgba(236,220,166,0.35);
+  }
+  .page-title-bar .right-slot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* —— 隐藏 BottomNav(由 SideNav 替代) —— */
+  .bottomnav { display: none !important; }
+
+  /* —— PageShell 桌面端:隐藏返回键(SideNav 承担),标题放大、留白加宽 —— */
+  .page-head {
+    padding: 20px 32px 16px;
+  }
+  .page-head-back { visibility: hidden; }
+  .page-head-title { font-size: 22px; }
+  .page-head-eyebrow { font-size: 10px; }
+  .page-head-sub { font-size: 12px; }
+
+  /* —— page-scroll 占满(无底部导航) —— */
+  .page-scroll { bottom: 0 !important; }
+
+  /* —— 放宽阅读带 —— */
+  .content-wrap { --content-w: 1180px; }
+  .content-wrap--narrow { --content-w: 920px; }
+
+  /* —— Split view (StoryPage 左场景右对白) —— */
+  .split-view {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(440px, 1fr);
+    height: 100%;
+  }
+  .split-scene {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+  }
+  .split-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 26px 32px 24px;
+    background:
+      linear-gradient(180deg, rgba(8,12,15,0.96), rgba(5,8,11,0.99));
+    border-left: 1px solid rgba(205,178,119,0.32);
+    overflow-y: auto;
+  }
+  .split-panel::-webkit-scrollbar { width: 9px; }
+  .split-panel::-webkit-scrollbar-thumb {
+    background: rgba(205,178,119,0.26);
+    border-radius: 9px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .split-panel-header {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(205,178,119,0.18);
+  }
+  /* 场景区左上角浮层(章节标题 + 进程入口) */
+  .scene-overlay-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 26px 14px;
+    background: linear-gradient(180deg, rgba(5,8,11,0.78) 0%, rgba(5,8,11,0.28) 60%, transparent 100%);
+    pointer-events: none;
+  }
+  .scene-overlay-top > * { pointer-events: auto; }
+
+  /* —— 多列网格工具类 —— */
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .grid-auto-fill { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .span-all { grid-column: 1 / -1; }
+
+  /* —— 字号/间距放大 —— */
+  .dialogue-text { font-size: 17px; line-height: 2; }
+  .dialogue-name { font-size: 15px; }
+
+  /* galgame 对话框桌面端放大 + 历史浮层右抽屉圆角 */
+  .galgame-dialogue { max-width: 760px; padding: 18px 22px 13px; }
+  .gd-text { font-size: 17px; line-height: 2; }
+  .gd-body { min-height: 3.8em; }
+  .history-log { max-height: 100%; border-radius: 14px 0 0 14px; }
+  /* 进程入口由 SideNav 承担,桌面端隐藏顶部/对话框内的菜单键 */
+  .story-top-menu { display: none; }
+  .gd-btn--menu { display: none; }
+  .choice-label { font-size: 16px; }
+  .btn-primary, .btn-ghost { font-size: 15px; min-height: 50px; }
+  .topbar-title { font-size: 20px; }
+
+  /* —— dialogue 在 split-panel 内去外边距,宽度跟随面板 —— */
+  .split-panel .dialogue { margin: 0; }
+
+  /* —— BottomSheet 改右侧抽屉 —— */
+  .sheet-backdrop { position: fixed; inset: 0; }
+  .sheet {
+    left: auto; right: 0; top: 0; bottom: 0;
+    max-height: 100%;
+    width: min(460px, 50%);
+    animation: slideInRight 300ms cubic-bezier(.2,.8,.3,1) both;
+  }
+  @keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+  .sheet .paper-panel {
+    border-radius: 12px 0 0 12px;
+    max-height: 100%;
+    overflow-y: auto;
+  }
+
+  /* —— Topbar 桌面端:无返回按钮时,标题居中需调整 —— */
+  .topbar { padding: 18px 32px 14px; }
+  /* 桌面端隐藏 Topbar 返回按钮(由 SideNav 承担导航),保留占位以维持标题居中 */
+  .topbar-back { visibility: hidden !important; }
+
+  /* —— CoverPage 桌面端按钮组:底部居中,更宽更舒展 —— */
+  .cover-actions {
+    max-width: 480px !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* —— EndingPage 桌面端按钮区横向 —— */
+  .ending-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .ending-actions .btn-primary { grid-column: 1 / -1; }
+
+  /* —— ProgressPage 桌面端 2 列:节点 + 展开卡 —— */
+  .progress-split {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* —— CluePage 桌面端 auto-fill 多列 —— */
+  .clue-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  /* —— MiniGame 桌面端多列网格 —— */
+  .mg-classify-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .mg-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .mg-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 }

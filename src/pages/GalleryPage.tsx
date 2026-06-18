@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BottomNav, SealTag, Topbar, PageHeader } from "../components";
+import { BottomNav, SealTag, PageShell } from "../components";
 import {
   SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
 } from "../components/art";
@@ -65,21 +65,20 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
     gotoPage("ending");
   };
   return (
-    <div className="page night-deep-bg">
-      <Topbar title="结 局 图 鉴" onBack={() => gotoPage("story")}/>
-
-      <div className="page-scroll" style={{top: 56, bottom: 64, padding: "0 16px"}}>
-        <PageHeader
-          eyebrow="ENDINGS · CODEX"
-          intro={<>已解锁 <span style={{color:"var(--gold-pale)"}}>{unlocked.length}</span> / {Object.keys(ENDINGS).length}</>}
-        />
-
+    <PageShell
+      bg="night-deep-bg"
+      eyebrow="ENDINGS · CODEX"
+      title="结 局 图 鉴"
+      subtitle={<>已解锁 <span style={{color:"var(--gold-pale)"}}>{unlocked.length}</span> / {Object.keys(ENDINGS).length}</>}
+      onBack={() => gotoPage("story")}
+      footer={<BottomNav active="gallery" onNav={gotoPage}/>}
+    >
+        <div className="grid-2">
         {Object.values(ENDINGS).map((e, i) => {
           const has = unlocked.includes(e.id);
           return (
             <div key={e.id} className="fade-up"
               style={{
-                marginBottom: 14,
                 animationDelay: `${i*90}ms`,
               }}>
               <div
@@ -92,7 +91,7 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
                   boxShadow: has ? "0 0 0 1px rgba(236,220,166,0.12), 0 8px 24px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.5)",
                   cursor: has ? "pointer" : "default",
                 }}>
-                <div style={{position:"relative", height: 130}}>
+                <div style={{position:"relative", height: "clamp(130px, 22vh, 200px)"}}>
                   {has ? (
                     <>
                       {sceneForEnding(e.id)}
@@ -159,6 +158,7 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
             </div>
           );
         })}
+        </div>
 
         <div style={{
           textAlign:"center", padding: "12px 0 20px",
@@ -166,11 +166,6 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
           fontSize: 11, opacity: 0.45,
           letterSpacing:"0.4em",
         }}>· 收 卷 ·</div>
-      </div>
-
-      <div style={{position:"absolute", bottom: 0, left: 0, right: 0}}>
-        <BottomNav active="gallery" onNav={gotoPage}/>
-      </div>
-    </div>
+    </PageShell>
   );
 }

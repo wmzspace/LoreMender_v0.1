@@ -9,7 +9,9 @@ interface SceneFrameProps {
 export function SceneFrame({ children, height = 240 }: SceneFrameProps) {
   return (
     <div style={{
-      position:"relative", width:"100%", height,
+      position:"relative", width:"100%",
+      // 随视口高度自适应：桌面高列里更像主视觉，移动端保持原始高度下限
+      height: `clamp(${height}px, 38vh, ${Math.round(height * 1.9)}px)`,
       overflow: "hidden",
       background: "#06090b",
     }}>

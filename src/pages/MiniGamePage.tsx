@@ -4,7 +4,7 @@ import type { GameNode, GameResultRank, GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
 import { saveState } from "../lib/storage";
 import { playSfx } from "../lib/audio";
-import { Toast, Topbar } from "../components";
+import { Toast, PageShell } from "../components";
 
 interface MiniGamePageProps {
   state: GameState;
@@ -187,13 +187,13 @@ function Shell({
   );
 
   return (
-    <div className="page night-bg">
-      <Topbar title={game.name} onBack={() => gotoPage("story")} right={rankBadge} />
-
-      <div className="page-scroll" style={{
-        top: 58, bottom: 0,
-        padding: "14px 16px calc(20px + var(--safe-bottom))",
-      }}>
+    <>
+      <PageShell
+        title={game.name}
+        right={rankBadge}
+        onBack={() => gotoPage("story")}
+        bodyPadding="14px 16px calc(20px + var(--safe-bottom))"
+      >
         {game.context && (
           <div style={{
             textAlign: "center",
@@ -208,11 +208,11 @@ function Shell({
         <div style={{ color: "var(--paper)", lineHeight: 1.7 }}>
           {children}
         </div>
-      </div>
+      </PageShell>
 
       <Toast text={toast} onDone={() => setToast("")} />
       {overlay}
-    </div>
+    </>
   );
 }
 
@@ -449,8 +449,8 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
         )}
       </div>
 
-      {/* 分类区（纵向堆叠，色彩编码） */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+      {/* 分类区（移动端纵向堆叠 / 桌面端 3 列网格，色彩编码） */}
+      <div className="mg-classify-grid" style={{ marginBottom: 16 }}>
         {classifyCategories.map(cat => {
           const theme = CAT_THEME[cat] ?? CAT_THEME["病症"];
           const catWords = Object.entries(placed).filter(([, v]) => v === cat).map(([k]) => k);
@@ -543,7 +543,7 @@ const ROWS = 5;
 const KEY_ID = 1;
 const EXIT_ROW = 4; // 钥匙(1×2横)到达 row=4, col=2 占据(r4,c2)(r4,c3)即为出口
 const EXIT_COL = 2;
-const CELL_SIZE = 48; // 每格像素大小
+const CELL_SIZE = typeof window !== "undefined" && window.innerWidth >= 1024 ? 72 : 48; // 每格像素大小(桌面端放大)
 
 interface Block {
   id: number;
@@ -850,7 +850,7 @@ function HerbMemory({ finish }: { finish: (rank: GameResultRank) => void }) {
             style={{ borderColor: selected === h ? "var(--jade)" : undefined }}>{h}</button>
         ))}
       </div>
-      <div style={{ display: "grid", gap: 10 }}>
+      <div className="mg-grid-3">
         {prescriptions.map(p => (
           <button key={p.name} className="choice press" onClick={() => {
             if (!selected) return;
@@ -901,7 +901,7 @@ function SimpleOrderGame({
         <div className="dialogue-name">你的排序</div>
         <div>{answer.join(" → ") || "尚未选择"}</div>
       </div>
-      <div style={{ display: "grid", gap: 8 }}>
+      <div className="mg-grid-2">
         {pool.map(item => (
           <div key={item}>
             <button className="choice press" onClick={() => choose(item)} style={{ width: "100%" }}>

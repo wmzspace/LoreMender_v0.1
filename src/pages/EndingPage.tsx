@@ -459,7 +459,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
         <div style={{position:"relative"}}>
 
           {/* ── 场景插图区 ── */}
-          <div style={{position:"relative", height: 300}}>
+          <div style={{position:"relative", height: "clamp(300px, 50vh, 520px)"}}>
             {sceneFor(endId)}
             {ENDING_IMAGES[endId] && <EndingSceneImage endId={endId} />}
             <div className="grain"/>
@@ -525,29 +525,33 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
           </div>
 
           {/* ── 余音正文 ── */}
-          <div className="fade-up" style={{ margin: "26px 18px 0", animationDelay: "300ms" }}>
-            <PaperPanel style={{padding:"18px 22px 22px"}}>
-              <GoldDivider label="余 音"/>
-              <div style={{
-                fontSize: 14, lineHeight: 2.05,
-                color:"var(--ink-deep)",
-                whiteSpace: "pre-line",
-                letterSpacing: "0.05em",
-                textAlign: "center",
-              }}>{getEndingBody(state, endId)}</div>
-              <GoldDivider/>
-              <div style={{
-                textAlign:"center",
-                fontFamily:"var(--font-han)",
-                fontSize: 11, color:"rgba(70,62,38,0.6)",
-                letterSpacing:"0.42em", textIndent:"0.42em",
-                marginTop: 4,
-              }}>· 全 章 终 ·</div>
-            </PaperPanel>
+          <div className="content-wrap content-wrap--narrow">
+            <div className="fade-up" style={{ margin: "26px 18px 0", animationDelay: "300ms" }}>
+              <PaperPanel style={{padding:"18px 22px 22px"}}>
+                <GoldDivider label="余 音"/>
+                <div style={{
+                  fontSize: 14, lineHeight: 2.05,
+                  color:"var(--ink-deep)",
+                  whiteSpace: "pre-line",
+                  letterSpacing: "0.05em",
+                  textAlign: "center",
+                }}>{getEndingBody(state, endId)}</div>
+                <GoldDivider/>
+                <div style={{
+                  textAlign:"center",
+                  fontFamily:"var(--font-han)",
+                  fontSize: 11, color:"rgba(70,62,38,0.6)",
+                  letterSpacing:"0.42em", textIndent:"0.42em",
+                  marginTop: 4,
+                }}>· 全 章 终 ·</div>
+              </PaperPanel>
+            </div>
           </div>
 
           {/* ── 一卷总评 ── */}
-          <ScorePanel state={state} />
+          <div className="content-wrap content-wrap--narrow">
+            <ScorePanel state={state} />
+          </div>
 
           {/* ── 操作按钮区 ── */}
           <div style={{ padding: "0 20px calc(32px + var(--safe-bottom))" }}>
@@ -556,11 +560,11 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
               color:"rgba(228,224,208,0.28)", letterSpacing:"0.3em",
               marginBottom: 14,
             }}>· · ·</div>
-            <button className="btn-primary press" onClick={() => gotoPage("gallery")}
-              style={{ width:"100%", marginBottom: 10 }}>
-              查 看 结 局 图 鉴
-            </button>
-            <div style={{display:"grid", gridTemplateColumns: "1fr 1fr", gap: 10}}>
+            <div className="ending-actions">
+              <button className="btn-primary press" onClick={() => gotoPage("gallery")}
+                style={{ width:"100%" }}>
+                查 看 结 局 图 鉴
+              </button>
               <button className="btn-ghost press" onClick={replay}>重 新 选 择</button>
               <button className="btn-ghost press" onClick={reset}>青 史 空 间</button>
             </div>
