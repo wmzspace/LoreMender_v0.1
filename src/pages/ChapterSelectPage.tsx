@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PageShell } from "../components";
+import { bgmPath, playBgm, stopBgm } from "../lib/audio";
 import type { GameState } from "../data/types";
 
 interface ChapterSelectPageProps {
@@ -35,7 +36,7 @@ const VOLUMES: Volume[] = [
 ];
 
 /** 已开放卷封面：图与视频交替——首次图停留 1s,之后每次 2.5s,中间各播一遍视频,循环。 */
-function CoverMedia() {
+function CoverMedia({ audible }: { audible: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showVideo, setShowVideo] = useState(false);
   // hasPlayed 只在「视频真正播完」时翻转,不受 StrictMode 双调用 effect 影响,
@@ -54,6 +55,17 @@ function CoverMedia() {
       return () => window.clearTimeout(t);
     }
   }, [showVideo, hasPlayed]);
+
+  // BGM 仅在第一卷可见、且封面视频已开始播放时响起；切到其它卷（audible=false）即停。
+  // 图片/视频交替间隙不打断（playBgm 同源幂等；hasPlayed 后切回也立即续上）。
+  useEffect(() => {
+    if (audible && (showVideo || hasPlayed)) {
+      const src = bgmPath(1);
+      if (src) playBgm(src);
+    } else if (!audible) {
+      stopBgm();
+    }
+  }, [audible, showVideo, hasPlayed]);
 
   return (
     <>
@@ -79,19 +91,20 @@ function CoverMedia() {
 }
 
 function VolumePanel({
-  vol, index, comingSoon, onEnter, panelRef,
+  vol, index, comingSoon, onEnter, panelRef, audible,
 }: {
   vol: Volume;
   index: number;
   comingSoon: boolean;
   onEnter: () => void;
   panelRef: (el: HTMLDivElement | null) => void;
+  audible: boolean;
 }) {
   return (
     <section ref={panelRef} data-idx={index} className="volume-panel">
       <div className="volume-bg">
         {vol.open ? (
-          <CoverMedia />
+          <CoverMedia audible={audible} />
         ) : vol.image ? (
           <img src={vol.image} alt="" className="volume-img--locked" />
         ) : (
@@ -130,6 +143,9 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
   const [active, setActive] = useState(0);
   const panels = useRef<(HTMLDivElement | null)[]>([]);
 
+  // 离开典故卷宗即停止 BGM（封面视频起的曲子不应延续到其它界面）。
+  useEffect(() => () => stopBgm(), []);
+
   useEffect(() => {
     const root = panels.current[0]?.parentElement ?? null;
     const obs = new IntersectionObserver(
@@ -165,6 +181,7 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
           comingSoon={cleared}
           onEnter={onEnter}
           panelRef={(el) => { panels.current[i] = el; }}
+          audible={active === i}
         />
       ))}
 
