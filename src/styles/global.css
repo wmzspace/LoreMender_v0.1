@@ -54,7 +54,6 @@
 
   /* UI */
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --phone-w: 390px;
 
   /* Typography — 统一 fallback 链避免缺字时字体不统一 */
   --font-han: "ZCOOL XiaoWei", "Noto Serif SC", serif;
@@ -79,68 +78,28 @@ img { display: block; max-width: 100%; }
 button { font-family: inherit; }
 
 /* ============================================================
-   Desktop: dark stage with phone preview centered
+   Full-screen app — fills the entire viewport edge-to-edge (no
+   centered phone frame, no letterbox bars). Pages fill the screen;
+   inner reading content is centered via .content-wrap.
    ============================================================ */
 .stage {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   background:
-    radial-gradient(ellipse at 50% 28%, rgba(95,168,146,0.08), transparent 60%),
-    radial-gradient(ellipse at 30% 82%, rgba(205,178,119,0.06), transparent 55%),
+    radial-gradient(ellipse at 50% 28%, rgba(95,168,146,0.07), transparent 60%),
+    radial-gradient(ellipse at 30% 82%, rgba(205,178,119,0.05), transparent 55%),
     #04070a;
   position: relative;
   overflow: hidden;
 }
-.stage::before {
-  content: "";
-  position: absolute; inset: 0;
-  background-image:
-    radial-gradient(1px 1px at 10% 20%, rgba(236,220,166,0.25), transparent 60%),
-    radial-gradient(1px 1px at 70% 40%, rgba(236,220,166,0.15), transparent 60%),
-    radial-gradient(1px 1px at 30% 80%, rgba(236,220,166,0.2), transparent 60%),
-    radial-gradient(1px 1px at 85% 75%, rgba(236,220,166,0.18), transparent 60%);
-  pointer-events: none;
-}
 
-/* Phone shell */
+/* The app surface fills the whole stage/viewport. */
 .phone {
-  position: relative;
-  width: 100%;
-  max-width: var(--phone-w);
-  height: min(844px, calc(100vh - 32px));
-  height: min(844px, calc(100dvh - 32px));
-  background: var(--ink-deepest);
-  border-radius: 44px;
+  position: absolute;
+  inset: 0;
+  background: var(--ink-deep);
   overflow: hidden;
-  box-shadow:
-    0 0 0 2px #0a1014,
-    0 0 0 10px #06090b,
-    0 30px 80px rgba(0,0,0,0.7),
-    0 0 120px rgba(205,178,119,0.08);
-}
-@media (max-width: 480px) {
-  /* Lock the outer document so the whole UI can't be dragged/overflow when the
-     mobile URL bar shows or hides — only inner .page-scroll regions scroll. */
-  html, body { height: 100dvh; overflow: hidden; }
-  .stage {
-    padding: 0;
-    background: #04070a;
-    min-height: 0;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
-  }
-  .phone {
-    max-width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    border-radius: 0;
-    box-shadow: none;
-  }
 }
 
 /* Inner screen */
@@ -149,6 +108,19 @@ button { font-family: inherit; }
   overflow: hidden;
   background: var(--ink-deep);
 }
+
+/* Lock the outer document so the whole UI can't be dragged/overflow when a
+   mobile URL bar shows or hides — only inner .page-scroll regions scroll. */
+html, body { height: 100dvh; overflow: hidden; }
+
+/* Centered reading band for full-bleed pages — fills the screen background
+   while keeping content at a comfortable desktop width. */
+.content-wrap {
+  width: 100%;
+  max-width: var(--content-w, 1080px);
+  margin-inline: auto;
+}
+.content-wrap--narrow { --content-w: 760px; }
 
 /* ============================================================
    Page transitions (each page is absolute-filled)
@@ -810,6 +782,34 @@ button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+}
+
+/* ============================================================
+   Desktop refinements — the wide single column gets larger reading
+   sizes, a visible scrollbar and roomier controls. Applies above the
+   mobile breakpoint (which forces full-bleed full-screen).
+   ============================================================ */
+@media (min-width: 700px) {
+  /* Visible, themed scrollbar (hidden on mobile, expected on desktop) */
+  .page-scroll { scrollbar-width: thin; scrollbar-color: rgba(205,178,119,0.32) transparent; }
+  .page-scroll::-webkit-scrollbar { width: 9px; }
+  .page-scroll::-webkit-scrollbar-thumb {
+    background: rgba(205,178,119,0.26);
+    border-radius: 9px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .page-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(205,178,119,0.45);
+    background-clip: padding-box;
+  }
+
+  /* Larger reading sizes for the wider column */
+  .dialogue-text { font-size: 18px; line-height: 1.95; }
+  .dialogue-name { font-size: 15px; }
+  .topbar-title { font-size: 18px; }
+  .choice-label { font-size: 16.5px; }
+  .btn-primary, .btn-ghost { font-size: 15px; }
 }
 
 /* Respect users who reduce motion */

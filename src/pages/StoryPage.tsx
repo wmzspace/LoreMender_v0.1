@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  BottomNav, ChoiceList, DialogueBox, ProgressDots, SceneFrame, SoundSettings, Toast, Topbar,
+  BottomNav, ChoiceList, DialogueBox, ProgressDots, SoundSettings, Toast, Topbar,
 } from "../components";
-import { SceneClinic, SceneFinal, SceneRaid } from "../components/art";
+import { Particles, SceneClinic, SceneFinal, SceneRaid } from "../components/art";
 import { CHARACTERS, LEVEL_ASSET_PLANS, STORY } from "../data";
 import { buildAudioIndex } from "../data/dungeons/huatuo/audioIndex";
 import type { Beat, Choice, GameState } from "../data/types";
@@ -258,128 +258,97 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   }, [beat, ch, audioIdx, isTransition, gameNode]);
 
   return (
-    <div className="page night-deep-bg" style={{ paddingBottom: 0 }}>
-      <Topbar
-        title="第一卷 · 青囊残卷"
-        onBack={() => gotoPage("chapters")}
-        right={
-          <>
-            <SoundSettings />
-            <button className="icon-btn press" onClick={() => gotoPage("map")} aria-label="第一卷进程">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 3 H12 M2 7 H12 M2 11 H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
-            </button>
-          </>
-        }
-      />
-      <ProgressDots total={5} current={ch} />
-
-      <div className="fade-in" style={{ textAlign: "center", padding: "2px 16px 10px" }}>
-        <div className="title-han" style={{
-          fontSize: 17,
-          color: "var(--gold-pale)",
-          letterSpacing: "0.22em",
-          textIndent: "0.22em",
-          textShadow: "0 0 10px rgba(236,220,166,0.4)",
-        }}>{chapter?.title}</div>
-      </div>
-
-      <SceneFrame height={220}>
+    <div className="page" style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      {/* ── 全屏场景背景 ── */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
         {sceneEl}
         <AiSceneImage chapter={ch} beatIdx={beatIdx} />
-      </SceneFrame>
+        <div className="grain" />
+        <div className="vignette" />
+        <Particles count={16} />
+        {/* 上下压暗，保证顶部栏与底部对白可读 */}
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          background: "linear-gradient(180deg, rgba(5,8,11,0.82) 0%, rgba(5,8,11,0.3) 15%, rgba(5,8,11,0.04) 40%, rgba(5,8,11,0.5) 66%, rgba(5,8,11,0.95) 100%)",
+        }} />
+      </div>
 
-      {gameNode && (
-        <div style={{ padding: "10px 18px 0" }}>
-          {gameDone ? (
+      {/* ── 顶部覆盖：返回 / 标题 / 进度 ── */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 3 }}>
+        <Topbar
+          title="第一卷 · 青囊残卷"
+          onBack={() => gotoPage("chapters")}
+          right={
             <>
-              <div style={{
-                display: "flex", alignItems: "center", gap: 8,
-                marginBottom: 10, padding: "5px 2px",
-              }}>
-                <span style={{
-                  fontSize: 11, color: "rgba(228,224,208,0.45)",
-                  letterSpacing: "0.12em",
-                }}>{gameNode.name}</span>
-                <span style={{
-                  fontSize: 10, color: "var(--jade)",
-                  letterSpacing: "0.1em", opacity: 0.9,
-                }}>· 已完成</span>
-              </div>
-              <button className="btn-primary press" onClick={next} style={{ width: "100%" }}>
-                继 续 剧 情
-              </button>
-              <button
-                className="btn-ghost press"
-                onClick={enterGame}
-                style={{ width: "100%", marginTop: 8, fontSize: 11, opacity: 0.55 }}
-              >
-                重 玩 · {gameNode.name}
+              <SoundSettings />
+              <button className="icon-btn press" onClick={() => gotoPage("map")} aria-label="第一卷进程">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2 3 H12 M2 7 H12 M2 11 H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                </svg>
               </button>
             </>
-          ) : (
-            <>
-              <button
-                className="btn-primary press"
-                disabled={gameLocked}
-                onClick={enterGame}
-                style={{ width: "100%", minHeight: 46 }}
-              >
-                {gameNode.name}
-              </button>
-              {gameLocked && (
-                <div style={{ textAlign: "center", fontSize: 11, opacity: 0.55, marginTop: 6 }}>
-                  尚缺少前置道具。
-                </div>
-              )}
-            </>
-          )}
+          }
+        />
+        <ProgressDots total={5} current={ch} />
+        <div className="fade-in" style={{ textAlign: "center", padding: "2px 16px 10px" }}>
+          <div className="title-han" style={{
+            fontSize: 18,
+            color: "var(--gold-pale)",
+            letterSpacing: "0.22em",
+            textIndent: "0.22em",
+            textShadow: "0 0 14px rgba(0,0,0,0.9), 0 0 10px rgba(236,220,166,0.4)",
+          }}>{chapter?.title}</div>
         </div>
-      )}
+      </div>
 
+      {/* ── 底部覆盖：对白 / 选项 / 小游戏入口 + 导航 ── */}
       <div style={{
-        flex: 1,
-        overflowY: "auto",
-        paddingBottom: "calc(20px + var(--safe-bottom) + 64px)",
-      }} className="no-scrollbar">
-        <div style={{ padding: "18px 0 0" }}>
+        position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 3,
+        display: "flex", flexDirection: "column", alignItems: "center",
+      }}>
+        <div className="content-wrap content-wrap--narrow no-scrollbar" style={{
+          padding: "0 20px 14px",
+          maxHeight: "62vh", overflowY: "auto",
+        }}>
           {gameNode ? (
-            <div
-              className="fade-in"
-              onClick={onGameStoryClick}
-              style={{
-                padding: "12px 20px",
-                minHeight: 80,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                cursor: gameDone ? "pointer" : "default",
-                textAlign: "center",
-              }}
-            >
+            <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {gameDone ? (
-                <div style={{
-                  fontSize: 13.5, color: "rgba(228,224,208,0.78)",
-                  lineHeight: 1.8, letterSpacing: "0.04em",
-                  fontStyle: "italic",
-                }}>{gameNode.nextBeatUnlocked}</div>
-              ) : gameNode.context ? (
-                <div style={{
-                  fontSize: 12.5, color: "rgba(228,224,208,0.45)",
-                  lineHeight: 1.85, letterSpacing: "0.04em",
-                  fontStyle: "italic",
-                }}>{gameNode.context}</div>
+                <>
+                  <div
+                    onClick={onGameStoryClick}
+                    style={{
+                      textAlign: "center", cursor: "pointer",
+                      fontSize: 14, color: "rgba(228,224,208,0.82)",
+                      lineHeight: 1.8, letterSpacing: "0.04em", fontStyle: "italic",
+                      textShadow: "0 1px 6px rgba(0,0,0,0.9)",
+                    }}>{gameNode.nextBeatUnlocked}</div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button className="btn-primary press" onClick={next} style={{ flex: 1 }}>继 续 剧 情</button>
+                    <button className="btn-ghost press" onClick={enterGame} style={{ flex: "0 0 auto", fontSize: 12, opacity: 0.7 }}>
+                      重 玩
+                    </button>
+                  </div>
+                </>
               ) : (
-                <div style={{ fontSize: 12, color: "rgba(228,224,208,0.35)", letterSpacing: "0.1em" }}>
-                  · 机关未解，后文待启 ·
-                </div>
+                <>
+                  {gameNode.context && (
+                    <div style={{
+                      textAlign: "center", fontSize: 13, color: "rgba(228,224,208,0.6)",
+                      lineHeight: 1.85, letterSpacing: "0.04em", fontStyle: "italic",
+                      textShadow: "0 1px 6px rgba(0,0,0,0.9)",
+                    }}>{gameNode.context}</div>
+                  )}
+                  <button className="btn-primary press" disabled={gameLocked} onClick={enterGame} style={{ width: "100%", minHeight: 48 }}>
+                    {gameNode.name}
+                  </button>
+                  {gameLocked && (
+                    <div style={{ textAlign: "center", fontSize: 11, opacity: 0.55 }}>尚缺少前置道具。</div>
+                  )}
+                </>
               )}
             </div>
           ) : isTransition ? null : "choices" in beat ? (
-            <div className="fade-in" style={{ padding: "12px 0" }}>
+            <div className="fade-in" style={{ padding: "6px 0" }}>
               <ChoiceList choices={beat.choices} onChoose={handleChoice} />
             </div>
           ) : (
@@ -392,21 +361,17 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
                 onNext={next}
               />
               <div style={{
-                textAlign: "center",
-                marginTop: 10,
-                fontSize: 10.5,
-                color: "rgba(228,224,208,0.28)",
+                textAlign: "center", marginTop: 8,
+                fontSize: 10.5, color: "rgba(228,224,208,0.4)",
                 letterSpacing: "0.22em",
               }}>· 轻 触 继 续 ·</div>
             </div>
           )}
         </div>
+        <BottomNav active="story" onNav={gotoPage} />
       </div>
 
       <Toast text={toast} onDone={() => setToast("")} />
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
-        <BottomNav active="story" onNav={gotoPage} />
-      </div>
     </div>
   );
 }

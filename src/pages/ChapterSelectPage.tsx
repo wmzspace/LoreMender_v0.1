@@ -67,6 +67,7 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
       <Particles count={8}/>
 
       <div className="page-scroll" style={{top: 56, bottom: 0, padding: "0 16px calc(28px + var(--safe-bottom))"}}>
+        <div className="content-wrap">
         <div style={{marginBottom: 22}}>
           <div style={{
             position:"relative", overflow:"hidden",
@@ -74,7 +75,7 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
             border: "1px solid rgba(205,178,119,0.6)",
             boxShadow: "0 0 0 1px rgba(236,220,166,0.18), 0 12px 32px rgba(0,0,0,0.6), inset 0 0 60px rgba(236,220,166,0.08)",
           }}>
-            <div style={{position:"relative", height: 200}}>
+            <div style={{position:"relative", height: "clamp(200px, 34vh, 380px)"}}>
               <DungeonCoverVideo/>
               <div className="grain"/>
               <div className="vignette"/>
@@ -125,12 +126,17 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
           letterSpacing:"0.5em", textIndent:"0.5em",
         }}>· 未 启 之 卷 ·</div>
 
-        <div style={{display:"flex", flexDirection:"column", gap: 10}}>
+        <div style={{
+          display:"grid",
+          gridTemplateColumns:"repeat(auto-fill, minmax(340px, 1fr))",
+          gap: 10,
+        }}>
           {locked.map((l, i) => (
             <div key={i} className="fade-up" style={{animationDelay: `${i*60}ms`}}>
               <LockedDungeon title={l.name} subtitle={l.brief} comingSoon={cleared}/>
             </div>
           ))}
+        </div>
         </div>
       </div>
     </div>

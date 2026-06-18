@@ -55,18 +55,20 @@ export function CoverPage({ onStart, onWorld, onShowcase }: CoverPageProps) {
       }} />
 
       <div style={{
-        position: "relative",
+        position: "absolute", inset: 0,
         zIndex: 2,
-        flex: 1,
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-end",
-        padding: "0 28px calc(34px + var(--safe-bottom))",
+        alignItems: "center",
+        padding: "0 28px calc(40px + var(--safe-bottom))",
       }}>
         <div className="fade-up" style={{
           display: "flex",
           flexDirection: "column",
           gap: 12,
+          width: "100%",
+          maxWidth: 440,
           animationDelay: "200ms",
         }}>
           <button className="btn-primary press" onClick={onStart}>开始修补</button>

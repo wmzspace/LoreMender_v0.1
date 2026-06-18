@@ -194,19 +194,21 @@ function Shell({
         top: 58, bottom: 0,
         padding: "14px 16px calc(20px + var(--safe-bottom))",
       }}>
-        {game.context && (
-          <div style={{
-            textAlign: "center",
-            fontSize: 12.5, fontStyle: "italic",
-            color: "rgba(228,224,208,0.52)",
-            letterSpacing: "0.04em", lineHeight: 1.85,
-            padding: "4px 8px 16px",
-            borderBottom: "1px solid rgba(205,178,119,0.12)",
-            marginBottom: 16,
-          }}>{game.context}</div>
-        )}
-        <div style={{ color: "var(--paper)", lineHeight: 1.7 }}>
-          {children}
+        <div className="content-wrap content-wrap--narrow">
+          {game.context && (
+            <div style={{
+              textAlign: "center",
+              fontSize: 12.5, fontStyle: "italic",
+              color: "rgba(228,224,208,0.52)",
+              letterSpacing: "0.04em", lineHeight: 1.85,
+              padding: "4px 8px 16px",
+              borderBottom: "1px solid rgba(205,178,119,0.12)",
+              marginBottom: 16,
+            }}>{game.context}</div>
+          )}
+          <div style={{ color: "var(--paper)", lineHeight: 1.7 }}>
+            {children}
+          </div>
         </div>
       </div>
 
