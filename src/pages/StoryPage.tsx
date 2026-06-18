@@ -17,14 +17,30 @@ interface StoryPageProps {
   gotoEnding: () => void;
 }
 
-const BEAT_IMAGES: Record<string, Record<number, string>> = {
+const LINE_IMAGES: Record<string, Record<number, string>> = {
   ch1: {
-    0: "/images/levels/1/chapters/ch1_beats/beat01_darkness_straw.webp",
-    1: "/images/levels/1/chapters/ch1_beats/beat02_waking.webp",
-    2: "/images/levels/1/chapters/ch1_beats/beat03_silhouette.webp",
-    3: "/images/levels/1/chapters/ch1_beats/beat04_bamboo_slips.webp",
-    7: "/images/levels/1/chapters/ch1_beats/beat05_choice.webp",
-    11: "/images/levels/1/chapters/ch1_beats/beat07_trust.webp",
+    0: "/images/levels/1/chapters/ch1_beats/ch1_01_aji_wakes_headache.png",
+    2: "/images/levels/1/chapters/ch1_beats/ch1_02_huatuo_calls_scattered_slips.png",
+    4: "/images/levels/1/chapters/ch1_beats/ch1_03_aji_recognizes_qingnang.png",
+    5: "/images/levels/1/chapters/ch1_beats/ch1_04_huatuo_lifetime_fragment.png",
+    6: "/images/levels/1/chapters/ch1_beats/ch1_05_aji_vows_keep_from_cao.png",
+    7: "/images/levels/1/chapters/ch1_beats/ch1_06_huatuo_guarding_book_not_way.png",
+    8: "/images/levels/1/chapters/ch1_beats/ch1_07_aji_asks_what_to_do.png",
+    9: "/images/levels/1/chapters/ch1_beats/ch1_08_huatuo_mission_three_paths.png",
+    10: "/images/levels/1/chapters/ch1_beats/ch1_09_huatuo_pushes_slips.png",
+    11: "/images/levels/1/chapters/ch1_beats/ch1_10_bamboo_sorting_three_groups.png",
+    12: "/images/levels/1/chapters/ch1_beats/ch1_11_old_wooden_box_revealed.png",
+    13: "/images/levels/1/chapters/ch1_beats/ch1_12_huatuo_warns_search_box.png",
+    14: "/images/levels/1/chapters/ch1_beats/ch1_13_wooden_box_mechanism_key.png",
+    15: "/images/levels/1/chapters/ch1_beats/ch1_14_box_compartment_qingnang_fragment.png",
+    16: "/images/levels/1/chapters/ch1_beats/ch1_15_huatuo_final_why_save_people.png",
+    17: "/images/levels/1/chapters/ch1_beats/ch1_16_chains_soldier_arrives.png",
+    19: "/images/levels/1/chapters/ch1_beats/ch1_17_huatuo_warns_trust_hate.png",
+    20: "/images/levels/1/chapters/ch1_beats/ch1_18_body_search_tension.png",
+    21: "/images/levels/1/chapters/ch1_beats/ch1_18_body_search_tension.png",
+    22: "/images/levels/1/chapters/ch1_beats/ch1_19_aji_understands_inheritance.png",
+    23: "/images/levels/1/chapters/ch1_beats/ch1_20_dawn_xuchang_escort_market.png",
+    24: "/images/levels/1/chapters/ch1_beats/ch1_21_half_song_aji_stops.png",
   },
   ch2: {
     0: "/images/levels/1/chapters/ch2_beats/beat00_dawn_shop.webp",
@@ -48,6 +64,13 @@ const BEAT_IMAGES: Record<string, Record<number, string>> = {
   },
 };
 
+const GAME_BEAT_IMAGES: Record<string, Record<number, string>> = {
+  ch1: {
+    11: "/images/levels/1/chapters/ch1_beats/ch1_10_bamboo_sorting_three_groups.png",
+    16: "/images/levels/1/chapters/ch1_beats/ch1_13_wooden_box_mechanism_key.png",
+  },
+};
+
 const preloaded = new Set<string>();
 
 function preloadImages(paths: string[]) {
@@ -60,20 +83,32 @@ function preloadImages(paths: string[]) {
 }
 
 function chapterImagePaths(chKey: string): string[] {
-  return Object.values(BEAT_IMAGES[chKey] || {});
+  return [
+    ...Object.values(LINE_IMAGES[chKey] || {}),
+    ...Object.values(GAME_BEAT_IMAGES[chKey] || {}),
+  ];
 }
 
-function resolveImagePath(chapter: number, beatIdx: number): string | undefined {
+function resolveImagePath(chapter: number, imageIdx: number, beatIdx: number, isGame: boolean): string | undefined {
   const chKey = "ch" + chapter;
-  const map = BEAT_IMAGES[chKey] || {};
+  if (isGame) {
+    const gameMap = GAME_BEAT_IMAGES[chKey] || {};
+    if (gameMap[beatIdx]) return gameMap[beatIdx];
+  }
+  const map = LINE_IMAGES[chKey] || {};
   const keys = Object.keys(map).map(Number).sort((a, b) => b - a);
-  const matched = keys.find(k => k <= beatIdx);
+  const matched = keys.find(k => k <= imageIdx);
   const asset = LEVEL_ASSET_PLANS.find(level => level.chapter === chapter);
   return matched !== undefined ? map[matched] : asset?.imagePath;
 }
 
-function AiSceneImage({ chapter, beatIdx }: { chapter: number; beatIdx: number }) {
-  const imagePath = resolveImagePath(chapter, beatIdx);
+function AiSceneImage({ chapter, imageIdx, beatIdx, isGame }: {
+  chapter: number;
+  imageIdx: number;
+  beatIdx: number;
+  isGame: boolean;
+}) {
+  const imagePath = resolveImagePath(chapter, imageIdx, beatIdx, isGame);
   const [currentSrc, setCurrentSrc] = useState<string | undefined>(imagePath);
   const [loaded, setLoaded] = useState(false);
 
@@ -166,6 +201,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const audioIndexMap = useMemo(() => buildAudioIndex(rawBeats), [rawBeats]);
   const audioIdx = beat ? audioIndexMap.get(beat) : undefined;
   const gameNode = beat && "game" in beat ? beat.game : null;
+  const imageIdx = !gameNode && audioIdx !== undefined ? audioIdx : beatIdx;
   const gameDone = !!(gameNode && state.gameResults[gameNode.id]?.completed);
   const gameLocked = !!(gameNode?.requiredItem && !state.items.includes(gameNode.requiredItem));
   const isTransition = isTransitionBeat(beat);
@@ -306,7 +342,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
       {/* ── 全屏场景背景 ── */}
       <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
         {sceneEl}
-        <AiSceneImage chapter={ch} beatIdx={beatIdx} />
+        <AiSceneImage chapter={ch} imageIdx={imageIdx} beatIdx={beatIdx} isGame={!!gameNode} />
         <div className="grain" />
         <div className="vignette" />
         <Particles count={16} />

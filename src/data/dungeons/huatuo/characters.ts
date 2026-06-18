@@ -15,7 +15,7 @@ export const CHARACTERS: Record<string, Character> = {
     role: "你所附身之人",
     desc: "华佗身边最不起眼的小徒弟。他害怕，却仍要决定《青囊经》的去路。",
     accent: "#a8a07a",
-    portrait: "/images/levels/1/characters/aj_square.webp",
+    portrait: "/images/levels/1/characters/aj_square.png",
   },
   wangji: {
     id: "wangji",
