@@ -216,6 +216,9 @@ function Shell({
   );
 }
 
+const BAMBOO_TABLE_IMG = "/images/levels/1/chapters/ch1_beats/bamboo_table.webp";
+const slipImg = (word: string) => `/images/levels/1/chapters/ch1_beats/slips/${encodeURIComponent(word)}.webp`;
+
 const classifyWords = {
   病症: ["发热", "咳嗽", "头痛", "失眠", "腹泻", "眩晕", "乏力", "心悸", "胃痛"],
   医理: ["阴阳", "脉象", "气血", "经络", "脏腑", "望诊", "问诊", "病因", "体质"],
@@ -347,24 +350,6 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
     药方: { accent: "#8a6830", bg: "rgba(138,104,48,0.06)", label: "rgba(200,168,88,0.92)", chip: "rgba(130,100,40,0.2)" },
   };
 
-  // 词语 chip 样式
-  const chipStyle = (isSelected: boolean): React.CSSProperties => ({
-    padding: "5px 12px",
-    fontSize: 13,
-    fontFamily: "var(--font-han)",
-    letterSpacing: "0.06em",
-    border: `1px solid ${isSelected ? "var(--jade)" : "rgba(205,178,119,0.32)"}`,
-    background: isSelected
-      ? "rgba(95,168,146,0.2)"
-      : "linear-gradient(135deg, rgba(205,178,119,0.07), rgba(205,178,119,0.03))",
-    borderRadius: 3,
-    color: isSelected ? "var(--jade)" : "rgba(228,224,208,0.9)",
-    cursor: "pointer",
-    boxShadow: isSelected ? "0 0 8px rgba(95,168,146,0.22)" : "none",
-    transition: "all 0.15s ease",
-    whiteSpace: "nowrap" as const,
-  });
-
   if (submitted && !allCorrect) {
     return (
       <>
@@ -431,107 +416,73 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
 
   return (
     <>
-      <div style={instStyle}>拖动词语到下方分类区归入；也可先点选词语再点分类区。点击或拖回已放入的词可取回重排。</div>
+      <div style={instStyle}>把竹简拖进对应的木桶：「病症 / 医理 / 药方」。也可先点选竹简、再点木桶；点桶中竹简可取回。</div>
 
-      {/* 词语池（也是拖拽的「取回」落区） */}
-      <div data-cat="__pool__" style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14, minHeight: 30 }}>
-        {remaining.map(w => (
-          <button key={w.id} className="press"
-            onPointerDown={(e) => startDrag(e, w.id, w.text)}
-            style={{ ...chipStyle(selected === w.id), touchAction: "none", opacity: drag?.id === w.id && drag.moved ? 0.4 : 1 }}>
-            {w.text}
-          </button>
-        ))}
-        {remaining.length === 0 && (
-          <div style={{ fontSize: 11.5, color: "rgba(228,224,208,0.38)", letterSpacing: "0.12em", fontStyle: "italic" }}>
-            · 所有词已归类 ·
-          </div>
-        )}
-      </div>
-
-      {/* 分类区（移动端纵向堆叠 / 桌面端 3 列网格，色彩编码） */}
-      <div className="mg-classify-grid" style={{ marginBottom: 16 }}>
-        {classifyCategories.map(cat => {
+      {/* 实景舞台：木桌 + 三木桶投放区 */}
+      <div className="bamboo-stage">
+        <img src={BAMBOO_TABLE_IMG} alt="" className="bamboo-stage-bg" draggable={false} />
+        {classifyCategories.map((cat, i) => {
           const theme = CAT_THEME[cat] ?? CAT_THEME["病症"];
           const catWords = Object.entries(placed).filter(([, v]) => v === cat).map(([k]) => k);
           const canDrop = !!selected || !!drag?.moved;
           return (
-            <div key={cat}
+            <div
+              key={cat}
               data-cat={cat}
+              className={"bamboo-bin bamboo-bin--" + i + (canDrop ? " can-drop" : "")}
+              style={{ ["--bin-accent" as string]: theme.accent } as React.CSSProperties}
               onClick={() => {
                 if (!selected) return;
                 setPlaced(prev => ({ ...prev, [selected]: cat }));
                 setSelected(null);
               }}
-              style={{
-                borderRadius: 6, padding: "11px 14px",
-                border: `1px solid ${canDrop ? theme.accent + "88" : theme.accent + "33"}`,
-                borderLeft: `3px solid ${canDrop ? theme.accent : theme.accent + "66"}`,
-                background: canDrop ? theme.bg : "rgba(8,12,14,0.3)",
-                cursor: canDrop ? "pointer" : "default",
-                transition: "border-color 0.18s, background 0.18s",
-                minHeight: 52,
-              }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: catWords.length > 0 ? 9 : 0 }}>
-                <span style={{
-                  fontSize: 13, color: theme.label,
-                  letterSpacing: "0.2em", fontFamily: "var(--font-han)",
-                }}>{cat}</span>
-                <span style={{
-                  fontSize: 10, letterSpacing: "0.04em",
-                  color: catWords.length > 0 ? theme.label + "99" : "rgba(228,224,208,0.22)",
-                }}>{catWords.length} / 5</span>
-                {canDrop && (
-                  <span style={{
-                    marginLeft: "auto", fontSize: 10,
-                    color: theme.label, opacity: 0.7, letterSpacing: "0.08em",
-                  }}>↓ 放入</span>
-                )}
+              <div className="bamboo-bin-label" style={{ color: theme.label }}>
+                {cat}<span>{catWords.length}/5</span>
               </div>
-              {catWords.length > 0 ? (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                  {catWords.map(w => (
-                    <button key={w} className="press"
-                      onPointerDown={(e) => { e.stopPropagation(); startDrag(e, w, w); }}
-                      style={{
-                        fontSize: 12, padding: "3px 10px", borderRadius: 3,
-                        border: `1px solid ${theme.accent}66`,
-                        background: theme.chip,
-                        color: theme.label, cursor: "pointer",
-                        fontFamily: "var(--font-han)", touchAction: "none",
-                        opacity: drag?.id === w && drag.moved ? 0.4 : 1,
-                      }}>{w}</button>
-                  ))}
-                </div>
-              ) : (
-                <div style={{
-                  fontSize: 11, color: "rgba(228,224,208,0.18)",
-                  letterSpacing: "0.2em", fontStyle: "italic",
-                }}>· 暂无 ·</div>
-              )}
+              <div className="bamboo-bin-slips">
+                {catWords.map(w => (
+                  <button key={w} className="bamboo-slip bamboo-slip--mini"
+                    onPointerDown={(e) => { e.stopPropagation(); startDrag(e, w, w); }}
+                    style={{ touchAction: "none", opacity: drag?.id === w && drag.moved ? 0.4 : 1 }}>
+                    <img className="bamboo-slip-img" src={slipImg(w)} alt={w} draggable={false} />
+                  </button>
+                ))}
+              </div>
             </div>
           );
         })}
+
+        {/* 桌面竹简区（也是拖拽的「取回」落区）：透视平铺在桌面上 */}
+        <div data-cat="__pool__" className="bamboo-deck">
+          {remaining.map(w => (
+            <button key={w.id}
+              className={"bamboo-slip" + (selected === w.id ? " is-selected" : "")}
+              onPointerDown={(e) => startDrag(e, w.id, w.text)}
+              style={{ touchAction: "none", opacity: drag?.id === w.id && drag.moved ? 0.4 : 1 }}>
+              <img className="bamboo-slip-img" src={slipImg(w.text)} alt={w.text} draggable={false} />
+            </button>
+          ))}
+          {remaining.length === 0 && (
+            <div className="bamboo-pool-empty">· 所有竹简已归位 ·</div>
+          )}
+        </div>
       </div>
 
       <button className="btn-primary press" disabled={!allPlaced}
         onClick={() => setSubmitted(true)}
-        style={{ width: "100%" }}>
+        style={{ width: "100%", marginTop: 14 }}>
         {allPlaced ? "完 成 分 类" : `完成分类（${placedCount}/${allWords.length}）`}
       </button>
 
-      {/* 拖拽时跟随指针的浮层 */}
+      {/* 拖拽时跟随指针的竹简浮层 */}
       {drag?.moved && (
-        <div style={{
+        <div className="bamboo-drag-ghost" style={{
           position: "fixed", left: drag.x, top: drag.y,
-          transform: "translate(-50%, -135%)", zIndex: 100, pointerEvents: "none",
-          padding: "5px 12px", fontSize: 13, fontFamily: "var(--font-han)",
-          letterSpacing: "0.06em", borderRadius: 3,
-          border: "1px solid var(--jade)", background: "rgba(95,168,146,0.3)",
-          color: "var(--paper-bright)", boxShadow: "0 4px 14px rgba(0,0,0,0.55)",
-          whiteSpace: "nowrap",
-        }}>{drag.text}</div>
+          transform: "translate(-50%, -115%)", zIndex: 100, pointerEvents: "none",
+        }}>
+          <img className="bamboo-slip-img" src={slipImg(drag.text)} alt="" draggable={false} />
+        </div>
       )}
     </>
   );

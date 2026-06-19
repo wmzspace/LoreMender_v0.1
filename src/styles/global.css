@@ -1889,3 +1889,119 @@ button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
   0%, 100% { transform: scale(1); opacity: 0.95; }
   50% { transform: scale(1.32); opacity: 0.55; }
 }
+
+/* ── 拼竹简：实景木桌 + 三木桶分类 ── */
+.bamboo-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  border: 1px solid rgba(205, 178, 119, 0.2);
+  user-select: none;
+}
+.bamboo-stage-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.bamboo-bin {
+  position: absolute;
+  border: 1.5px dashed transparent;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 4px;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+/* 三桶定位（对齐 bamboo_table.webp 的三个木桶；如有偏差可微调） */
+.bamboo-bin--0 { left: 12.5%; top: 14%; width: 25%; height: 48%; }
+.bamboo-bin--1 { left: 37.5%; top: 14%; width: 25%; height: 48%; }
+.bamboo-bin--2 { left: 62.5%; top: 14%; width: 25%; height: 48%; }
+.bamboo-bin.can-drop {
+  border-color: var(--bin-accent, var(--gold-pale));
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 18px -2px var(--bin-accent, rgba(236, 220, 166, 0.6));
+}
+.bamboo-bin-label {
+  font-family: var(--font-han);
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.bamboo-bin-label span { font-size: 10px; opacity: 0.7; }
+.bamboo-bin-slips {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-content: center;
+  justify-content: center;
+  padding: 4px;
+  overflow: hidden;
+}
+/* 桌面竹简区：定位在背景图的桌面上，整体后仰透视，像平铺在桌面 */
+.bamboo-deck {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 60%;
+  bottom: 3%;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 6px 8px;
+  padding: 6px;
+  transform: perspective(820px) rotateX(34deg);
+  transform-origin: center top;
+}
+.bamboo-deck .bamboo-slip-img { height: 74px; }
+.bamboo-pool-empty {
+  font-size: 11.5px;
+  color: rgba(228, 224, 208, 0.4);
+  letter-spacing: 0.14em;
+  font-style: italic;
+  padding: 6px;
+}
+/* 竹简贴图牌 */
+.bamboo-slip {
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  line-height: 0;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 4px;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s;
+}
+.bamboo-slip-img {
+  display: block;
+  height: 96px;
+  width: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+}
+.bamboo-slip:active { transform: translateY(2px) scale(0.97); }
+.bamboo-slip.is-selected { transform: translateY(-4px); }
+.bamboo-slip.is-selected .bamboo-slip-img {
+  filter: drop-shadow(0 0 7px rgba(236, 220, 166, 0.95)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+}
+/* 桶内已归类：缩小的竹片 */
+.bamboo-slip--mini .bamboo-slip-img { height: 38px; width: auto; }
+.bamboo-drag-ghost .bamboo-slip-img {
+  height: 108px;
+  width: auto;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.7));
+}
