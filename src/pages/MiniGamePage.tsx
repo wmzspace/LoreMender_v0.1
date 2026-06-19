@@ -227,7 +227,13 @@ const classifyWords = {
 
 const classifyCategories = ["病症", "医理", "药方"] as const;
 
-function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRank) => void; onClassifyRetry: (retry: boolean) => void }) {
+function BambooPuzzle({ finish, onClassifyRetry, game, best, onBack }: {
+  finish: (rank: GameResultRank) => void;
+  onClassifyRetry: (retry: boolean) => void;
+  game: GameNode;
+  best?: GameResultRank;
+  onBack: () => void;
+}) {
   const allWords = useMemo(() => {
     // 每个类别随机选取 5 个，共 15 个词语
     const pickRandom = (arr: string[], n: number) => {
@@ -350,81 +356,41 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
     药方: { accent: "#8a6830", bg: "rgba(138,104,48,0.06)", label: "rgba(200,168,88,0.92)", chip: "rgba(130,100,40,0.2)" },
   };
 
-  if (submitted && !allCorrect) {
-    return (
-      <>
-        <div style={{ ...instStyle, color: "rgba(205,100,80,0.85)", marginBottom: 14 }}>
-          有 {mistakes.length} 处归类有误（红色标出），请选择处理方式。
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-          {classifyCategories.map(cat => {
-            const theme = CAT_THEME[cat] ?? CAT_THEME["病症"];
-            const catWords = Object.entries(placed).filter(([, v]) => v === cat).map(([k]) => k);
-            return (
-              <div key={cat} style={{
-                borderRadius: 6, padding: "11px 14px",
-                border: `1px solid ${theme.accent}33`,
-                borderLeft: `3px solid ${theme.accent}88`,
-                background: "rgba(8,12,14,0.3)",
-              }}>
-                <div style={{
-                  fontSize: 12, color: theme.label,
-                  letterSpacing: "0.18em", marginBottom: 8,
-                  fontFamily: "var(--font-han)",
-                }}>{cat} · {catWords.length}/5</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                  {catWords.map(w => {
-                    const isCorrect = classifyWords[cat].includes(w);
-                    return (
-                      <span key={w} style={{
-                        fontSize: 12, padding: "3px 10px", borderRadius: 3,
-                        fontFamily: "var(--font-han)",
-                        border: `1px solid ${isCorrect ? "rgba(95,168,146,0.5)" : "rgba(180,60,44,0.6)"}`,
-                        background: isCorrect ? "rgba(95,168,146,0.15)" : "rgba(180,60,44,0.2)",
-                        color: isCorrect ? "var(--jade)" : "rgba(225,110,90,0.92)",
-                      }}>{w}</span>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <button className="btn-primary press" onClick={() => {
-            setSubmitted(false);
-            const toRemove: string[] = [];
-            mistakes.forEach(([id]) => toRemove.push(id));
-            setPlaced(prev => {
-              const next = { ...prev };
-              toRemove.forEach(id => delete next[id]);
-              return next;
-            });
-            onClassifyRetry(true);
-          }} style={{ width: "100%" }}>继续修正</button>
-          <button className="btn-ghost press" onClick={() => {
-            onClassifyRetry(false);
-            finish("low");
-          }} style={{ width: "100%" }}>接受结果</button>
-        </div>
-      </>
-    );
-  }
-
   const remaining = allWords.filter(w => !placed[w.id]);
   const placedCount = allWords.length - remaining.length;
+  const reviewing = submitted && !allCorrect;
 
   return (
-    <>
-      <div style={instStyle}>把竹简拖进对应的木桶：「病症 / 医理 / 药方」。也可先点选竹简、再点木桶；点桶中竹简可取回。</div>
+    <div className="bamboo-fs">
+      {/* 模糊背景衬底，填满整屏 */}
+      <div className="bamboo-fs-bg" style={{ backgroundImage: `url(${BAMBOO_TABLE_IMG})` }} />
+      <div className="bamboo-fs-scrim" />
 
-      {/* 实景舞台：木桌 + 三木桶投放区 */}
+      {/* 顶部浮层：返回 + 标题/说明 + 评级 */}
+      <div className="bamboo-top">
+        <button className="bamboo-back press" data-sfx="back" onClick={onBack} aria-label="返回">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M8 2 L3 6.5 L8 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <div className="bamboo-top-titles">
+          <div className="bamboo-top-title">拼 竹 简</div>
+          {game.context && <div className="bamboo-top-sub">{game.context}</div>}
+        </div>
+        <div className="bamboo-top-right">
+          {best
+            ? <span className="bamboo-badge" style={{ color: RANK_COLOR[best], borderColor: `${RANK_COLOR[best]}55` }}>最佳 · {RANK_LABEL[best]}</span>
+            : <span className="bamboo-badge bamboo-badge--new">初 次 挑 战</span>}
+        </div>
+      </div>
+
+      {/* 居中 16/9 舞台 */}
       <div className="bamboo-stage">
         <img src={BAMBOO_TABLE_IMG} alt="" className="bamboo-stage-bg" draggable={false} />
         {classifyCategories.map((cat, i) => {
           const theme = CAT_THEME[cat] ?? CAT_THEME["病症"];
           const catWords = Object.entries(placed).filter(([, v]) => v === cat).map(([k]) => k);
-          const canDrop = !!selected || !!drag?.moved;
+          const canDrop = !reviewing && (!!selected || !!drag?.moved);
           return (
             <div
               key={cat}
@@ -432,7 +398,7 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
               className={"bamboo-bin bamboo-bin--" + i + (canDrop ? " can-drop" : "")}
               style={{ ["--bin-accent" as string]: theme.accent } as React.CSSProperties}
               onClick={() => {
-                if (!selected) return;
+                if (reviewing || !selected) return;
                 setPlaced(prev => ({ ...prev, [selected]: cat }));
                 setSelected(null);
               }}
@@ -441,13 +407,18 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
                 {cat}<span>{catWords.length}/5</span>
               </div>
               <div className="bamboo-bin-slips">
-                {catWords.map(w => (
-                  <button key={w} className="bamboo-slip bamboo-slip--mini"
-                    onPointerDown={(e) => { e.stopPropagation(); startDrag(e, w, w); }}
-                    style={{ touchAction: "none", opacity: drag?.id === w && drag.moved ? 0.4 : 1 }}>
-                    <img className="bamboo-slip-img" src={slipImg(w)} alt={w} draggable={false} />
-                  </button>
-                ))}
+                {catWords.map(w => {
+                  const wrong = reviewing && !classifyWords[cat].includes(w);
+                  const right = reviewing && classifyWords[cat].includes(w);
+                  return (
+                    <button key={w}
+                      className={"bamboo-slip bamboo-slip--mini" + (wrong ? " is-wrong" : "") + (right ? " is-right" : "")}
+                      onPointerDown={(e) => { if (reviewing) return; e.stopPropagation(); startDrag(e, w, w); }}
+                      style={{ touchAction: "none", opacity: drag?.id === w && drag.moved ? 0.4 : 1 }}>
+                      <img className="bamboo-slip-img" src={slipImg(w)} alt={w} draggable={false} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
           );
@@ -463,17 +434,58 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
               <img className="bamboo-slip-img" src={slipImg(w.text)} alt={w.text} draggable={false} />
             </button>
           ))}
-          {remaining.length === 0 && (
+          {remaining.length === 0 && !reviewing && (
             <div className="bamboo-pool-empty">· 所有竹简已归位 ·</div>
           )}
         </div>
       </div>
 
-      <button className="btn-primary press" disabled={!allPlaced}
-        onClick={() => setSubmitted(true)}
-        style={{ width: "100%", marginTop: 14 }}>
-        {allPlaced ? "完 成 分 类" : `完成分类（${placedCount}/${allWords.length}）`}
-      </button>
+      {/* 底部浮层：完成 / 校验 */}
+      <div className="bamboo-bottom">
+        {reviewing ? (
+          <>
+            <div className="bamboo-hint bamboo-hint--warn">
+              有 {mistakes.length} 处归类有误（红色标出），请选择处理方式。
+            </div>
+            <div className="bamboo-actions">
+              <button className="btn-primary press" onClick={() => {
+                setSubmitted(false);
+                const toRemove: string[] = [];
+                mistakes.forEach(([id]) => toRemove.push(id));
+                setPlaced(prev => {
+                  const next = { ...prev };
+                  toRemove.forEach(id => delete next[id]);
+                  return next;
+                });
+                onClassifyRetry(true);
+              }}>继续修正</button>
+              <button className="btn-ghost press" onClick={() => {
+                onClassifyRetry(false);
+                finish("low");
+              }}>接受结果</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="bamboo-hint">把竹简拖进对应的木桶；点选竹简再点木桶也可，点桶中竹简可取回。</div>
+            <div className="bamboo-actions">
+              <button className="btn-primary press bamboo-submit" disabled={!allPlaced} onClick={() => setSubmitted(true)}>
+                {allPlaced ? "完 成 分 类" : `完成分类（${placedCount}/${allWords.length}）`}
+              </button>
+            </div>
+            <div className="bamboo-dev">
+              <span className="bamboo-dev-label">开 发 者 跳 过</span>
+              {(["high", "mid", "low"] as GameResultRank[]).map(r => (
+                <button key={r} className="btn-ghost press bamboo-dev-btn"
+                  onClick={() => finish(r)}
+                  style={{ borderColor: `${RANK_COLOR[r]}40`, color: RANK_COLOR[r] }}>
+                  {RANK_LABEL[r]}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
 
       {/* 拖拽时跟随指针的竹简浮层 */}
       {drag?.moved && (
@@ -484,7 +496,7 @@ function BambooPuzzle({ finish, onClassifyRetry }: { finish: (rank: GameResultRa
           <img className="bamboo-slip-img" src={slipImg(drag.text)} alt="" draggable={false} />
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -1070,11 +1082,28 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
 
   const locked = game.requiredItem && !state.items.includes(game.requiredItem);
 
+  // 拼竹简：全屏沉浸场景（脱离 PageShell 卡片）
+  if (game.kind === "bambooPuzzle" && !locked) {
+    return (
+      <>
+        <BambooPuzzle
+          finish={finish}
+          onClassifyRetry={handleClassifyRetry}
+          game={game}
+          best={state.gameResults[game.id]?.best}
+          onBack={() => gotoPage("story")}
+        />
+        <Toast text={toast} onDone={() => setToast("")} />
+        {feedback !== null && (
+          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={() => gotoPage("story")} />
+        )}
+      </>
+    );
+  }
+
   let body: React.ReactNode;
   if (locked) {
     body = <p>尚未获得进入此机关所需之物。</p>;
-  } else if (game.kind === "bambooPuzzle") {
-    body = <BambooPuzzle key={retryKey} finish={finish} onClassifyRetry={handleClassifyRetry} />;
   } else if (game.kind === "woodenBox") {
     body = <WoodenBox key={retryKey} finish={finish} hardMode={woodenBoxHard} />;
   } else if (game.kind === "herbMemory") {

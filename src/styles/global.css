@@ -1891,15 +1891,41 @@ button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
 }
 
 /* ── 拼竹简：实景木桌 + 三木桶分类 ── */
+/* ── 拼竹简全屏沉浸 ── */
+.bamboo-fs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 10px 74px;
+  background: #07090c;
+  user-select: none;
+}
+.bamboo-fs-bg {
+  position: absolute;
+  inset: -6%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(28px) brightness(0.45);
+  transform: scale(1.12);
+}
+.bamboo-fs-scrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(5, 8, 11, 0.72) 100%);
+}
 .bamboo-stage {
   position: relative;
-  width: 100%;
   aspect-ratio: 16 / 9;
+  width: min(96%, calc((100dvh - 150px) * 16 / 9));
+  container-type: size;
   border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 14px;
-  border: 1px solid rgba(205, 178, 119, 0.2);
-  user-select: none;
+  border: 1px solid rgba(205, 178, 119, 0.22);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.72);
+  z-index: 1;
 }
 .bamboo-stage-bg {
   position: absolute;
@@ -1930,14 +1956,14 @@ button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
 }
 .bamboo-bin-label {
   font-family: var(--font-han);
-  font-size: 14px;
+  font-size: 3.4cqh;
   letter-spacing: 0.16em;
   text-shadow: 0 1px 5px rgba(0, 0, 0, 0.92);
   display: flex;
   align-items: baseline;
   gap: 6px;
 }
-.bamboo-bin-label span { font-size: 10px; opacity: 0.7; }
+.bamboo-bin-label span { font-size: 2.4cqh; opacity: 0.7; }
 .bamboo-bin-slips {
   flex: 1;
   width: 100%;
@@ -1965,7 +1991,7 @@ button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
   transform: perspective(820px) rotateX(34deg);
   transform-origin: center top;
 }
-.bamboo-deck .bamboo-slip-img { height: 74px; }
+.bamboo-deck .bamboo-slip-img { height: 19cqh; }
 .bamboo-pool-empty {
   font-size: 11.5px;
   color: rgba(228, 224, 208, 0.4);
@@ -1998,10 +2024,110 @@ button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
 .bamboo-slip.is-selected .bamboo-slip-img {
   filter: drop-shadow(0 0 7px rgba(236, 220, 166, 0.95)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
 }
-/* 桶内已归类：缩小的竹片 */
-.bamboo-slip--mini .bamboo-slip-img { height: 38px; width: auto; }
+/* 桶内已归类：插在桶里——下半被桶壁遮住（底部渐隐模拟没入） */
+.bamboo-slip--mini .bamboo-slip-img {
+  height: 15cqh;
+  width: auto;
+  -webkit-mask-image: linear-gradient(180deg, #000 48%, rgba(0, 0, 0, 0.3) 72%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 48%, rgba(0, 0, 0, 0.3) 72%, transparent 100%);
+}
 .bamboo-drag-ghost .bamboo-slip-img {
-  height: 108px;
+  height: 15vmin;
   width: auto;
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.7));
 }
+/* 校验：桶内对错高亮 */
+.bamboo-slip.is-wrong .bamboo-slip-img {
+  filter: drop-shadow(0 0 3px rgba(225, 70, 50, 1)) drop-shadow(0 0 6px rgba(225, 70, 50, 0.8));
+}
+.bamboo-slip.is-right .bamboo-slip-img {
+  filter: drop-shadow(0 0 3px rgba(95, 168, 146, 0.95)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* 顶部浮层 */
+.bamboo-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  background: linear-gradient(180deg, rgba(5, 8, 11, 0.82), transparent);
+}
+.bamboo-back {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(205, 178, 119, 0.35);
+  background: rgba(9, 14, 17, 0.55);
+  color: var(--gold-pale);
+  cursor: pointer;
+}
+.bamboo-top-titles { flex: 1; text-align: center; min-width: 0; }
+.bamboo-top-title {
+  font-family: var(--font-han);
+  font-size: 19px;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: var(--gold-pale);
+  text-shadow: 0 0 14px rgba(0, 0, 0, 0.92);
+}
+.bamboo-top-sub {
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(228, 224, 208, 0.6);
+  letter-spacing: 0.04em;
+  margin-top: 5px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+}
+.bamboo-top-right { flex: none; min-width: 52px; text-align: right; }
+.bamboo-badge {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  padding: 3px 9px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.bamboo-badge--new { color: rgba(228, 224, 208, 0.4); border-color: rgba(228, 224, 208, 0.2); }
+
+/* 底部浮层 */
+.bamboo-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px calc(14px + var(--safe-bottom));
+  background: linear-gradient(180deg, transparent, rgba(5, 8, 11, 0.88) 38%);
+}
+.bamboo-hint {
+  font-size: 12px;
+  color: rgba(228, 224, 208, 0.62);
+  text-align: center;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+}
+.bamboo-hint--warn { color: rgba(225, 120, 100, 0.92); }
+.bamboo-actions { display: flex; gap: 10px; }
+.bamboo-submit { min-width: 200px; }
+.bamboo-dev {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  opacity: 0.7;
+}
+.bamboo-dev-label { font-size: 9px; color: rgba(228, 224, 208, 0.32); letter-spacing: 0.18em; }
+.bamboo-dev-btn { min-width: 48px; padding: 5px 12px; font-size: 11px; letter-spacing: 0.1em; }
