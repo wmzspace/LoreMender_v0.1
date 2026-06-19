@@ -33,6 +33,8 @@ export type ClueIconType = "scroll" | "ledger" | "lips" | "music" | "needle";
 
 export type EndingId =
   | "chenbo_true"
+  | "chenbo_fallback"
+  | "xuanyin_true"
   | "xuanyin_fallback"
   | "wangji_trap"
   | "burn_ending"
@@ -92,11 +94,28 @@ export interface Choice {
   condition?: Record<string, unknown>;
 }
 
+/** 可交互探索场景中的一个可点击热点（人/物），点击后展开 beats 对白。 */
+export interface ExploreHotspot {
+  id: string;
+  label: string;       // 热点标签（如「自己」「邻室老者」）
+  x: number;           // 横向定位，0–100 百分比
+  y: number;           // 纵向定位，0–100 百分比
+  beats: Beat[];       // 点击后逐句展开的对白（仅 speaker / narration 行）
+}
+
+/** 可交互探索场景：玩家点击场景中的人与物，分别跳到对应对白；可选要求全部看完后继续。 */
+export interface ExploreScene {
+  hint?: string;       // 顶部引导语
+  image?: string;      // 场景底图（覆盖当前章背景）
+  hotspots: ExploreHotspot[];
+}
+
 export type Beat =
   | { speaker: string; line: string; narration?: false }
   | { narration: true; line: string }
   | { game: GameNode }
   | { choices: Choice[] }
+  | { explore: ExploreScene }
   | { gotoChapter: string }
   | { gotoTrust: true }
   | { gotoEnding: true }

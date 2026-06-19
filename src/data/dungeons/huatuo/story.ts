@@ -8,6 +8,26 @@ export const STORY: Record<string, StoryChapter> = {
     beats: [
       { narration: true, line: "建安十三年，许昌大牢。\n黑暗中，一只手在枯草里摸索。" },
       { speaker: "aj", line: "这里是……哪里？头好痛。" },
+      {
+        explore: {
+          hint: "环顾四周，点击牢中的人与物",
+          image: "/images/levels/1/chapters/ch1_beats/ch1_explore_cell.webp",
+          hotspots: [
+            { id: "aj", label: "自己", x: 26, y: 36, beats: [
+              { narration: true, line: "你低头打量自己：粗布囚衣，腕上还留着一圈未褪的勒痕。" },
+              { speaker: "aj", line: "这具身体……不像是我的。可脑子里，却有人一遍遍唤我『阿吉』。" },
+            ] },
+            { id: "huatuo", label: "邻室老者", x: 80, y: 31, beats: [
+              { narration: true, line: "隔壁囚室，一位老者盘膝而坐，膝前竹简断裂散乱。" },
+              { speaker: "huatuo", line: "醒了？你昏睡了整整一日。莫怕，此处虽是牢狱，老夫尚在。" },
+            ] },
+            { id: "qingnang", label: "散落竹简", x: 70, y: 68, beats: [
+              { narration: true, line: "牢门边散落着断裂的竹简，墨迹被血与潮气浸得发花。" },
+              { speaker: "aj", line: "这些……是医方？竹片上『青囊』二字，我仿佛在哪里听过。" },
+            ] },
+          ],
+        },
+      },
       { narration: true, line: "烛火摇曳中，隔壁囚室里有一个苍老身影，膝前散落着断裂竹简。" },
       { speaker: "huatuo", line: "醒了？过来。那些竹筒，散了。" },
       { speaker: "aj", line: "师父……这写的是？" },

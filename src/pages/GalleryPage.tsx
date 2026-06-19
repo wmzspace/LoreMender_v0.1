@@ -11,6 +11,8 @@ import type { PageKey } from "../lib/routes";
 /** Map ending ID to its dedicated AI scene illustration */
 const ENDING_IMAGES: Record<string, string> = {
   chenbo_true: "/images/levels/1/chapters/endings/ending_chenbo.webp",
+  chenbo_fallback: "/images/levels/1/chapters/endings/ending_chenbo_caomu.webp",
+  xuanyin_true: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
   xuanyin_fallback: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
   wangji_trap: "/images/levels/1/chapters/endings/ending_wangji.webp",
   burn_ending: "/images/levels/1/chapters/endings/ending_burn.webp",
@@ -63,6 +65,14 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
     setState(ns);
     saveState(ns);
     gotoPage("ending");
+  };
+
+  // 【开发者外挂】一键解锁全部结局图鉴
+  const allUnlocked = unlocked.length >= Object.keys(ENDINGS).length;
+  const unlockAll = () => {
+    const ns: GameState = { ...state, unlockedEndings: Object.keys(ENDINGS) as EndingId[] };
+    setState(ns);
+    saveState(ns);
   };
   return (
     <PageShell
@@ -161,11 +171,32 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
         </div>
 
         <div style={{
-          textAlign:"center", padding: "12px 0 20px",
+          textAlign:"center", padding: "12px 0 16px",
           fontFamily:"var(--font-han)",
           fontSize: 11, opacity: 0.45,
           letterSpacing:"0.4em",
         }}>· 收 卷 ·</div>
+
+        {/* 【开发者外挂】一键解锁全部结局 */}
+        <div style={{ textAlign:"center", padding:"0 0 24px" }}>
+          <button
+            className="press"
+            data-sfx="unlock"
+            disabled={allUnlocked}
+            onClick={unlockAll}
+            style={{
+              fontFamily:"var(--font-han)",
+              fontSize: 12, letterSpacing:"0.2em", textIndent:"0.2em",
+              padding:"8px 18px", borderRadius: 2, cursor: allUnlocked ? "default" : "pointer",
+              color: allUnlocked ? "rgba(140,107,41,0.5)" : "rgba(205,178,119,0.9)",
+              background:"rgba(9,14,17,0.6)",
+              border:"1px dashed " + (allUnlocked ? "rgba(70,62,38,0.5)" : "rgba(205,178,119,0.5)"),
+              opacity: allUnlocked ? 0.5 : 1,
+            }}>
+            {allUnlocked ? "已 解 锁 全 部" : "解 锁 全 部"}
+            <span style={{ marginLeft: 8, fontSize: 10, opacity: 0.7 }}>【开发者外挂】</span>
+          </button>
+        </div>
     </PageShell>
   );
 }

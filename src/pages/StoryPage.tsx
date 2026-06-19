@@ -44,23 +44,36 @@ const LINE_IMAGES: Record<string, Record<number, string>> = {
   },
   ch2: {
     0: "/images/levels/1/chapters/ch2_beats/beat00_dawn_shop.webp",
-    1: "/images/levels/1/chapters/ch2_beats/beat04_chenbo.webp",
-    5: "/images/levels/1/chapters/ch2_beats/beat08_choice.webp",
+    1: "/images/levels/1/chapters/ch2_beats/beat01_child_fever.webp",
+    4: "/images/levels/1/chapters/ch2_beats/beat04_chenbo_stall.webp",
+    6: "/images/levels/1/chapters/ch2_beats/beat06_chenbo_steady.webp",
+    9: "/images/levels/1/chapters/ch2_beats/beat09_sniff_herbs.webp",
+    14: "/images/levels/1/chapters/ch2_beats/beat14_slips_to_aji.webp",
+    20: "/images/levels/1/chapters/ch2_beats/beat20_half_song.webp",
   },
   ch3: {
-    0: "/images/levels/1/chapters/ch3_beats/beat02_cao_hall.webp",
-    1: "/images/levels/1/chapters/ch3_beats/beat03_caocao.webp",
-    4: "/images/levels/1/chapters/ch3_beats/beat06_choice.webp",
+    0: "/images/levels/1/chapters/ch3_beats/beat00_residue_slip.webp",
+    2: "/images/levels/1/chapters/ch3_beats/beat02_cao_hall.webp",
+    3: "/images/levels/1/chapters/ch3_beats/beat03_wangji_desk.webp",
+    8: "/images/levels/1/chapters/ch3_beats/beat08_three_cases.webp",
+    18: "/images/levels/1/chapters/ch3_beats/beat18_wangji_record.webp",
+    22: "/images/levels/1/chapters/ch3_beats/beat22_fake_document.webp",
   },
   ch4: {
-    0: "/images/levels/1/chapters/ch4_beats/beat00_dying_candle.webp",
-    1: "/images/levels/1/chapters/ch2_beats/beat06_xuanyin.webp",
-    4: "/images/levels/1/chapters/ch5_beats/beat04_choice.webp",
+    0: "/images/levels/1/chapters/ch4_beats/beat00_xuanyin_song.webp",
+    2: "/images/levels/1/chapters/ch4_beats/beat02_xuanyin_pipa.webp",
+    5: "/images/levels/1/chapters/ch4_beats/beat05_torn_paper.webp",
+    14: "/images/levels/1/chapters/ch4_beats/beat14_fingertips.webp",
+    20: "/images/levels/1/chapters/ch4_beats/beat20_song_spreads.webp",
+    24: "/images/levels/1/chapters/ch4_beats/beat24_leave_for_shrine.webp",
   },
   ch5: {
-    0: "/images/levels/1/chapters/ch5_beats/beat00_dawn_drum.webp",
-    1: "/images/levels/1/chapters/ch5_beats/beat02_huatuo_wisdom.webp",
-    2: "/images/levels/1/chapters/ch5_beats/beat03_glowing_slip.webp",
+    0: "/images/levels/1/chapters/ch5_beats/beat00_old_shrine.webp",
+    1: "/images/levels/1/chapters/ch5_beats/beat01_three_relics.webp",
+    3: "/images/levels/1/chapters/ch5_beats/beat03_wind_candle.webp",
+    4: "/images/levels/1/chapters/ch5_beats/beat04_huatuo_wisdom.webp",
+    6: "/images/levels/1/chapters/ch5_beats/beat06_glowing_slip.webp",
+    8: "/images/levels/1/chapters/ch5_beats/beat08_farewell.webp",
   },
 };
 
@@ -201,6 +214,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const audioIndexMap = useMemo(() => buildAudioIndex(rawBeats), [rawBeats]);
   const audioIdx = beat ? audioIndexMap.get(beat) : undefined;
   const gameNode = beat && "game" in beat ? beat.game : null;
+  const exploreScene = beat && "explore" in beat ? beat.explore : null;
   const imageIdx = !gameNode && audioIdx !== undefined ? audioIdx : beatIdx;
   const gameDone = !!(gameNode && state.gameResults[gameNode.id]?.completed);
   const gameLocked = !!(gameNode?.requiredItem && !state.items.includes(gameNode.requiredItem));
@@ -311,6 +325,32 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const [audioDone, setAudioDone] = useState(false);
   const handleTypingDone = () => setTypingDone(true);
 
+  // ── 可交互探索场景状态 ──
+  const [exploreOpen, setExploreOpen] = useState<string | null>(null); // 当前展开的热点 id
+  const [exploreSub, setExploreSub] = useState(0);                     // 该热点对白的下标
+  const [exploreVisited, setExploreVisited] = useState<string[]>([]);  // 已看过的热点
+
+  // 切换主 beat 时重置探索状态
+  useEffect(() => { setExploreOpen(null); setExploreSub(0); setExploreVisited([]); }, [beatIdx]);
+
+  const exHotspot = exploreScene?.hotspots.find(h => h.id === exploreOpen) ?? null;
+  const exBeat = exHotspot?.beats[exploreSub];
+  const exSpeaker = exBeat && "speaker" in exBeat ? CHARACTERS[exBeat.speaker] : undefined;
+  const exIsNarration = !!(exBeat && "narration" in exBeat && exBeat.narration);
+  const exText = exBeat && "line" in exBeat ? exBeat.line : "";
+  const allExplored = !!exploreScene && exploreVisited.length >= exploreScene.hotspots.length;
+
+  const openHotspot = (id: string) => { setExploreOpen(id); setExploreSub(0); };
+  const exploreNext = () => {
+    if (!exHotspot) return;
+    if (exploreSub < exHotspot.beats.length - 1) { setExploreSub(exploreSub + 1); return; }
+    // 该热点对白看完:回到场景并标记已看
+    setExploreOpen(null);
+    setExploreSub(0);
+    setExploreVisited(v => v.includes(exHotspot.id) ? v : [...v, exHotspot.id]);
+  };
+  const explorePrev = () => { if (exploreSub > 0) setExploreSub(exploreSub - 1); };
+
   useEffect(() => clearAuto, []);
 
   // 配音:每个 beat 重置进度。有配音则等 onended,无配音视为「已读完」。
@@ -330,7 +370,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   useEffect(() => {
     clearAuto();
     if (!autoplay || logOpen) return;
-    if (!beat || isTransition || gameNode || "choices" in beat) return;
+    if (!beat || isTransition || gameNode || exploreScene || "choices" in beat) return;
     if (typingDone && audioDone) {
       autoTimer.current = window.setTimeout(() => { next(); }, 700);
     }
@@ -343,6 +383,11 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
       <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
         {sceneEl}
         <AiSceneImage chapter={ch} imageIdx={imageIdx} beatIdx={beatIdx} isGame={!!gameNode} />
+        {exploreScene?.image && (
+          <img src={exploreScene.image} alt="" style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
+          }} />
+        )}
         <div className="grain" />
         <div className="vignette" />
         <Particles count={16} />
@@ -352,6 +397,28 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
           background: "linear-gradient(180deg, rgba(5,8,11,0.78) 0%, rgba(5,8,11,0.18) 14%, rgba(5,8,11,0.04) 38%, rgba(5,8,11,0.45) 64%, rgba(5,8,11,0.96) 100%)",
         }} />
       </div>
+
+      {/* ── 探索热点层:点击场景中的人与物 ── */}
+      {exploreScene && !exploreOpen && (
+        <div className="explore-layer">
+          {exploreScene.hotspots.map(h => {
+            const done = exploreVisited.includes(h.id);
+            return (
+              <button
+                key={h.id}
+                data-sfx="nav"
+                className={"explore-hotspot" + (done ? " is-done" : "")}
+                style={{ left: `${h.x}%`, top: `${h.y}%` }}
+                onClick={() => openHotspot(h.id)}
+                aria-label={h.label}
+              >
+                <span className="explore-dot" />
+                <span className="explore-label">{done ? "✓ " : ""}{h.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* ── 顶部浮层:居中竖排标题 · 右(音量+菜单)。左上角收/展侧栏由全局按钮承担。 ── */}
       <div className="scene-overlay-top story-top">
@@ -390,7 +457,38 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
           padding: "0 24px",
           display: "flex", flexDirection: "column", alignItems: "center",
         }}>
-          {gameNode ? (
+          {exploreScene ? (
+            exploreOpen ? (
+              <DialogueBox
+                speaker={exSpeaker?.name ?? null}
+                portrait={exSpeaker?.portrait ?? null}
+                text={exText}
+                isNarration={exIsNarration}
+                canPrev={exploreSub > 0}
+                onPrev={explorePrev}
+                onNext={exploreNext}
+                autoOn={false}
+                onToggleAuto={() => {}}
+                onOpenLog={() => setLogOpen(true)}
+                onMenu={() => gotoPage("map")}
+                onTypingDone={() => {}}
+              />
+            ) : (
+              <div className="galgame-dialogue story-action fade-in">
+                <div className="story-action-text">
+                  {exploreScene.hint}
+                  <span style={{ marginLeft: 10, opacity: 0.7 }}>
+                    已了解 {exploreVisited.length}/{exploreScene.hotspots.length}
+                  </span>
+                </div>
+                {allExplored && (
+                  <div className="story-action-btns">
+                    <button className="btn-primary press" onClick={next}>继 续 剧 情</button>
+                  </div>
+                )}
+              </div>
+            )
+          ) : gameNode ? (
             <div className="galgame-dialogue story-action fade-in">
               {gameDone ? (
                 <>

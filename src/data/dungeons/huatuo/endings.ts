@@ -10,6 +10,24 @@ export const ENDINGS: Record<string, Ending> = {
     body: "你将《青囊经》交予陈伯。\n他不通文墨，一字一句默诵方药，游走市井救苦济民。\n千载光阴更迭，经中妙法散落民间，化作万千济世良方。\n华佗倚壁而眠，毕生仁术落于民间，心中再无遗憾。",
     glyph: "shoots",
   },
+  chenbo_fallback: {
+    id: "chenbo_fallback",
+    name: "草木有遗",
+    rank: "遗憾半修",
+    rankColor: "#8f7846",
+    epitaph: "老手能救急，验方难成签",
+    body: "你将《青囊经》交予陈伯。\n他凭一双老手救人无数，却始终没能把方药整理成人人可读的药签。\n他年事渐高，手上的药渍一种种淡去。\n那些救命的法子，终究随他的手，慢慢散在了市井里。",
+    glyph: "shoots",
+  },
+  xuanyin_true: {
+    id: "xuanyin_true",
+    name: "弦歌不辍",
+    rank: "典故修补",
+    rankColor: "#2c6657",
+    epitaph: "医理入弦歌，传唱济苍生",
+    body: "你把《青囊经》谱成了歌。\n玄音带着歌诀走过乐坊、山门与村巷，连孩童也能哼上几句。\n字简会被烧、会被夺，曲子却藏在千万人口中。\n医理随弦歌流转人间，再难被一座库、一场火湮没。",
+    glyph: "living",
+  },
   xuanyin_fallback: {
     id: "xuanyin_fallback",
     name: "残卷余音",
@@ -46,18 +64,26 @@ export function resolveEnding(state: GameState): EndingId {
   const caseRank = state.gameResults?.["case_triage"]?.best;
   const caseTriageOk = caseRank === "high" || caseRank === "mid";
 
-  // 真结局：托付陈伯 + 陈伯信任高(>=2) + 至少两个小游戏高完成度 + 病案未按身份排序
-  if (
-    state.finalChoice === "chenbo" &&
-    state.chenbo_trust >= 2 &&
-    highCount >= 2 &&
-    caseTriageOk
-  ) return "chenbo_true";
-  if (state.finalChoice === "chenbo") return "xuanyin_fallback";
-  if (state.finalChoice === "xuanyin") return "xuanyin_fallback";
-  if (state.finalChoice === "wangji") return "wangji_trap";
-  if (state.finalChoice === "burn") return "burn_ending";
-  return "xuanyin_fallback";
+  // 「选谁就是谁的结局」：最终抉择决定结局归属，绝不跳到别人；
+  // 同一人内部再按达成度分「圆满版 / 遗憾版」两套文案。
+  switch (state.finalChoice) {
+    case "chenbo":
+      // 圆满：陈伯信任高(>=2) + 至少两个小游戏高完成度 + 病案未按身份排序
+      return state.chenbo_trust >= 2 && highCount >= 2 && caseTriageOk
+        ? "chenbo_true"
+        : "chenbo_fallback";
+    case "xuanyin":
+      // 圆满：玄音信任高(>=2) + 至少两个小游戏高完成度
+      return state.xuanyin_trust >= 2 && highCount >= 2
+        ? "xuanyin_true"
+        : "xuanyin_fallback";
+    case "wangji":
+      return "wangji_trap"; // 圆满/遗憾由 getEndingBody 按 wangji_trust 区分
+    case "burn":
+      return "burn_ending";
+    default:
+      return "xuanyin_fallback"; // 仅在未作最终抉择的异常数据下兜底
+  }
 }
 
 /** 王济结局低信任版本 */

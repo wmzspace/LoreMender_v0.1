@@ -1832,3 +1832,60 @@ button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
   .mg-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   .mg-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 }
+
+/* ── 可交互探索热点 ── */
+.explore-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+.explore-hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  transition: transform 120ms ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--gold-pale);
+  opacity: 0;
+  animation: exploreIn 420ms ease forwards;
+}
+/* 按下缩放保留居中位移，避免跳位 */
+.explore-hotspot:active { transform: translate(-50%, -50%) scale(0.92); }
+@keyframes exploreIn { to { opacity: 1; } }
+.explore-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(236, 220, 166, 0.92);
+  box-shadow: 0 0 0 6px rgba(236, 220, 166, 0.16), 0 0 20px rgba(236, 220, 166, 0.65);
+  animation: explorePulse 1.7s ease-in-out infinite;
+}
+.explore-label {
+  font-family: var(--font-han);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+  padding: 4px 11px;
+  border-radius: 2px;
+  white-space: nowrap;
+  background: rgba(9, 14, 17, 0.84);
+  border: 1px solid rgba(205, 178, 119, 0.5);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+}
+.explore-hotspot.is-done { opacity: 0.5; }
+.explore-hotspot.is-done .explore-dot {
+  background: rgba(150, 168, 158, 0.7);
+  box-shadow: none;
+  animation: none;
+}
+@keyframes explorePulse {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50% { transform: scale(1.32); opacity: 0.55; }
+}
