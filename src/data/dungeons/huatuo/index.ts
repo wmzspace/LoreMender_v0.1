@@ -3,5 +3,5 @@ export { STORY } from "./story";
 export { CHAPTERS } from "./chapters";
 export { CHARACTERS, TRUST_OPTIONS } from "./characters";
 export { CLUES } from "./clues";
-export { ENDINGS, resolveEnding, getEndingBody } from "./endings";
+export { ENDINGS, ENDING_NARRATION_BODIES, resolveEnding, getEndingBody, getEndingAudioId } from "./endings";
 export { NARRATION_VOICE, CHARACTER_VOICES, type VoiceSetting } from "./voices";

@@ -40,13 +40,16 @@ export function calcScore(state: GameState): ScoreResult {
     (state.wangji_trust || 0) +
     (state.xuanyin_trust || 0) +
     (state.medical_skill || 0) +
-    (state.asked_heart || 0);
-  const trustMax = 10;
+    (state.asked_heart || 0) +
+    Math.min(state.record_tendency || 0, 2) +
+    Math.min(state.system_tendency || 0, 2) +
+    Math.min(state.spread_tendency || 0, 2);
+  const trustMax = 16;
 
   const CHOICE_SCORE: Record<string, Record<string, number>> = {
-    ch2: { agree_him: 3, urge_write: 2, worry_loss: 1 },
-    ch3: { warn_ethics: 3, doubt_system: 2, distrust_cao: 1 },
-    ch4: { worry_errors: 3, eager_help: 2, ask_danger: 1 },
+    ch2: { record_network: 3, oral_only: 2, show_fragment: 1 },
+    ch3: { patient_first: 3, over_search: 2, tamper_case: 1 },
+    ch4: { keep_forbidden_record: 3, spread_then_fix: 2, destroy_wrong_song: 1 },
   };
   const choiceMax = 9;
   const choiceScore =
@@ -58,7 +61,8 @@ export function calcScore(state: GameState): ScoreResult {
   const finalScore = state.finalChoice ? (finalMap[state.finalChoice] ?? 0) : 0;
   const finalMax = 3;
 
-  const total = gameScore + trustScore + choiceScore + finalScore;
+  const pressurePenalty = Math.min(state.searchPressure || 0, 4);
+  const total = Math.max(0, gameScore + trustScore + choiceScore + finalScore - pressurePenalty);
   const maxTotal = gameMax + trustMax + choiceMax + finalMax;
   const pct = Math.round((total / maxTotal) * 100);
 
@@ -82,9 +86,10 @@ export function calcScore(state: GameState): ScoreResult {
     gradeColor,
     breakdown: [
       { label: "医术修习", score: gameScore, max: gameMax, detail: `${gamesDone}/${games.length} 关` },
-      { label: "信任积累", score: trustScore, max: trustMax },
-      { label: "情理判断", score: choiceScore, max: choiceMax },
+      { label: "证据与信任", score: trustScore, max: trustMax },
+      { label: "过程判断", score: choiceScore, max: choiceMax },
       { label: "最终抉择", score: finalScore, max: finalMax },
+      { label: "追索压力", score: -pressurePenalty, max: 0, detail: `${state.searchPressure || 0} 点` },
     ],
   };
 }

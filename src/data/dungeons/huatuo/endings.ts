@@ -6,26 +6,26 @@ export const ENDINGS: Record<string, Ending> = {
     name: "医者人间",
     rank: "典故修补",
     rankColor: "#2c6657",
-    epitaph: "青囊朽草木，医术遍人间",
-    body: "你将《青囊经》交予陈伯。\n他不通文墨，一字一句默诵方药，游走市井救苦济民。\n千载光阴更迭，经中妙法散落民间，化作万千济世良方。\n华佗倚壁而眠，毕生仁术落于民间，心中再无遗憾。",
+    epitaph: "药方入市井，医术在人间",
+    body: "你把残卷托给陈伯。\n药方没有被锁进高阁，而是在街巷之间一遍遍誊写、背诵、校正。\n许多内容终会散失，可有些救急法门活进乡民的手里。\n很多年后，没人说得清那些方子从何而来，只知道在孩子高热、老人喘咳、行人受伤时，总有人能先做对第一步。\n华佗闭眼前，终于听见牢外有人仍在问药。",
     glyph: "shoots",
   },
   chenbo_fallback: {
     id: "chenbo_fallback",
-    name: "草木有遗",
+    name: "残卷余音",
     rank: "遗憾半修",
     rankColor: "#8f7846",
-    epitaph: "老手能救急，验方难成签",
-    body: "你将《青囊经》交予陈伯。\n他凭一双老手救人无数，却始终没能把方药整理成人人可读的药签。\n他年事渐高，手上的药渍一种种淡去。\n那些救命的法子，终究随他的手，慢慢散在了市井里。",
+    epitaph: "药签未成卷，余法入人声",
+    body: "你把残卷托给陈伯。\n他凭一双老手救下不少急症，也把能记住的法子讲给街坊。\n可药签残缺，记录太少，许多病机只能靠口耳相传。\n青囊没有彻底断绝，却只能留下零散余音。",
     glyph: "shoots",
   },
   xuanyin_true: {
     id: "xuanyin_true",
-    name: "弦歌不辍",
+    name: "残卷余音",
     rank: "典故修补",
     rankColor: "#2c6657",
-    epitaph: "医理入弦歌，传唱济苍生",
-    body: "你把《青囊经》谱成了歌。\n玄音带着歌诀走过乐坊、山门与村巷，连孩童也能哼上几句。\n字简会被烧、会被夺，曲子却藏在千万人口中。\n医理随弦歌流转人间，再难被一座库、一场火湮没。",
+    epitaph: "歌行渡口，禁录同行",
+    body: "你把残卷托给玄音。\n她把难懂的医理改作歌诀，带向乐坊、渡口与山门。\n后世未必能得到全卷，却能从曲调里记住该救什么、又该避开什么。\n有些句子在流传中变形，有些禁忌被谨慎保留下来。\n残术不再完整，但没有完全失声。",
     glyph: "living",
   },
   xuanyin_fallback: {
@@ -33,8 +33,8 @@ export const ENDINGS: Record<string, Ending> = {
     name: "残卷余音",
     rank: "遗憾半修",
     rankColor: "#8f7846",
-    epitaph: "兵戈毁古卷，余音寥难寻",
-    body: "你把《青囊经》交给了玄音。\n他带着医书入山，藏于道观深处。\n数百年后，战火烧毁山门，残卷不知所终。\n只有只言片语，流传于世。",
+    epitaph: "歌声走远，错句难清",
+    body: "你把残卷托给玄音。\n歌诀比竹简走得更远，也比竹简更难追回。\n有些救急法门留在曲调里，有些错句也混入人群。\n玄音一路校正，仍无法保证每个渡口唱出的都是原意。\n青囊没有完全失声，却留下了长久的遗憾。",
     glyph: "wall",
   },
   wangji_trap: {
@@ -43,8 +43,7 @@ export const ENDINGS: Record<string, Ending> = {
     rank: "遗憾未竟",
     rankColor: "#6e1f18",
     epitaph: "良方锁侯府，黎庶无缘观",
-    // 高信任版本（getEndingBody 会根据 wangji_trust 动态选择）
-    body: "你把《青囊经》交给了王济。\n王济将《青囊经》献于曹操，宫中只截取浅方留存，正本永久封藏曹氏秘库。\n后世偶拾残纸知华佗盛名，寻常百姓却永无机会习得完整医术。",
+    body: "你把残卷托给王济。\n他确有能力保下一部分内容，也确实让它进入曹府医案。\n可门第与功名会重新筛选文字，许多不合时宜的提醒被删去，许多民间经验被轻看。\n书活了下来，却又被锁住。\n多年以后，有人从府库残页中读见华佗之名，却再难听见街市上的咳声与哭声。",
     glyph: "wall",
   },
   burn_ending: {
@@ -53,48 +52,101 @@ export const ENDINGS: Record<string, Ending> = {
     rank: "遗憾焚绝",
     rankColor: "#b23a2c",
     epitaph: "烈焰吞竹简，仙术失传人",
-    body: "你拿起蜡烛，点燃了《青囊经》。\n竹简在火光中卷曲、变黑、化为灰烬。\n华佗沉默地望向窗外苍生。\n外科之术，从此失传。",
+    body: "你点燃残卷。\n竹简在火里卷曲、发黑、化灰。\n无人能借它作恶，也无人能据它救人。\n华佗没有责怪你，只望着窗外很久。\n此后千年，人们只记得那本应当存在的书。",
     glyph: "fire",
   },
 };
 
+const RANK_WEIGHT: Record<string, number> = { low: 0, mid: 1, high: 2 };
+
+function rankOf(state: GameState, id: string): string | undefined {
+  return state.gameResults?.[id]?.best;
+}
+
+function isAtLeastMid(state: GameState, id: string): boolean {
+  return RANK_WEIGHT[rankOf(state, id) ?? ""] >= 1;
+}
+
+function isHigh(state: GameState, id: string): boolean {
+  return rankOf(state, id) === "high";
+}
+
+function hasItem(state: GameState, item: string): boolean {
+  return state.items.includes(item);
+}
+
+function searchPressure(state: GameState): number {
+  let pressure = state.searchPressure || 0;
+  if (state.ch2 === "show_fragment") pressure += 1;
+  if (state.ch3 === "over_search") pressure += 1;
+  if (state.ch4 === "spread_then_fix" && !isAtLeastMid(state, "song_formula")) pressure += 1;
+  if (state.boxCompartment === "missed") pressure += 1;
+  return pressure;
+}
+
 export function resolveEnding(state: GameState): EndingId {
   const highCount = Object.values(state.gameResults ?? {}).filter(r => r.best === "high").length;
-  // 病案未按身份排序：孩童排首位即可（high=完全正确, mid=前两位正确，均以孩童领先）
-  const caseRank = state.gameResults?.["case_triage"]?.best;
-  const caseTriageOk = caseRank === "high" || caseRank === "mid";
+  const caseTriageOk = isAtLeastMid(state, "case_triage") && state.ch3 !== "tamper_case";
+  const completePrescription = isHigh(state, "herb_memory") || hasItem(state, "chenbo_prescription_full");
+  const completeSongPage = isHigh(state, "song_formula") || hasItem(state, "xuanyin_song_page_complete");
+  const hasForbiddenRecord = hasItem(state, "forbidden_record") || state.ch4 === "keep_forbidden_record";
+  const weakEvidenceCount = ["herb_memory", "case_triage", "song_formula"].filter(id => !isAtLeastMid(state, id)).length;
 
-  // 「选谁就是谁的结局」：最终抉择决定结局归属，绝不跳到别人；
-  // 同一人内部再按达成度分「圆满版 / 遗憾版」两套文案。
+  if (state.finalChoice === "burn" || searchPressure(state) >= 4 || weakEvidenceCount >= 3) {
+    return "burn_ending";
+  }
+
   switch (state.finalChoice) {
     case "chenbo":
-      // 圆满：陈伯信任高(>=2) + 至少两个小游戏高完成度 + 病案未按身份排序
-      return state.chenbo_trust >= 2 && highCount >= 2 && caseTriageOk
+      return state.chenbo_trust >= 2 &&
+        completePrescription &&
+        highCount >= 2 &&
+        caseTriageOk &&
+        (state.record_tendency || 0) >= 1
         ? "chenbo_true"
         : "chenbo_fallback";
     case "xuanyin":
-      // 圆满：玄音信任高(>=2) + 至少两个小游戏高完成度
-      return state.xuanyin_trust >= 2 && highCount >= 2
+      return completeSongPage && hasForbiddenRecord && state.ch4 !== "spread_then_fix"
         ? "xuanyin_true"
         : "xuanyin_fallback";
     case "wangji":
-      return "wangji_trap"; // 圆满/遗憾由 getEndingBody 按 wangji_trust 区分
-    case "burn":
-      return "burn_ending";
+      return "wangji_trap";
     default:
-      return "xuanyin_fallback"; // 仅在未作最终抉择的异常数据下兜底
+      return "xuanyin_fallback";
   }
 }
 
-/** 王济结局低信任版本 */
-const WANGJI_BODY_LOW = "你把《青囊经》交给了王济。\n他将医书献给曹操。曹营的医官抄录了部分方子。\n但大部分内容，被锁进曹氏秘库，再未见光。\n华佗在牢中听闻，沉默了很久。";
+const WANGJI_BODY_LOW = "你把残卷托给王济。\n他接住了它，也立刻把它交进更深的门里。\n曹府医官抄录了几条可用浅方，正本却再未离开府库。\n阿吉后来听人说，残页确实活了下来，只是寻常百姓再也摸不到它。";
 
-/** 根据信任值动态返回结局正文；王济结局高信任用 ENDINGS 中的默认 body，低信任用遗憾版本 */
+const WANGJI_BODY_STABLE = "你把残卷托给王济。\n完整病案和假文书让他保下一部分内容，也让曹府不得不承认华佗之名。\n可制度会重新筛选文字，民间经验被轻看，危险提醒被删改。\n书活了下来，却又被锁住。";
+
+function isStableWangjiEnding(state: GameState): boolean {
+  return (state.wangji_trust ?? 0) >= 2 && isHigh(state, "case_triage") && (state.system_tendency || 0) >= 1;
+}
+
+export const ENDING_NARRATION_BODIES: Record<string, string> = {
+  chenbo_true: ENDINGS.chenbo_true.body,
+  chenbo_fallback: ENDINGS.chenbo_fallback.body,
+  xuanyin_true: ENDINGS.xuanyin_true.body,
+  xuanyin_fallback: ENDINGS.xuanyin_fallback.body,
+  wangji_trap_low: WANGJI_BODY_LOW,
+  wangji_trap_stable: WANGJI_BODY_STABLE,
+  burn_ending: ENDINGS.burn_ending.body,
+};
+
+export function getEndingAudioId(state: GameState, endId: EndingId): string {
+  if (endId === "wangji_trap") {
+    return isStableWangjiEnding(state) ? "wangji_trap_stable" : "wangji_trap_low";
+  }
+  return endId;
+}
+
 export function getEndingBody(state: GameState, endId: EndingId): string {
   if (endId === "wangji_trap") {
-    return (state.wangji_trust ?? 0) >= 2
-      ? ENDINGS.wangji_trap.body
-      : WANGJI_BODY_LOW;
+    if (isStableWangjiEnding(state)) {
+      return WANGJI_BODY_STABLE;
+    }
+    return WANGJI_BODY_LOW;
   }
   return ENDINGS[endId]?.body ?? "";
 }
