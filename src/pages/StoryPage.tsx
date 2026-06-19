@@ -19,28 +19,14 @@ interface StoryPageProps {
 
 const LINE_IMAGES: Record<string, Record<number, string>> = {
   ch1: {
-    0: "/images/levels/1/chapters/ch1_beats/ch1_01_aji_wakes_headache.webp",
-    2: "/images/levels/1/chapters/ch1_beats/ch1_02_huatuo_calls_scattered_slips.webp",
-    4: "/images/levels/1/chapters/ch1_beats/ch1_03_aji_recognizes_qingnang.webp",
-    5: "/images/levels/1/chapters/ch1_beats/ch1_04_huatuo_lifetime_fragment.webp",
-    6: "/images/levels/1/chapters/ch1_beats/ch1_05_aji_vows_keep_from_cao.webp",
-    7: "/images/levels/1/chapters/ch1_beats/ch1_06_huatuo_guarding_book_not_way.webp",
-    8: "/images/levels/1/chapters/ch1_beats/ch1_07_aji_asks_what_to_do.webp",
-    9: "/images/levels/1/chapters/ch1_beats/ch1_08_huatuo_mission_three_paths.webp",
-    10: "/images/levels/1/chapters/ch1_beats/ch1_09_huatuo_pushes_slips.webp",
-    11: "/images/levels/1/chapters/ch1_beats/ch1_10_bamboo_sorting_three_groups.webp",
-    12: "/images/levels/1/chapters/ch1_beats/ch1_11_old_wooden_box_revealed.webp",
-    13: "/images/levels/1/chapters/ch1_beats/ch1_12_huatuo_warns_search_box.webp",
-    14: "/images/levels/1/chapters/ch1_beats/ch1_13_wooden_box_mechanism_key.webp",
-    15: "/images/levels/1/chapters/ch1_beats/ch1_14_box_compartment_qingnang_fragment.webp",
-    16: "/images/levels/1/chapters/ch1_beats/ch1_15_huatuo_final_why_save_people.webp",
-    17: "/images/levels/1/chapters/ch1_beats/ch1_16_chains_soldier_arrives.webp",
-    19: "/images/levels/1/chapters/ch1_beats/ch1_17_huatuo_warns_trust_hate.webp",
-    20: "/images/levels/1/chapters/ch1_beats/ch1_18_body_search_tension.webp",
-    21: "/images/levels/1/chapters/ch1_beats/ch1_18_body_search_tension.webp",
-    22: "/images/levels/1/chapters/ch1_beats/ch1_19_aji_understands_inheritance.webp",
-    23: "/images/levels/1/chapters/ch1_beats/ch1_20_dawn_xuchang_escort_market.webp",
-    24: "/images/levels/1/chapters/ch1_beats/ch1_21_half_song_aji_stops.webp",
+    0: "/images/levels/1/chapters/ch1_beats/ch1_01_wake_cell.webp",
+    2: "/images/levels/1/chapters/ch1_beats/ch1_02_huatuo_scattered_slips.webp",
+    4: "/images/levels/1/chapters/ch1_beats/ch1_04_scattered_bamboo.webp",
+    8: "/images/levels/1/chapters/ch1_beats/ch1_08_box_success.webp",
+    10: "/images/levels/1/chapters/ch1_beats/ch1_09_box_failure.webp",
+    11: "/images/levels/1/chapters/ch1_beats/ch1_05_box_key_hint.webp",
+    13: "/images/levels/1/chapters/ch1_beats/ch1_10_guard_checks_box.webp",
+    19: "/images/levels/1/chapters/ch1_beats/ch1_11_escape_side_gate.webp",
   },
   ch2: {
     0: "/images/levels/1/chapters/ch2_beats/beat00_dawn_shop.webp",
@@ -79,8 +65,8 @@ const LINE_IMAGES: Record<string, Record<number, string>> = {
 
 const GAME_BEAT_IMAGES: Record<string, Record<number, string>> = {
   ch1: {
-    11: "/images/levels/1/chapters/ch1_beats/ch1_10_bamboo_sorting_three_groups.webp",
-    16: "/images/levels/1/chapters/ch1_beats/ch1_13_wooden_box_mechanism_key.webp",
+    5: "/images/levels/1/chapters/ch1_beats/ch1_04_scattered_bamboo.webp",
+    10: "/images/levels/1/chapters/ch1_beats/ch1_05_box_key_hint.webp",
   },
 };
 
@@ -166,12 +152,26 @@ function flattenBeats(beats: Beat[], state: GameState): Beat[] {
   }
   return beats.flatMap(beat => {
     if ("ifKey" in beat) {
-      return stateMap[beat.ifKey] === beat.ifVal
+      return String(stateMap[beat.ifKey] ?? "") === beat.ifVal
         ? flattenBeats(beat.beats, state)
         : [];
     }
     return [beat];
   });
+}
+
+function applyChoiceSet(state: GameState, set: Choice["set"]): GameState {
+  const next = { ...state };
+  for (const [key, value] of Object.entries(set ?? {})) {
+    if (key === "searchPressure") {
+      next.searchPressure = Math.max(0, (next.searchPressure || 0) + Number(value || 0));
+    } else if (key === "record_tendency" || key === "spread_tendency" || key === "burn_tendency") {
+      next[key] = Math.max(Number(next[key] || 0), Number(value || 0));
+    } else {
+      (next as unknown as Record<string, unknown>)[key] = value;
+    }
+  }
+  return next;
 }
 
 export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPageProps) {
@@ -248,7 +248,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
 
   const handleChoice = (choice: Choice) => {
     if (choice.set) {
-      const ns = { ...state, ...choice.set };
+      const ns = applyChoiceSet(state, choice.set);
       setState(ns);
       saveState(ns);
     }
@@ -385,6 +385,11 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
         <AiSceneImage chapter={ch} imageIdx={imageIdx} beatIdx={beatIdx} isGame={!!gameNode} />
         {exploreScene?.image && (
           <img src={exploreScene.image} alt="" style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
+          }} />
+        )}
+        {exHotspot?.image && (
+          <img src={exHotspot.image} alt="" style={{
             position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
           }} />
         )}

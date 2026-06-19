@@ -24,6 +24,11 @@ export function defaultState(): GameState {
     chenbo_trust: 0,
     wangji_trust: 0,
     xuanyin_trust: 0,
+    searchPressure: 0,
+    record_tendency: 0,
+    system_tendency: 0,
+    spread_tendency: 0,
+    burn_tendency: 0,
     classifyRetry: null,
     boxCompartment: null,
     firstChoice: null,
@@ -46,6 +51,11 @@ export function normalizeState(value: Partial<GameState> | null | undefined): Ga
   merged.chenbo_trust = Number(merged.chenbo_trust || 0);
   merged.wangji_trust = Number(merged.wangji_trust || 0);
   merged.xuanyin_trust = Number(merged.xuanyin_trust || 0);
+  merged.searchPressure = Number(merged.searchPressure || 0);
+  merged.record_tendency = Number(merged.record_tendency || 0);
+  merged.system_tendency = Number(merged.system_tendency || 0);
+  merged.spread_tendency = Number(merged.spread_tendency || 0);
+  merged.burn_tendency = Number(merged.burn_tendency || 0);
   merged.classifyRetry = merged.classifyRetry ?? null;
   merged.boxCompartment = merged.boxCompartment ?? null;
   return merged;

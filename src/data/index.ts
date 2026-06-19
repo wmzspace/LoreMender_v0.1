@@ -9,8 +9,10 @@ export {
   TRUST_OPTIONS,
   CLUES,
   ENDINGS,
+  ENDING_NARRATION_BODIES,
   resolveEnding,
   getEndingBody,
+  getEndingAudioId,
 } from "./dungeons/huatuo";
 
 export {

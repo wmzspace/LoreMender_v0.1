@@ -17,7 +17,7 @@ import * as path from "path";
 import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
 import { STORY } from "../../src/data/dungeons/huatuo/story";
-import { ENDINGS } from "../../src/data/dungeons/huatuo/endings";
+import { ENDING_NARRATION_BODIES } from "../../src/data/dungeons/huatuo/endings";
 import { NARRATION_VOICE, CHARACTER_VOICES, type VoiceSetting } from "../../src/data/dungeons/huatuo/voices";
 import { buildAudioIndex } from "../../src/data/dungeons/huatuo/audioIndex";
 import type { Beat } from "../../src/data/types";
@@ -99,13 +99,12 @@ for (const [chapterId, chapter] of Object.entries(STORY)) {
   }
 }
 
-// ── 结局旁白：读取 ENDINGS[id].body，旁白音色合成 ──────────────
-// 注：wangji_trap 有高/低信任两版正文，此处统一用默认（高信任）body 配音。
+// ── 结局旁白：读取当前结局旁白正文，含王济低/稳两版 ──────────────
 const ENDINGS_DIR = path.join(OUTPUT_ROOT, "endings");
 fs.mkdirSync(ENDINGS_DIR, { recursive: true });
-for (const [endId, ending] of Object.entries(ENDINGS)) {
-  if (!ending.body) continue;
-  synth(NARRATION_VOICE, ending.body, `结局·${ending.name}`, path.join(ENDINGS_DIR, `${endId}.mp3`));
+for (const [audioId, body] of Object.entries(ENDING_NARRATION_BODIES)) {
+  if (!body) continue;
+  synth(NARRATION_VOICE, body, `结局·${audioId}`, path.join(ENDINGS_DIR, `${audioId}.mp3`));
 }
 
 console.log(`\n完成：生成 ${generated}，跳过(已存在) ${skipped}，缺失音色映射 ${missing}，失败 ${failed.length}`);

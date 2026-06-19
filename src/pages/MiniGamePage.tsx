@@ -23,6 +23,10 @@ function addUnique(list: string[], item: string) {
   return list.includes(item) ? list : [...list, item];
 }
 
+function addItems(list: string[], items: string[]) {
+  return items.reduce(addUnique, list);
+}
+
 function applyResult(state: GameState, game: GameNode, rank: GameResultRank): GameState {
   const prev = state.gameResults[game.id];
   const best = !prev || RANK_WEIGHT[rank] > RANK_WEIGHT[prev.best] ? rank : prev.best;
@@ -36,6 +40,61 @@ function applyResult(state: GameState, game: GameNode, rank: GameResultRank): Ga
     },
     ...(skill ? { [skill]: Math.max(Number(state[skill] || 0), RANK_WEIGHT[rank]) } : {}),
   };
+}
+
+function applyNarrativeResult(state: GameState, game: GameNode, rank: GameResultRank): GameState {
+  const inc = rank === "high" ? 2 : rank === "mid" ? 1 : 0;
+  let next = { ...state };
+
+  if (game.id === "bamboo_puzzle") {
+    next.record_tendency = Math.max(next.record_tendency || 0, inc >= 1 ? 1 : 0);
+  }
+
+  if (game.id === "wooden_box") {
+    next.searchPressure = Math.max(0, (next.searchPressure || 0) + (rank === "low" ? 1 : 0));
+  }
+
+  if (game.id === "herb_memory") {
+    const qualityItem =
+      rank === "high" ? "chenbo_prescription_full" :
+      rank === "mid" ? "chenbo_prescription_partial" :
+      "chenbo_prescription_stained";
+    next = {
+      ...next,
+      items: addUnique(next.items, qualityItem),
+      record_tendency: Math.max(next.record_tendency || 0, rank === "high" ? 2 : rank === "mid" ? 1 : 0),
+      searchPressure: Math.max(0, (next.searchPressure || 0) + (rank === "low" ? 1 : 0)),
+    };
+  }
+
+  if (game.id === "case_triage") {
+    const qualityItem =
+      rank === "high" ? "case_record_full" :
+      rank === "mid" ? "case_record_partial" :
+      "case_record_flawed";
+    next = {
+      ...next,
+      items: addItems(next.items, [qualityItem, "wangji_fake_doc"]),
+      system_tendency: Math.max(next.system_tendency || 0, rank === "high" ? 2 : rank === "mid" ? 1 : 0),
+      searchPressure: Math.max(0, (next.searchPressure || 0) + (rank === "low" ? 1 : 0)),
+    };
+  }
+
+  if (game.id === "song_formula") {
+    const qualityItem =
+      rank === "high" ? "xuanyin_song_page_complete" :
+      rank === "mid" ? "xuanyin_song_page_corrected" :
+      "xuanyin_song_page_unclean";
+    const extraItems = rank === "high" ? [qualityItem, "forbidden_record"] : [qualityItem];
+    next = {
+      ...next,
+      items: addItems(next.items, extraItems),
+      spread_tendency: Math.max(next.spread_tendency || 0, inc),
+      searchPressure: Math.max(0, (next.searchPressure || 0) + (rank === "low" ? 1 : 0)),
+    };
+  }
+
+  return next;
 }
 
 // ── 游戏完成反馈数据 ───────────────────────────────────────────
@@ -1062,10 +1121,15 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
 
   const finish = (rank: GameResultRank) => {
     playSfx("unlock"); // 完成机关/游戏的成功音（优先级高于点击 tap，会在 30ms 内胜出）
-    let ns = applyResult(state, game, rank);
+    let ns = applyNarrativeResult(applyResult(state, game, rank), game, rank);
     // 木盒夹层：困难难度高完成度=藏卷成功(found)，其余完成=险些被搜出(missed)
     if (game.kind === "woodenBox") {
-      ns = { ...ns, boxCompartment: woodenBoxHard && rank === "high" ? "found" : "missed" };
+      const found = woodenBoxHard && rank === "high";
+      ns = {
+        ...ns,
+        boxCompartment: found ? "found" : "missed",
+        searchPressure: Math.max(0, (ns.searchPressure || 0) + (found ? 0 : 1)),
+      };
     }
     setState(ns);
     saveState(ns);

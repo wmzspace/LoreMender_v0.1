@@ -3,7 +3,7 @@ import { GoldDivider, PaperPanel, SealTag } from "../components";
 import {
   Particles, SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
 } from "../components/art";
-import { ENDINGS, resolveEnding, getEndingBody } from "../data";
+import { ENDINGS, resolveEnding, getEndingBody, getEndingAudioId } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState } from "../lib/storage";
 import { playSfx, playDialogueAudio, stopDialogueAudio, useAudioMuted } from "../lib/audio";
@@ -12,10 +12,13 @@ import type { PageKey } from "../lib/routes";
 
 /** Map ending ID to narrator voiceover for the ending body text */
 const ENDING_NARRATION: Record<string, string> = {
-  chenbo_true:      "/audio/levels/1/dialogue/endings/chenbo_true.mp3",
-  wangji_trap:      "/audio/levels/1/dialogue/endings/wangji_trap.mp3",
-  xuanyin_fallback: "/audio/levels/1/dialogue/endings/xuanyin_fallback.mp3",
-  burn_ending:      "/audio/levels/1/dialogue/endings/burn_ending.mp3",
+  chenbo_true:        "/audio/levels/1/dialogue/endings/chenbo_true.mp3",
+  chenbo_fallback:    "/audio/levels/1/dialogue/endings/chenbo_fallback.mp3",
+  xuanyin_true:       "/audio/levels/1/dialogue/endings/xuanyin_true.mp3",
+  wangji_trap_low:    "/audio/levels/1/dialogue/endings/wangji_trap_low.mp3",
+  wangji_trap_stable: "/audio/levels/1/dialogue/endings/wangji_trap_stable.mp3",
+  xuanyin_fallback:   "/audio/levels/1/dialogue/endings/xuanyin_fallback.mp3",
+  burn_ending:        "/audio/levels/1/dialogue/endings/burn_ending.mp3",
 };
 
 /** Map ending ID to its cinematic opening video（圆满/遗憾两版复用同角色的开场画面；配音不复用，见 ENDING_NARRATION） */
@@ -233,7 +236,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   const checkAndDismissRef = useRef(() => {});
   useEffect(() => {
     checkAndDismissRef.current = () => {
-      const hasNarration = !!ENDING_NARRATION[endId] && !isMuted;
+      const hasNarration = !!ENDING_NARRATION[getEndingAudioId(state, endId)] && !isMuted;
       if (hasNarration ? narrationEndedRef.current : videoEndedRef.current) {
         dismissVideoRef.current();
       }
@@ -256,7 +259,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
     let i = 0;
     const body = getEndingBody(state, endId);
     let intervalId: ReturnType<typeof setInterval>;
-    const narrationSrc = ENDING_NARRATION[endId];
+    const narrationSrc = ENDING_NARRATION[getEndingAudioId(state, endId)];
     const timeoutId = setTimeout(() => {
       if (narrationSrc) {
         playDialogueAudio(narrationSrc, () => {
@@ -275,13 +278,13 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
       clearInterval(intervalId);
       stopDialogueAudio();
     };
-  }, [showVideo, e?.body]);
+  }, [showVideo, e?.body, state, endId]);
 
   // Tracks whether narration audio is active — read by onTimeUpdate and onEnded closures.
   // We use a ref (not state) so the video event handlers always see the current value
   // without needing to be recreated on every isMuted change.
   const hasNarrationRef = useRef(false);
-  useEffect(() => { hasNarrationRef.current = !!ENDING_NARRATION[endId] && !isMuted; });
+  useEffect(() => { hasNarrationRef.current = !!ENDING_NARRATION[getEndingAudioId(state, endId)] && !isMuted; });
 
   // React doesn't reliably sync `muted` DOM property via JSX props — drive directly.
   // We intentionally do NOT set loop=true here: iOS Safari still fires the `ended` event

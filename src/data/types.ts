@@ -71,7 +71,15 @@ export interface GameReward {
   item: string;
   skill?: keyof Pick<
     GameState,
-    "medical_skill" | "asked_heart" | "chenbo_trust" | "wangji_trust" | "xuanyin_trust"
+    | "medical_skill"
+    | "asked_heart"
+    | "chenbo_trust"
+    | "wangji_trust"
+    | "xuanyin_trust"
+    | "record_tendency"
+    | "system_tendency"
+    | "spread_tendency"
+    | "burn_tendency"
   >;
 }
 
@@ -89,7 +97,7 @@ export interface GameNode {
 export interface Choice {
   label: string;
   toast?: string;
-  set?: Record<string, string>;
+  set?: Partial<Record<keyof GameState, string | number | boolean | null>>;
   ending?: EndingId;
   condition?: Record<string, unknown>;
 }
@@ -100,6 +108,7 @@ export interface ExploreHotspot {
   label: string;       // 热点标签（如「自己」「邻室老者」）
   x: number;           // 横向定位，0–100 百分比
   y: number;           // 纵向定位，0–100 百分比
+  image?: string;      // 点击热点后可切换到对应局部/物品图
   beats: Beat[];       // 点击后逐句展开的对白（仅 speaker / narration 行）
 }
 
@@ -170,6 +179,11 @@ export interface GameState {
   chenbo_trust: number;
   wangji_trust: number;
   xuanyin_trust: number;
+  searchPressure: number;
+  record_tendency: number;
+  system_tendency: number;
+  spread_tendency: number;
+  burn_tendency: number;
 
   classifyRetry: boolean | null; // true=分类后继续修正, false=直接退出, null=未决定
 
