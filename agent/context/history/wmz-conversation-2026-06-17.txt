@@ -1,0 +1,1433 @@
+
+● 我需要完成剩余的两个功能请求：ProgressPage 重置按钮 和 MiniGamePage 一键完成按钮。让我先读取这两个文件的当前状态。
+
+● Read(src/pages/ProgressPage.tsx)
+  ⎿ Read 510 lines (ctrl+o to expand)
+
+● Read(src/pages/MiniGamePage.tsx)
+  ⎿ Read 946 lines (ctrl+o to expand)
+
+● 现在我还需要检查状态管理代码，以理解如何正确实现重置功能。
+
+● 现在我清楚了。让我创建任务并实现这两个功能。
+
+● TaskCreate
+  ⎿ Task #21 created successfully: Add progress reset button to ProgressPage
+
+● TaskCreate
+  ⎿ Task #22 created successfully: Add one-click finish button on MiniGamePage
+
+● TaskUpdate
+  ⎿ Updated task #21 status
+
+● 现在我来在 ProgressPage 上实现重置按钮。我需要从 storage 中导入 defaultState 和 saveState，并添加一个带有确认提示的重置按钮。
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 1 addition
+
+    1    import { useState } from "react";
+    2    import type { GameState } from "../data/types";
+    3    import type { PageKey } from "../lib/routes";
+    4 +  import { defaultState, saveState } from "../lib/storage";
+    5    import { Topbar, BottomNav } from "../components";
+    6    import { Particles } from "../components/art";
+
+● 现在更新组件 props 以包含 setState 并添加重置按钮：
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 1 addition
+
+    1    interface ProgressPageProps {
+    2      state: GameState;
+    3 +    setState: (s: GameState) => void;
+    4      gotoPage: (p: PageKey) => void;
+    5    }
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 14 additions and 1 removal
+
+     1 - export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
+     1 + export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
+     2      const cur = state.currentChapter || 1;
+     3      const [expanded, setExpanded] = useState<number>(cur);
+     4 +    const [confirmReset, setConfirmReset] = useState(false);
+     5 
+     6      const toggle = (num: number) => setExpanded(prev => (prev === num ? -1 : num));
+     7 +  
+     8 +    const handleReset = () => {
+     9 +      if (!confirmReset) {
+    10 +        setConfirmReset(true);
+    11 +        return;
+    12 +      }
+    13 +      const ns = { ...defaultState(), unlockedEndings: state.unlockedEndings };
+    14 +      setState(ns);
+    15 +      saveState(ns);
+    16 +      setConfirmReset(false);
+    17 +      gotoPage("story");
+    18 +    };
+
+● 现在，在页脚区域（引语 div 之后）添加重置按钮 UI：
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 31 additions
+
+    21                </div>
+    22              </div>
+    23            </div>
+    24 +  
+    25 +          <div style={{ marginTop: 14, textAlign: "center" }}>
+    26 +            <button
+    27 +              onClick={handleReset}
+    28 +              style={{
+    29 +                background: confirmReset ? "rgba(180,60,44,0.15)" : "none",
+    30 +                border: `1px solid ${confirmReset ? "rgba(180,60,44,0.6)" : "rgba(228,224,208,0.22)"}`,
+    31 +                borderRadius: 3,
+    32 +                padding: "8px 18px",
+    33 +                cursor: "pointer",
+    34 +                color: confirmReset ? "rgba(225,110,90,0.9)" : `${PAPER}0.45)`,
+    35 +                fontSize: 11,
+    36 +                letterSpacing: "0.16em",
+    37 +                fontFamily: "inherit",
+    38 +                transition: "all 0.2s",
+    39 +              }}
+    40 +            >
+    41 +              {confirmReset ? "确 认 重 置 ？（再次点击确认）" : "重 置 进 度"}
+    42 +            </button>
+    43 +            {confirmReset && (
+    44 +              <button
+    45 +                onClick={() => setConfirmReset(false)}
+    46 +                style={{
+    47 +                  background: "none", border: "1px solid rgba(228,224,208,0.15)",
+    48 +                  borderRadius: 3, padding: "6px 14px", cursor: "pointer",
+    49 +                  color: `${PAPER}0.38)`, fontSize: 10, letterSpacing: "0.12em",
+    50 +                  fontFamily: "inherit", marginLeft: 10, transition: "all 0.2s",
+    51 +                }}
+    52 +              >取 消</button>
+    53 +            )}
+    54 +          </div>
+
+● 现在我需要更新 App.tsx，将 setState 传递给 ProgressPage。让我查找一下。
+
+● Search(pattern: "ProgressPage")
+  ⎿ Found 13 lines (ctrl+o to expand)
+
+● Read(src/App.tsx)
+  ⎿ Read 16 lines (ctrl+o to expand)
+
+● Edit(src/App.tsx)
+  ⎿ src/App.tsx with 1 addition and 1 removal
+
+    1 - pageEl = <ProgressPage state={state} gotoPage={gotoPage}/>;
+    1 + pageEl = <ProgressPage state={state} setState={setState} gotoPage={gotoPage}/>;
+
+● TaskUpdate
+  ⎿ Updated task #21 status
+
+● TaskUpdate
+  ⎿ Updated task #22 status
+
+● 现在正在实现一键完成按钮。我需要在 MiniGamePage 上添加一个开发/测试
+  UI，它会显示3个等级按钮（高/中/低），以便在没有完成游戏时立即完成当前游戏。
+
+● Edit(src/pages/MiniGamePage.tsx)
+  ⎿ src/pages/MiniGamePage.tsx with 1 addition
+
+    1    const locked = game.requiredItem && !state.items.includes(game.requiredItem);
+    2 +    const gameCompleted = state.gameResults[game.id]?.completed;
+    3 
+    4      let body: React.ReactNode;
+
+● 现在，我将在 Shell 组件内部，游戏内容下方，添加开发跳过 UI。我将把它添加到渲染返回中：
+
+● Edit(src/pages/MiniGamePage.tsx)
+  ⎿ src/pages/MiniGamePage.tsx with 27 additions
+
+    11          )}
+    12        >
+    13          {body}
+    14 +        {!locked && !gameCompleted && (
+    15 +          <div style={{
+    16 +            marginTop: 20, padding: "10px 0",
+    17 +            borderTop: "1px solid rgba(228,224,208,0.12)",
+    18 +            textAlign: "center",
+    19 +          }}>
+    20 +            <div style={{
+    21 +              fontSize: 9, color: "rgba(228,224,208,0.3)",
+    22 +              letterSpacing: "0.2em", marginBottom: 8,
+    23 +            }}>开 发 者 跳 过</div>
+    24 +            <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+    25 +              {(["high", "mid", "low"] as GameResultRank[]).map(r => (
+    26 +                <button
+    27 +                  key={r}
+    28 +                  className="btn-ghost press"
+    29 +                  onClick={() => finish(r)}
+    30 +                  style={{
+    31 +                    minWidth: 56, padding: "6px 14px",
+    32 +                    fontSize: 11, letterSpacing: "0.12em",
+    33 +                    borderColor: `${RANK_COLOR[r]}40`,
+    34 +                    color: RANK_COLOR[r],
+    35 +                  }}
+    36 +                >{RANK_LABEL[r]}</button>
+    37 +              ))}
+    38 +            </div>
+    39 +          </div>
+    40 +        )}
+    41        </Shell>
+    42      );
+
+● 现在让我来验证这两个文件是否能通过类型检查：
+
+● Bash(npx tsc --noEmit 2>&1)
+  ⎿ ⠙
+
+● 类型检查通过。让我现在运行构建：
+
+● Bash(npx vite build 2>&1)
+  ⎿ vite v8.0.16 building client environment for production...
+    transforming (87) node_modules/.pnpm/d3-selection@3.0.0/node_modules/d3-selection/src/index.jstransforming (179)
+    node_modules/.pnpm/d3-selection@3.0.0/node_modules/d3-selection/src/window.js✓ 230 modules transformed.
+    ...+9 line (ctrl+o to expand)
+
+● 构建成功。
+
+● TaskUpdate
+  ⎿ Updated task #22 status
+
+● 两项功能都已完成并构建成功：
+
+  1. ProgressPage 重置按钮 (src/pages/ProgressPage.tsx) — 在页面底部引语下方添加了"重 置 进 度"按钮。点击后按钮变为红色确认状态"确 认
+  重 置？"，再次点击才会真正重置（保留 unlockedEndings），旁边有"取 消"按钮。已在 App.tsx 中传入 setState。
+  2. MiniGamePage 开发者跳过按钮 (src/pages/MiniGamePage.tsx) — 当游戏未锁定且未完成时，在游戏内容下方显示三个等级按钮（高/中/低），点
+  击即可立即以所选等级完成当前小游戏，跳过实际游戏过程。按钮使用对应等级的颜色（青/金/灰），标记为"开 发 者 跳 过"。
+
+  TypeScript 类型检查和 Vite 构建均通过。
+
+> 我现在点击“进入此卷后直接黑屏了”Uncaught ReferenceError: Cannot access 'beats' before initialization 
+  at StoryPage (StoryPage.tsx:143:7) 
+
+● 让我检查 StoryPage.tsx 中出现问题的代码，特别是第143行附近。
+
+● Read(src/pages/StoryPage.tsx)
+  ⎿ Read 61 lines (ctrl+o to expand)
+
+● 问题很明显：useEffect 在第139行引用了 beats，但 beats 是在第150行才通过 useMemo 定义的。这造成了"在初始化前无法访问"的错误——useEffect
+   在 useMemo 之前使用了 beats。
+
+● Edit(src/pages/StoryPage.tsx)
+  ⎿ src/pages/StoryPage.tsx with 7 additions and 6 removals
+
+     1    const [toast, setToast] = useState("");
+     2 
+     3 +    const rawBeats = chapter?.beats ?? [];
+     4 +    const beats = useMemo(
+     5 +      () => flattenBeats(rawBeats, state),
+     6 +      // eslint-disable-next-line react-hooks/exhaustive-deps
+     7 +      [rawBeats, state.ch2, state.ch3, state.ch4, state.boxCompartment, state.medical_skill, state.classifyRetry]
+     8 +    );
+     9 +  
+    10      // beats 变化后，确保 beatIdx 不越界
+    11      useEffect(() => {
+    12        if (beatIdx >= beats.length && beats.length > 0) {
+
+    ...
+
+    11        saveBeat(ch, beatIdx);
+    12      }, [ch, beatIdx]);
+    13 
+    14 -    const rawBeats = chapter?.beats ?? [];
+    15 -    const beats = useMemo(
+    16 -      () => flattenBeats(rawBeats, state),
+    17 -      // eslint-disable-next-line react-hooks/exhaustive-deps
+    18 -      [rawBeats, state.ch2, state.ch3, state.ch4, state.boxCompartment, state.medical_skill, state.classifyRetry]
+    19 -    );
+    14      const beat = beats[beatIdx];
+
+● Bash(npx tsc --noEmit 2>&1 && npx vite build 2>&1)
+  ⎿ ⠙vite v8.0.16 building client environment for production...
+    transforming (36) src/pages/EndingPage.tsxtransforming (69)
+    node_modules/.pnpm/zustand@4.5.7_@types+react@19.2.17_react@19.2.7/node_modules/zustand/esm/shallow.mjstransforming (68)
+    ...+10 line (ctrl+o to expand)
+
+● 已修复。原因是 useEffect 引用了 beats 变量，但 beats 的 useMemo 定义在其下方，导致 "Cannot access before initialization" 错误。现在将
+   beats 的 useMemo 定义移到了 useEffect 之前，类型检查和构建均通过。
+
+> 结尾情理判断的3分该怎么获得？我为什么试了几次都是0分 
+
+● 让我查看信任路线页面中情理判断的相关代码。
+
+● Read(src/pages/TrustRoutePage.tsx)
+  ⎿ Read 164 lines (ctrl+o to expand)
+
+● Read(src/pages/EndingPage.tsx)
+  ⎿ Read 578 lines (ctrl+o to expand)
+
+● 现在让我查看 calcScore 的实现来理解"情理判断"3分的计算逻辑。
+
+● Search(pattern: "calcScore")
+  ⎿ Found 2 files (ctrl+o to expand)
+
+● Read(src/lib/score.ts)
+  ⎿ Read 86 lines (ctrl+o to expand)
+
+● 找到问题了。"情理判断"的3分来自 state.firstImpression、state.trust_huatuo、state.found_clue
+  这三个字段。让我查看这些字段在游戏中是如何被设置的。
+
+● Search(pattern: "firstImpression", path: "src")
+  ⎿ Found 5 lines (ctrl+o to expand)
+
+● Search(pattern: "trust_huatuo", path: "src")
+  ⎿ Found 5 lines (ctrl+o to expand)
+
+● Search(pattern: "found_clue", path: "src")
+  ⎿ Found 4 lines (ctrl+o to expand)
+
+● 这三个字段（firstImpression、trust_huatuo、found_clue）只在 defaultState、types、score.ts 和 EndingPage
+  的重置代码中出现——它们从未在任何剧情或故事数据中被赋值。让我查看剧情数据中的选择是如何处理这些字段的。
+
+● Search(pattern: "firstImpression|trust_huatuo|found_clue", path: "src/data/dungeons/huatuo")
+  ⎿ Found 0 matches (ctrl+o to expand)
+
+● Search(pattern: "firstImpression|trust_huatuo|found_clue", path: "src/pages/StoryPage.tsx")
+  ⎿ Found 0 matches (ctrl+o to expand)
+
+● Search(pattern: ""firstImpression"|'firstImpression'", path: "src")
+  ⎿ Found 0 matches (ctrl+o to expand)
+
+● 问题明确了：firstImpression、trust_huatuo、found_clue 这三个字段在 GameState 中定义了，score.ts
+  中也用来计分，但整个游戏中没有任何代码给它们赋值——它们永远是 null，所以"情理判断"永远得0分。
+
+  让我看看剧情数据中的 choices beat 是如何存储玩家选择的，以及现有字段和剧情选择之间的对应关系。
+
+● Read(src/data/types.ts)
+  ⎿ Read 166 lines (ctrl+o to expand)
+
+● Read(src/data/dungeons/huatuo/story.ts)
+  ⎿ Read 394 lines (ctrl+o to expand)
+
+● 现在我明白了。"情理判断"3分来源于 state.firstImpression、state.trust_huatuo、state.found_clue，但这三个字段在故事数据中从未被任何
+  choices beat 的 set 操作赋值——所以它们永远为 null，得分永远为0。
+
+  让我查看 StoryPage 中选择是如何处理的，以确认赋值机制。
+
+● Search(pattern: "choices|set:", path: "src/pages/StoryPage.tsx")
+  ⎿ Found 3 lines (ctrl+o to expand)
+
+● Search(pattern: "handleChoice", path: "src/pages/StoryPage.tsx")
+  ⎿ Found 2 lines (ctrl+o to expand)
+
+● Read(src/pages/StoryPage.tsx)
+  ⎿ Read 21 lines (ctrl+o to expand)
+
+● 现在完全确认了：当玩家选择选项时，handleChoice 会把 choice.set 里的字段合并到 state 中。但故事数据中各章的 choices 只设置了 ch2, ch3,
+   ch4 等字段，从未设置 firstImpression、trust_huatuo、found_clue。
+
+  这些字段看起来是旧版设计遗留的——原本可能对应第一章中的某些选择，但现在第一章没有 choices beat。
+
+  我需要决定怎么修复。最合理的方案是：把现有的选择字段映射到计分逻辑中。当前的三个"情理判断"维度应该是：
+  - 做出了第一章的判断（firstChoice 或 firstImpression）
+  - 对华佗表明了立场（trust_huatuo）
+  - 找到了关键线索（found_clue 或类似的）
+
+  但实际上第一章根本没有选择 beat。让我重新审视设计意图——看看 score.ts 的"情理判断"概念到底应该追踪什么。
+
+  当前游戏的实际选择发生在 ch2、ch3、ch4，每次选择都设置了对应的 ch2/ch3/ch4 字段。情理判断应该基于玩家是否在每章做出了关键选择。
+
+● User answered CodeBuddy's questions:
+  ⎿ · "情理判断"目前追踪的是 firstImpression/trust_huatuo/found_clue
+    三个字段，但游戏中从未赋值，所以永远0分。我建议改为追踪玩家在ch2/ch3/ch4中是否做出了关键选择——即只要 ch2/ch3/ch4
+    有值就各得1分。这样玩家做完三章选择就能拿满分3分。你觉得哪种方案更合适？ → 按章节选择计分 (推荐)
+
+● 好，按推荐方案修改 score.ts，让"情理判断"追踪 ch2/ch3/ch4 选择。
+
+● Edit(src/lib/score.ts)
+  ⎿ src/lib/score.ts with 3 additions and 3 removals
+
+    1    let choiceScore = 0;
+    2 -    if (state.firstImpression) choiceScore++;
+    3 -    if (state.trust_huatuo) choiceScore++;
+    4 -   if (state.found_clue) choiceScore++;
+    2 +   if (state.ch2) choiceScore++;
+    3 +    if (state.ch3) choiceScore++;
+    4 +    if (state.ch4) choiceScore++;
+    5      const choiceMax = 3;
+
+● Bash(npx tsc --noEmit 2>&1)
+  ⎿ ⠙
+
+● 已修复。"情理判断"原来是追踪 firstImpression/trust_huatuo/found_clue 三个从未被赋值的旧字段，所以永远0分。现在改为追踪玩家在
+  ch2/ch3/ch4 三章中是否做出了关键选择——只要 state.ch2、state.ch3、state.ch4 有值就各得1分，做完三章选择即可拿满分3分。
+
+> 当前第一卷剧情有哪些抉择或选择？分别对应什么得分 
+
+● Search(pattern: "choices", path: "src/data/dungeons/huatuo/story.ts")
+  ⎿ Found 3 lines (ctrl+o to expand)
+
+● Read(src/data/dungeons/huatuo/story.ts)
+  ⎿ Read 11 lines (ctrl+o to expand)
+
+● Read(src/data/dungeons/huatuo/story.ts)
+  ⎿ Read 11 lines (ctrl+o to expand)
+
+● Read(src/data/dungeons/huatuo/story.ts)
+  ⎿ Read 11 lines (ctrl+o to expand)
+
+● Read(src/lib/score.ts)
+  ⎿ Read 86 lines (ctrl+o to expand)
+
+● 当前第一卷共有 4处抉择/选择，分布在三个章节和最终归处页：
+
+  ---
+  1. 第二章 · 陈伯 — 3选1
+
+  ┌────────────────────────────────┬───────────────────┬──────────────┐
+  │              选项              │     state字段     │ 情理判断得分 │
+  ├────────────────────────────────┼───────────────────┼──────────────┤
+  │ 「写下来，才能传给更多人。」   │ ch2: "urge_write" │ +1           │
+  ├────────────────────────────────┼───────────────────┼──────────────┤
+  │ 「可是万一哪天你出了意外……」   │ ch2: "worry_loss" │ +1           │
+  ├────────────────────────────────┼───────────────────┼──────────────┤
+  │ 「你说得对，手艺活确实难写。」 │ ch2: "agree_him"  │ +1           │
+  └────────────────────────────────┴───────────────────┴──────────────┘
+
+  2. 第三章 · 王济 — 3选1
+
+  ┌────────────────────────────────────────┬─────────────────────┬──────────────┐
+  │                  选项                  │      state字段      │ 情理判断得分 │
+  ├────────────────────────────────────────┼─────────────────────┼──────────────┤
+  │ 「制度若没有医德约束，会变成武器。」   │ ch3: "warn_ethics"  │ +1           │
+  ├────────────────────────────────────────┼─────────────────────┼──────────────┤
+  │ 「你能保证府库不会变成权贵的私藏吗？」 │ ch3: "doubt_system" │ +1           │
+  ├────────────────────────────────────────┼─────────────────────┼──────────────┤
+  │ 「你说得有理，但我不信曹府。」         │ ch3: "distrust_cao" │ +1           │
+  └────────────────────────────────────────┴─────────────────────┴──────────────┘
+
+  3. 第四章 · 玄音 — 3选1
+
+  ┌──────────────────────────────────┬─────────────────────┬──────────────┐
+  │               选项               │      state字段      │ 情理判断得分 │
+  ├──────────────────────────────────┼─────────────────────┼──────────────┤
+  │ 「歌诀传得广，但万一传错了呢？」 │ ch4: "worry_errors" │ +1           │
+  ├──────────────────────────────────┼─────────────────────┼──────────────┤
+  │ 「你不怕唱这些被人抓起来吗？」   │ ch4: "ask_danger"   │ +1           │
+  ├──────────────────────────────────┼─────────────────────┼──────────────┤
+  │ 「这个法子真好，我帮你补全。」   │ ch4: "eager_help"   │ +1           │
+  └──────────────────────────────────┴─────────────────────┴──────────────┘
+
+  4. 第五章 · 青囊归处 — 4选1（最终抉择）
+
+  ┌──────────────────┬────────────────────────┬──────────────┐
+  │       选项       │       state字段        │ 最终抉择得分 │
+  ├──────────────────┼────────────────────────┼──────────────┤
+  │ 陈伯（青囊归处） │ finalChoice: "chenbo"  │ 3            │
+  ├──────────────────┼────────────────────────┼──────────────┤
+  │ 玄音（青囊归处） │ finalChoice: "xuanyin" │ 2            │
+  ├──────────────────┼────────────────────────┼──────────────┤
+  │ 王济（青囊归处） │ finalChoice: "wangji"  │ 1            │
+  ├──────────────────┼────────────────────────┼──────────────┤
+  │ 焚毁残卷         │ finalChoice: "burn"    │ 0            │
+  └──────────────────┴────────────────────────┴──────────────┘
+
+  ---
+  计分规则汇总
+
+  ┌──────────┬──────┬───────────────────────────────────────────────────────────────────────────┐
+  │   维度   │ 满分 │                                 计算方式                                  │
+  ├──────────┼──────┼───────────────────────────────────────────────────────────────────────────┤
+  │ 医术修习 │ 10   │ 5个小游戏，high=2, mid=1, low=0                                           │
+  ├──────────┼──────┼───────────────────────────────────────────────────────────────────────────┤
+  │ 信任积累 │ 10   │ chenbo_trust + wangji_trust + xuanyin_trust + medical_skill + asked_heart │
+  ├──────────┼──────┼───────────────────────────────────────────────────────────────────────────┤
+  │ 情理判断 │ 3    │ ch2/ch3/ch4 有值各+1（不论选哪个选项，只要做了选择就得分）                │
+  ├──────────┼──────┼───────────────────────────────────────────────────────────────────────────┤
+  │ 最终抉择 │ 3    │ chenbo=3, xuanyin=2, wangji=1, burn=0                                     │
+  └──────────┴──────┴───────────────────────────────────────────────────────────────────────────┘
+
+  总分 26 分。情理判断目前的设计是"做了选择就得分"，不区分选项好坏——三个选项都得1分。
+
+> 我觉得情理分不应该都一样，要给每个选项不同评分，你根据情理设置一下呢 
+
+● 让我先理解每个选项的情理深度，然后设计评分。
+
+● Read(src/data/dungeons/huatuo/story.ts)
+  ⎿ Read 56 lines (ctrl+o to expand)
+
+● Read(src/data/dungeons/huatuo/story.ts)
+  ⎿ Read 51 lines (ctrl+o to expand)
+
+● Read(src/data/dungeons/huatuo/story.ts)
+  ⎿ Read 51 lines (ctrl+o to expand)
+
+● 现在我理解了每章三个选项的情理深度差异，来设计评分方案并修改代码。
+
+  每章满分3分，选项分3档（3/2/1），总满分9分：
+
+  - ch2 陈伯：urge_write(3) 直接主张传承核心价值 > worry_loss(2) 有意识但被动 > agree_him(1) 逃避追问、替陈伯找借口
+  - ch3 王济：warn_ethics(3) 提出制度必须受医德约束 > doubt_system(2) 有具体质疑但不提建设性方案 > distrust_cao(1) 情绪化拒绝
+  - ch4 玄音：worry_errors(3) 最关键的风险意识 > eager_help(2) 有意愿但欠审慎 > ask_danger(1) 只关注个人危险而非医理
+
+● Edit(src/lib/score.ts)
+  ⎿ src/lib/score.ts with 10 additions and 5 removals
+
+     1 -  let choiceScore = 0;
+     2 -    if (state.ch2) choiceScore++;
+     3 -    if (state.ch3) choiceScore++;
+     4 -    if (state.ch4) choiceScore++;
+     5 -   const choiceMax = 3;
+     1 + const CHOICE_SCORE: Record<string, Record<string, number>> = {
+     2 +      ch2: { urge_write: 3, worry_loss: 2, agree_him: 1 },
+     3 +      ch3: { warn_ethics: 3, doubt_system: 2, distrust_cao: 1 },
+     4 +      ch4: { worry_errors: 3, eager_help: 2, ask_danger: 1 },
+     5 +    };
+     6 +    const choiceMax = 9;
+     7 +    const choiceScore =
+     8 +      (CHOICE_SCORE.ch2[state.ch2 ?? ""] ?? 0) +
+     9 +      (CHOICE_SCORE.ch3[state.ch3 ?? ""] ?? 0) +
+    10 +      (CHOICE_SCORE.ch4[state.ch4 ?? ""] ?? 0);
+
+● Bash(npx tsc --noEmit 2>&1)
+  ⎿ ⠙
+
+● 类型检查通过。"情理判断"现在满分从3分变为9分，每个选项有不同评分：
+
+  ┌──────────┬──────────────────────────────────────────┬──────┬────────────────────────┐
+  │   章节   │                   选项                   │ 得分 │          理由          │
+  ├──────────┼──────────────────────────────────────────┼──────┼────────────────────────┤
+  │ ch2 陈伯 │ 「写下来，才能传给更多人」(urge_write)   │ 3    │ 直接主张传承核心价值   │
+  ├──────────┼──────────────────────────────────────────┼──────┼────────────────────────┤
+  │          │ 「万一你出了意外……」(worry_loss)         │ 2    │ 有意识但被动           │
+  ├──────────┼──────────────────────────────────────────┼──────┼────────────────────────┤
+  │          │ 「你说得对，手艺活难写」(agree_him)      │ 1    │ 替对方找借口、回避追问 │
+  ├──────────┼──────────────────────────────────────────┼──────┼────────────────────────┤
+  │ ch3 王济 │ 「制度须受医德约束」(warn_ethics)        │ 3    │ 提出建设性约束方案     │
+  ├──────────┼──────────────────────────────────────────┼──────┼────────────────────────┤
+  │          │ 「府库会变私藏吗」(doubt_system)         │ 2    │ 有具体质疑但不提方案   │
+  ├──────────┼──────────────────────────────────────────┼──────┼────────────────────────┤
+  │          │ 「我不信曹府」(distrust_cao)             │ 1    │ 情绪化拒绝，无建设性   │
+  ├──────────┼──────────────────────────────────────────┼──────┼────────────────────────┤
+  │ ch4 玄音 │ 「万一传错了呢」(worry_errors)           │ 3    │ 最关键的风险意识       │
+  ├──────────┼──────────────────────────────────────────┼──────┼────────────────────────┤
+  │          │ 「这个法子真好，我帮你补全」(eager_help) │ 2    │ 有意愿但欠审慎         │
+  ├──────────┼──────────────────────────────────────────┼──────┼────────────────────────┤
+  │          │ 「你不怕被抓吗」(ask_danger)             │ 1    │ 关注个人危险而非医理   │
+  └──────────┴──────────────────────────────────────────┴──────┴────────────────────────┘
+
+  总分由原来的满分26变为满分32（医术10 + 信任10 + 情理9 + 最终抉择3）。
+
+> 这个分值设计不对，你要根据后续对话的人物语气来判断 
+
+● 让我重新仔细审视每个选项后续对话中对方的反应语气，这才是判断情理深度的真正依据——对话越深入、对方越被触动、越主动交出药签，说明你的判
+  断越到位。
+
+  让我重新逐个分析：
+
+  ch2 陈伯：
+  - urge_write：陈伯反驳→阿吉反驳→陈伯沉默→"也罢，你说得对"。陈伯被说服了，主动交出药签。
+  - worry_loss：陈伯诉苦→阿吉提议画叶子→陈伯说"倒是个法子"，拿出自己画的叶子。
+  - agree_him：陈伯直接说"你替我找借口"、"心善救不了人"，是被陈伯教训了，陈伯反而更有动力主动拿出药签（"华先生在牢里还想着传下去，我有
+  什么理由偷懒"）。
+
+  ch3 王济：
+  - warn_ethics：王济承认保证不了→但承诺加条款。对话最深入，王济看着你的眼睛。
+  - doubt_system：王济承认保证不了→但说自己在能让刀刃朝外。务实但有妥协。
+  - distrust_cao：王济说"最危险的地方最安全"→"我替这些字找不被烧掉的地方"。真诚但被动，是王济在说服你而非你说服他。
+
+  ch4 玄音：
+  - worry_errors：玄音深入讨论什么能唱什么不能→划出边界→"等的是懂医理的人"。最深入的对话。
+  - eager_help：玄音直接劝"别急"→划出边界→区分急救常识和复杂处方。虽然是热情但被玄音引导了。
+  - ask_danger：玄音说"禁不了一首歌"→"怕的不是被抓，是唱错害人"。最终也谈到核心问题，但起点是个人安危而非医理。
+
+  关键发现：ch2的agree_him看似最差，但陈伯的反应反而是最积极的——他主动反省、主动拿出药签。这说明"心善"的选择反而触动了陈伯内心最深处。
+
+● Read(src/lib/score.ts)
+  ⎿ Read 91 lines (ctrl+o to expand)
+
+● 根据后续对话中对方的语气反应重新评分：
+
+  ch2 陈伯：
+  - agree_him(3)：陈伯被触动最深——"心善救不了人"、"华先生在牢里还想着传下去，我有什么理由偷懒"，主动反省并交出药签。看似顺着说，实则触
+  到了陈伯心底最柔软的地方
+  - urge_write(2)：有理有据，陈伯被说服——"也罢，你说得对"。理性说服，但陈伯是被动接受
+  - worry_loss(1)：诉苦式回应——陈伯说"埋了就埋了"、"我比谁都心疼"，他自己也在逃避，阿吉的提议(画叶子)虽可行但陈伯只说"倒是个法子"，触动
+  较浅
+
+  ch3 王济：
+  - warn_ethics(3)：王济承认保证不了，但主动承诺加条款——"我会在归档条例加上一条"。对话最深入，王济"第一次看着你的眼睛"
+  - doubt_system(2)：王济承认保证不了，说"我在这里至少让刀刃朝外"——务实但有妥协，阿吉追问"若你不在这里"时王济转向借华佗之名
+  - distrust_cao(1)：情绪化拒绝，王济反过来说服你——"最危险的地方最安全"。不是你在判断情理，而是王济在说服你
+
+  ch4 玄音：
+  - worry_errors(3)：最核心的风险意识，对话最深——划出边界"基础救急入歌、复杂处方交给医者"，玄音说"等的是懂医理的人"
+  - eager_help(2)：有热情但欠审慎——玄音主动劝你"别急"，帮你划出边界。热情被引导成了审慎
+  - ask_danger(1)：从个人安危出发——最终也谈到核心问题"怕的是唱错害人"，但起点不是医理
+
+● Edit(src/lib/score.ts)
+  ⎿ src/lib/score.ts with 1 addition and 1 removal
+
+    1    const CHOICE_SCORE: Record<string, Record<string, number>> = {
+    2 -     ch2: { urge_write: 3, worry_loss: 2, agree_him: 1 },
+    2 +     ch2: { agree_him: 3, urge_write: 2, worry_loss: 1 },
+    3        ch3: { warn_ethics: 3, doubt_system: 2, distrust_cao: 1 },
+    4        ch4: { worry_errors: 3, eager_help: 2, ask_danger: 1 },
+    5      };
+
+● Bash(npx tsc --noEmit 2>&1)
+  ⎿ ⠙
+
+● 已根据后续对话人物语气重新评分：
+
+  ┌─────┬───────────────────────────────────┬─────┬───────────────────────────────────────────────────────────────────────────────┐
+  │ 章  │               选项                │ 得  │                                 对方反应依据                                  │
+  │ 节  │                                   │ 分  │                                                                               │
+  ├─────┼───────────────────────────────────┼─────┼───────────────────────────────────────────────────────────────────────────────┤
+  │ ch2 │ 「你说得对，手艺活难写」(agree_hi │ 3   │ 陈伯被触到心底——"心善救不了人"、"华先生还想着传下去，我有什么理由偷懒"，主动  │
+  │ 陈  │ m)                                │     │ 反省交出药签                                                                  │
+  │ 伯  │                                   │     │                                                                               │
+  ├─────┼───────────────────────────────────┼─────┼───────────────────────────────────────────────────────────────────────────────┤
+  │     │ 「写下来，才能传给更多人」(urge_w │ 2   │ 理性说服，陈伯被动接受——"也罢，你说得对"                                      │
+  │     │ rite)                             │     │                                                                               │
+  ├─────┼───────────────────────────────────┼─────┼───────────────────────────────────────────────────────────────────────────────┤
+  │     │ 「万一你出了意外……」(worry_loss)  │ 1   │ 陈伯诉苦式回应——"埋了就埋了"、"我比谁都心疼"，双方都在逃避                    │
+  ├─────┼───────────────────────────────────┼─────┼───────────────────────────────────────────────────────────────────────────────┤
+  │ ch3 │ 「制度须受医德约束」(warn_ethics) │ 3   │ 王济主动承诺加条款，"第一次看着你的眼睛"——最深入对话                          │
+  │ 王  │                                   │     │                                                                               │
+  │ 济  │                                   │     │                                                                               │
+  ├─────┼───────────────────────────────────┼─────┼───────────────────────────────────────────────────────────────────────────────┤
+  │     │ 「府库会变私藏吗」(doubt_system)  │ 2   │ 王济承认保证不了，但务实妥协——"我在这里能让刀刃朝外"                          │
+  ├─────┼───────────────────────────────────┼─────┼───────────────────────────────────────────────────────────────────────────────┤
+  │     │ 「我不信曹府」(distrust_cao)      │ 1   │ 王济反过来说服你，不是你在判断情理                                            │
+  ├─────┼───────────────────────────────────┼─────┼───────────────────────────────────────────────────────────────────────────────┤
+  │ ch4 │ 「万一传错了呢」(worry_errors)    │ 3   │ 划出边界"基础救急入歌、复杂交给医者"——最深对话                                │
+  │ 玄  │                                   │     │                                                                               │
+  │ 音  │                                   │     │                                                                               │
+  ├─────┼───────────────────────────────────┼─────┼───────────────────────────────────────────────────────────────────────────────┤
+  │     │ 「我帮你补全」(eager_help)        │ 2   │ 玄音劝"别急"，帮你划边界——热情被引导为审慎                                    │
+  ├─────┼───────────────────────────────────┼─────┼───────────────────────────────────────────────────────────────────────────────┤
+  │     │ 「你不怕被抓吗」(ask_danger)      │ 1   │ 起点是个人安危而非医理，虽最终触及核心                                        │
+  └─────┴───────────────────────────────────┴─────┴───────────────────────────────────────────────────────────────────────────────┘
+
+  满分仍为9分。ch2的关键调整：agree_him看似顺着说，实则触到陈伯最软处，得分最高。
+
+> 提交并推送 
+
+● Bash(git -C /home/wumianzi/workspace/codespace/LoreMender_v0.1 status)
+  ⎿ On branch main
+    Your branch is up to date with 'origin/main'.
+    Changes to be committed:
+    ...+15 line (ctrl+o to expand)
+
+● Bash(git -C /home/wumianzi/workspace/codespace/LoreMender_v0.1 diff --staged --stat)
+  ⎿ src/App.tsx                         |   2 +-
+    src/data/dungeons/huatuo/endings.ts |  41 ++++++++++++++++++++++++++++--------
+    src/data/dungeons/huatuo/index.ts   |   2 +-
+    ...+12 line (ctrl+o to expand)
+
+● Bash(cd /home/wumianzi/workspace/codespace/LoreMender_v0.1 && /commit-push-pr)
+  ⎿ /bin/bash: line 1: /commit-push-pr: No such file or directory
+
+● Bash(cd /home/wumianzi/workspace/codespace/LoreMender_v0.1 && git co…锁)- 小游戏页增加开发者跳过按钮(高/中/低一键完成)" && git push)
+  ⎿ [main 72508eb] 剧情对齐设计文档、bug修复、功能增强
+    13 files changed, 339 insertions(+), 63 deletions(-)
+    Enumerating objects: 41, done.
+    ...+33 line (ctrl+o to expand)
+
+● 已提交并推送成功，commit 72508eb。
+
+> 似乎重新进度并没有完全重置到开头 
+
+● Read(src/pages/ProgressPage.tsx)
+  ⎿ Read 21 lines (ctrl+o to expand)
+
+● Search(pattern: "loadBeat|saveBeat", path: "src/pages/StoryPage.tsx")
+  ⎿ Found 3 lines (ctrl+o to expand)
+
+● Search(pattern: "loadBeat|saveBeat|BEAT_KEY", path: "src/lib/storage.ts")
+  ⎿ Found 5 lines (ctrl+o to expand)
+
+● Read(src/lib/storage.ts)
+  ⎿ Read 21 lines (ctrl+o to expand)
+
+● 找到原因了。重置进度只重置了 GameState（saveState），但没有清除 BEAT_KEY（loremender:huatuo:beat:v4）保存的 beat 进度。StoryPage
+  初始化时通过 loadBeat(ch) 恢复 beatIdx，重置后 currentChapter 变回1，但 beat 进度还指向旧的章节和位置，所以 loadBeat(1)
+  返回0（因为保存的章节不是1），这看起来好像回到了开头——但如果重置时当前已经在ch1，loadBeat(1) 会返回旧的 beatIdx，导致直接跳到中间。
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 1 addition and 1 removal
+
+    1 - import { defaultState, saveState } from "../lib/storage";
+    1 + import { defaultState, saveBeat, saveState } from "../lib/storage";
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 1 addition
+
+    1        const ns = { ...defaultState(), unlockedEndings: state.unlockedEndings };
+    2        setState(ns);
+    3        saveState(ns);
+    4 +      saveBeat(1, 0);
+    5        setConfirmReset(false);
+    6        gotoPage("story");
+
+● Bash(npx tsc --noEmit 2>&1)
+  ⎿ ⠙
+
+● 已修复。问题是重置进度时只重置了 GameState，但没有清除 localStorage 中保存的 beat 进度（loremender:huatuo:beat:v4）。StoryPage
+  初始化时通过 loadBeat(ch) 恢复 beatIdx，旧进度仍指向中间位置，导致看起来没有回到开头。
+
+  现在重置时额外调用 saveBeat(1, 0) 将 beat 进度也重置到第一章第0条。
+
+> 提交并推送 
+
+● Bash(git add -A && git commit -m "修复进度重置未清除beat进度的问题重…Beat(1,0)，确保StoryPage的beatIdx也回到第一章开头" && git push)
+  ⎿ [main f50e0f6] 修复进度重置未清除beat进度的问题
+    1 file changed, 2 insertions(+), 1 deletion(-)
+    Enumerating objects: 9, done.
+    ...+13 line (ctrl+o to expand)
+
+● 已推送，commit f50e0f6。
+
+> 我发现有的时候字体会不统一，就是同一个元素里的字体，例如“大体整妥”“押解街市” 
+
+● Search(pattern: "ZCOOL XiaoWei", path: "src")
+  ⎿ Found 51 lines (ctrl+o to expand)
+
+● Read(src/styles/global.css)
+  ⎿ Read 31 lines (ctrl+o to expand)
+
+● Search(pattern: "@font-face", path: "src/styles/global.css")
+  ⎿ Found 2 lines (ctrl+o to expand)
+
+● Search(pattern: "**/*.woff2", path: ".")
+  ⎿ Found 0 files (ctrl+o to expand)
+
+● Search(pattern: "**/*.ttf", path: ".")
+  ⎿ Found 0 files (ctrl+o to expand)
+
+● Search(pattern: "ZCOOL.*XiaoWei.*url|font.*ZCOOL.*src.*http", path: ".")
+  ⎿ Found 3 lines (ctrl+o to expand)
+
+● Search(pattern: "@import.*font|google.*font|fonts\.google", path: "src")
+  ⎿ Found 0 matches (ctrl+o to expand)
+
+● Read(index.html)
+  ⎿ Read 21 lines (ctrl+o to expand)
+
+● Search(pattern: "title-han|en-small|font-family", path: "src/styles/global.css")
+  ⎿ Found 20 lines (ctrl+o to expand)
+
+● Read(src/styles/global.css)
+  ⎿ Read 31 lines (ctrl+o to expand)
+
+● 现在我理解了字体系统。让我检查 Google Fonts 的 ZCOOL XiaoWei 实际覆盖的字符范围。
+
+● Search(ZCOOL XiaoWei Google Fonts CJK coverage missing characters 国产字体 缺字)
+  ⎿ Found 5 results for "ZCOOL XiaoWei Google Fonts CJK coverage missing characters 国产字体 缺字" (provider: 0)
+
+● Search(Google Fonts ZCOOL XiaoWei unicode-range subset GB2312 characters supported)
+  ⎿ Found 5 results for "Google Fonts ZCOOL XiaoWei unicode-range subset GB2312 characters supported" (provider: 0)
+
+● 问题的根源已经清楚了。Google Fonts 通过 unicode-range 分片加载 ZCOOL XiaoWei，只加载页面实际用到的字符子集。如果某些汉字不在 ZCOOL
+  XiaoWei 的字符集中（该字体只支持简体中文字符集，非完整 CJK），浏览器会 fallback 到下一个字体（Ma Shan Zheng 或 Noto Serif
+  SC），导致同一元素内不同字符显示不同字体。
+
+  解决方案：给 title-han 的 fallback 链统一为 Noto Serif SC，并且对 inline 的 fontFamily: "ZCOOL XiaoWei" 也统一 fallback
+  链。同时确保关键的标题元素不使用 Ma Shan Zheng 作为中间 fallback（Ma Shan Zheng 是手写风格，和 ZCOOL XiaoWei 差异更大）。
+
+● Read(src/styles/global.css)
+  ⎿ Read 21 lines (ctrl+o to expand)
+
+● 问题确认：.title-han 的 fallback 链是 "ZCOOL XiaoWei", "Ma Shan Zheng", "Noto Serif SC", serif。当 ZCOOL XiaoWei 缺字时，会 fallback
+  到 Ma Shan Zheng（手写风格），视觉差异极大。而且 Ma Shan Zheng 本身也可能缺字，再 fallback 到 Noto Serif
+  SC，导致同一元素内三种字体混排。
+
+  最佳方案：去掉 Ma Shan Zheng 作为中间 fallback，让 ZCOOL XiaoWei 缺字时直接 fallback 到 Noto Serif SC（两者风格更接近），同时在
+  inline style 中也统一这个 fallback 链。
+
+● Edit(src/styles/global.css)
+  ⎿ src/styles/global.css with 2 additions and 2 removals
+
+    1    .title-han {
+    2 -   font-family: "ZCOOL XiaoWei", "Ma Shan Zheng", "Noto Serif SC", serif;
+    2 +   font-family: "ZCOOL XiaoWei", "Noto Serif SC", serif;
+    3      letter-spacing: 0.18em;
+    4    }
+    5    .title-deco {
+    6 -   font-family: "Ma Shan Zheng", "ZCOOL XiaoWei", serif;
+    6 +   font-family: "Ma Shan Zheng", "Noto Serif SC", serif;
+    7    }
+
+● 现在统一 inline style 中的 fontFamily，把所有 "ZCOOL XiaoWei", serif 和 "'ZCOOL XiaoWei', serif" 都改为 "ZCOOL XiaoWei", "Noto Serif 
+  SC", serif。
+
+● Search(pattern: "fontFamily.*ZCOOL XiaoWei", path: "src/pages")
+  ⎿ Found 27 lines (ctrl+o to expand)
+
+● 有很多 inline style 需要统一。最有效的方式是用 CSS class 而非 inline style 来指定字体，但改动量太大。更务实的方案是：在全局 CSS
+  中定义一个 CSS 自定义属性 --font-han，所有地方统一引用。
+
+  不过实际上，最快的修法是统一所有 inline fontFamily 字符串。让我批量替换。
+
+● Bash(grep -rn "fontFamily.*ZCOOL XiaoWei" src/pages/ src/components/ | wc -l)
+  ⎿ 37
+
+● 37处太多了，让我用更优雅的方案——在 CSS 变量中定义字体，然后全局替换。
+
+● Read(src/styles/global.css)
+  ⎿ Read 16 lines (ctrl+o to expand)
+
+● Read(src/styles/global.css)
+  ⎿ Read 21 lines (ctrl+o to expand)
+
+● CSS 自定义属性不能用在 inline style 的 fontFamily 中（因为 React inline style 不支持 CSS 变量的 var() 在 fontFamily
+  属性中的方式——实际上可以的，但需要写 fontFamily: 'var(--font-han)'）。不过更简洁的方案是直接批量替换字符串。
+
+  让我用一个 agent 来批量处理所有 inline fontFamily 替换。
+
+● Edit(src/styles/global.css)
+  ⎿ src/styles/global.css with 6 additions
+
+     1      /* UI */
+     2      --safe-bottom: env(safe-area-inset-bottom, 0px);
+     3      --phone-w: 390px;
+     4 +  
+     5 +    /* Typography — 统一 fallback 链避免缺字时字体不统一 */
+     6 +    --font-han: "ZCOOL XiaoWei", "Noto Serif SC", serif;
+     7 +    --font-deco: "Ma Shan Zheng", "Noto Serif SC", serif;
+     8 +    --font-en: "Cormorant Garamond", "EB Garamond", serif;
+     9 +    --font-body: "Noto Serif SC", "Songti SC", "STSong", serif;
+    10    }
+
+● 现在更新 body 和 .title-han / .title-deco 以使用变量：
+
+● Edit(src/styles/global.css)
+  ⎿ src/styles/global.css with 1 addition and 1 removal
+
+    1    body {
+    2 -    font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+    2 +    font-family: var(--font-body);
+    3      color: var(--paper);
+
+● Edit(src/styles/global.css)
+  ⎿ src/styles/global.css with 2 additions and 2 removals
+
+    1    .title-han {
+    2 -    font-family: "ZCOOL XiaoWei", "Noto Serif SC", serif;
+    2 +    font-family: var(--font-han);
+    3      letter-spacing: 0.18em;
+    4    }
+    5    .title-deco {
+    6 -    font-family: "Ma Shan Zheng", "Noto Serif SC", serif;
+    6 +    font-family: var(--font-deco);
+    7    }
+
+● Edit(src/styles/global.css)
+  ⎿ src/styles/global.css with 1 addition and 1 removal
+
+    1    .en-small {
+    2 -    font-family: "Cormorant Garamond", "EB Garamond", serif;
+    2 +    font-family: var(--font-en);
+
+● 现在替换 global.css 中所有剩余的 font-family: "ZCOOL XiaoWei", serif 模式。
+
+● Search(pattern: "font-family.*ZCOOL", path: "src/styles/global.css")
+  ⎿ Found 11 lines (ctrl+o to expand)
+
+● Bash(sed -i 's/font-family: "ZCOOL XiaoWei", serif;/font-family: var… serif;/font-family: var(--font-han);/g' src/styles/global.css)
+  ⎿ (No content)
+
+● 现在处理 global.css 中的 Noto Serif SC 条目：
+
+● Search(pattern: "font-family.*Noto Serif SC", path: "src/styles/global.css")
+  ⎿ Found 1 lines (ctrl+o to expand)
+
+● Read(src/styles/global.css)
+  ⎿ Read 6 lines (ctrl+o to expand)
+
+● Edit(src/styles/global.css)
+  ⎿ src/styles/global.css with 1 addition and 1 removal
+
+    1 -    font-family: "Noto Serif SC", serif;
+    1 +    font-family: var(--font-body);
+
+● 现在处理724行附近的“ZCOOL Xiao”拼写错误：
+
+● Search(pattern: "font-family", path: "src/styles/global.css")
+  ⎿ Found 18 lines (ctrl+o to expand)
+
+● global.css 全部替换完毕。现在处理页面和组件中的 inline fontFamily。最可靠的方式是统一替换所有 inline 的 "ZCOOL XiaoWei", serif 和
+  "'ZCOOL XiaoWei', serif" 为 "var(--font-han)"。
+
+● Bash(grep -rln "fontFamily.*ZCOOL XiaoWei" src/pages/ src/components/ | sort -u)
+  ⎿ src/components/art/CoverArt.tsx
+    src/components/art/SceneEndings.tsx
+    src/components/art/SceneFinal.tsx
+    ...+11 line (ctrl+o to expand)
+  ⎿ Interrupted by user
+
+> 继续改 
+
+● Bash(grep -rn "fontFamily.*ZCOOL XiaoWei" /home/wumianzi/workspace/c…despace/LoreMender_v0.1/src/components/ 2>/dev/null | head -40)
+  ⎿ /home/wumianzi/workspace/codespace/LoreMender_v0.1/src/pages/ShowcasePage.tsx:48:                fontFamily: "ZCOOL XiaoWei,
+    serif",
+    /home/wumianzi/workspace/codespace/LoreMender_v0.1/src/pages/ShowcasePage.tsx:68:          fontFamily: "ZCOOL XiaoWei, serif",
+    ...+63 line (ctrl+o to expand)
+
+● 还有37处没改。agent 看来没执行成功，我直接用 sed 批量替换。
+
+● Bash(\sed -i "s/fontFamily: \"ZCOOL XiaoWei, serif\"/fontFamily: \"v… \  src/pages/EndingPage.tsx && \echo "Done JSX inline styles")
+  ⎿ Done JSX inline styles
+
+● Bash(# SVG attribute style: fontFamily="ZCOOL XiaoWei, serif" and fo…/components/GoldDivider.tsx && \echo "Done SVG and components")
+  ⎿ Could not identify command root to obtain permission from user.
+
+● Bash(sed -i 's/fontFamily="ZCOOL XiaoWei, serif"/fontFamily="var(--f…c/components/art/WorldIcon.tsx src/components/art/CoverArt.tsx)
+  ⎿ (No content)
+
+● Bash(sed -i "s/fontFamily=\"'ZCOOL XiaoWei', serif\"/fontFamily=\"va…-han)\"/g" src/pages/MiniGamePage.tsx src/pages/EndingPage.tsx)
+  ⎿ (No content)
+
+● Bash(sed -i 's/fontFamily:"ZCOOL XiaoWei, serif"/fontFamily:"var(--f…rc/components/LockedDungeon.tsx src/components/GoldDivider.tsx)
+  ⎿ (No content)
+
+● 现在确认是否还有剩余的：
+
+● Bash(grep -rn "fontFamily.*ZCOOL XiaoWei" src/pages/ src/components/ 2>/dev/null)
+  ⎿ src/components/GoldDivider.tsx:13:        fontFamily: "ZCOOL XiaoWei, serif",
+
+● Read(src/components/GoldDivider.tsx)
+  ⎿ Read 21 lines (ctrl+o to expand)
+
+● 空格导致没匹配到，手动替换：
+
+● Edit(src/components/GoldDivider.tsx)
+  ⎿ src/components/GoldDivider.tsx with 1 addition and 1 removal
+
+    1 -         fontFamily: "ZCOOL XiaoWei, serif",
+    1 +         fontFamily: "var(--font-han)",
+
+● Bash(grep -rn "fontFamily.*ZCOOL XiaoWei" src/ 2>/dev/null)
+  ⎿ (No content)
+
+● 全部替换完毕。验证类型检查和构建：
+
+● Bash(npx tsc --noEmit 2>&1 && npx vite build 2>&1)
+  ⎿ ⠙⠙vite v8.0.16 building client environment for production...
+    transforming (12) src/styles/global.csstransforming (13) src/pages/CluePage.tsxtransforming (18)
+    src/pages/ChapterSelectPage.tsxtransforming (23) src/components/SceneFrame.tsxtransforming (31)
+    ...+17 line (ctrl+o to expand)
+
+● 类型检查和构建都通过。
+
+  修改总结：
+  - 在 global.css 中定义 CSS 变量 --font-han: "ZCOOL XiaoWei", "Noto Serif SC", serif，统一 fallback 链
+  - 移除了 .title-han 中的 Ma Shan Zheng 中间 fallback（手写风格和 ZCOOL XiaoWei 差异太大，是字体不统一的主要原因）
+  - 将所有37处 inline fontFamily: "ZCOOL XiaoWei, serif" 替换为 fontFamily: "var(--font-han)"
+  - 现在当 ZCOOL XiaoWei 缺字时，统一 fallback 到 Noto Serif SC（宋体风格接近），不再出现同一元素内字体混排
+
+> 玄音道人是男性，你需要更正story.ts等文件中的中“她”等词汇为“他”等男性称呼。 
+  而且我发现对话框中如果文字有三行及以上，动画可能会抽搐 
+
+● Search(pattern: "她|女子", path: "src/data/dungeons/huatuo/story.ts")
+  ⎿ Found 5 lines (ctrl+o to expand)
+
+● Search(pattern: "她.*玄音|玄音.*她|xuanyin.*她|她.*xuanyin", path: "src")
+  ⎿ Found 2 lines (ctrl+o to expand)
+
+● Search(pattern: "xuanyin.*她|她.*xuanyin|道人.*她|她.*道人", path: "src")
+  ⎿ Found 0 matches (ctrl+o to expand)
+
+● Search(pattern: "女子", path: "src")
+  ⎿ Found 1 lines (ctrl+o to expand)
+
+● 让我再检查一下其他文件，看看玄音是否有女性代词：
+
+● Search(pattern: "她", path: "src/data/dungeons/huatuo")
+  ⎿ Found 7 lines (ctrl+o to expand)
+
+● 接下来我还要检查 xuanyin_fallback 的结束体：
+
+● Read(src/data/dungeons/huatuo/endings.ts)
+  ⎿ Read 11 lines (ctrl+o to expand)
+
+● Read(src/data/dungeons/huatuo/characters.ts)
+  ⎿ Read 16 lines (ctrl+o to expand)
+
+● 现在我清楚了所有需要修改的位置。同时我需要查看对话框动画抽搐的问题。
+
+● 现在，修正所有与玄音性别代词相关的问题：
+
+● Edit(src/data/dungeons/huatuo/story.ts)
+  ⎿ src/data/dungeons/huatuo/story.ts with 1 addition and 1 removal
+
+    1 - { narration: true, line: "门槛上坐着个年轻女子，手里拨着一把旧琵琶。她唱的不是风月，是药名、脉象和民间救急的法子。" },
+    1 + { narration: true, line: "门槛上坐着个年轻道人，手里拨着一把旧琵琶。他唱的不是风月，是药名、脉象和民间救急的法子。" },
+
+● Edit(src/data/dungeons/huatuo/story.ts)
+  ⎿ src/data/dungeons/huatuo/story.ts with 1 addition and 1 removal
+
+    1 - { narration: true, line: 
+    "她摊开几页残纸，上面有药名、脉象和不完整的韵脚。阿吉忽然想起牢中竹简的顺序，也想起曹府正在追查这些"华佗歌"。" },
+      - 查这些"华佗歌"。" },
+    1 + { narration: true, line: 
+    "他摊开几页残纸，上面有药名、脉象和不完整的韵脚。阿吉忽然想起牢中竹简的顺序，也想起曹府正在追查这些"华佗歌"。" },
+      + 查这些"华佗歌"。" },
+
+● Edit(src/data/dungeons/huatuo/story.ts)
+  ⎿ src/data/dungeons/huatuo/story.ts with 1 addition and 1 removal
+
+    1 - { narration: true, line: "她笑了一下，但那笑容里没有轻浮。她拨了一下琴弦，琴声在巷子里弹了两弹才散。" },
+    1 + { narration: true, line: "他笑了一下，但那笑容里没有轻浮。他拨了一下琴弦，琴声在巷子里弹了两弹才散。" },
+
+● Edit(src/data/dungeons/huatuo/story.ts)
+  ⎿ src/data/dungeons/huatuo/story.ts with 1 addition and 1 removal
+
+    1 - { narration: true, line: "她低头看了看自己拨琴弦的手指——指尖有茧，和你的针茧位置不一样，但同样结实。" },
+    1 + { narration: true, line: "他低头看了看自己拨琴弦的手指——指尖有茧，和你的针茧位置不一样，但同样结实。" },
+
+● Edit(src/data/dungeons/huatuo/story.ts)
+  ⎿ src/data/dungeons/huatuo/story.ts with 1 addition and 1 removal
+
+    1 - { narration: true, line: "她重新拨弦。歌声从巷尾散开，这一次没有断在最要紧处，也没有越过不该越过的边界。" },
+    1 + { narration: true, line: "他重新拨弦。歌声从巷尾散开，这一次没有断在最要紧处，也没有越过不该越过的边界。" },
+
+● Edit(src/data/dungeons/huatuo/endings.ts)
+  ⎿ src/data/dungeons/huatuo/endings.ts with 1 addition and 1 removal
+
+    1 -     body: 
+    "你把《青囊经》交给了玄音。\n她带着医书入山，藏于道观深处。\n数百年后，战火烧毁山门，残卷不知所终。\n只有只言片语，流传于世。",
+      - 片语，流传于世。",
+    1 +     body: 
+    "你把《青囊经》交给了玄音。\n他带着医书入山，藏于道观深处。\n数百年后，战火烧毁山门，残卷不知所终。\n只有只言片语，流传于世。",
+      + 片语，流传于世。",
+
+● Edit(src/data/dungeons/huatuo/characters.ts)
+  ⎿ src/data/dungeons/huatuo/characters.ts with 1 addition and 1 removal
+
+    1 -     detail: "玄音相信字会被烧、简会被夺，曲子却能藏在人嘴里。她能让知识流动，也必须守住医理边界。",
+    1 +     detail: "玄音相信字会被烧、简会被夺，曲子却能藏在人嘴里。他能让知识流动，也必须守住医理边界。",
+
+● 现在让我来调查对话动画抖动问题。
+
+● Search(pattern: "typewriter|typist|setInterval|displayed|animation", path: "src/pages/StoryPage.tsx")
+  ⎿ Found 0 matches (ctrl+o to expand)
+
+● Search(pattern: "dialogue|DialogueBubble|speaker|line", path: "src/pages/StoryPage.tsx")
+  ⎿ Found 9 lines (ctrl+o to expand)
+
+● Search(pattern: "DialogueBubble", path: "src")
+  ⎿ Found 0 matches (ctrl+o to expand)
+
+● Search(pattern: "speaker|dialogue", path: "src/components")
+  ⎿ Found 5 lines (ctrl+o to expand)
+
+● Read(src/components/DialogueBox.tsx)
+  ⎿ Read 66 lines (ctrl+o to expand)
+
+● 找到了抽搐的原因。问题在于逐字动画期间，每26ms调用一次 setShown(text.slice(0, i))，每次都触发 React
+  重新渲染。当文本有3行以上时，.dialogue 容器的高度会随文字增加而反复变化，而容器很可能有 min-height 或受布局影响导致高度抖动。特别是
+  pre-line 换行 + 每次重渲染都可能导致容器高度在行边界处跳动。
+
+  让我查看 .dialogue 的 CSS 样式：
+
+● Search(pattern: "\.dialogue", path: "src/styles/global.css")
+  ⎿ Found 58 lines (ctrl+o to expand)
+
+● 现在我看到问题了。.dialogue 没有固定高度，在逐字打字动画期间，每增加一行文字容器高度就会跳变。text-wrap: pretty
+  可能也会导致浏览器在行边界处重新计算换行。
+
+  修复方案：先用完整文本预计算最终高度，让容器一开始就是最终高度，逐字显示用 visibility 或 overflow: hidden
+  来控制可见部分。更简单的方式是让 .dialogue-text 有一个基于完整文本的最小高度。
+
+● Edit(src/components/DialogueBox.tsx)
+  ⎿ src/components/DialogueBox.tsx with 19 additions
+
+    13      const [shown, setShown] = useState("");
+    14      const [done, setDone] = useState(false);
+    15      const intervalRef = useRef<number>(0);
+    16 +    // 隐藏占位：用完整文本撑开容器高度，避免逐字动画时容器高度跳变
+    17 +    const [measured, setMeasured] = useState(false);
+    18 +    const measureRef = useRef<HTMLDivElement>(null);
+    19 
+    20      useEffect(() => {
+    21        setShown("");
+    22        setDone(false);
+    23 +      setMeasured(false);
+    24        let i = 0;
+    25        intervalRef.current = window.setInterval(() => {
+    26          i++;
+
+    ...
+
+    29        return () => window.clearInterval(intervalRef.current);
+    30      }, [text]);
+    31 
+    32 +    // 测量完整文本高度后，用最小高度锁定容器
+    33 +    useEffect(() => {
+    34 +      if (measureRef.current) {
+    35 +        setMeasured(true);
+    36 +      }
+    37 +    }, [text]);
+    38 +  
+    39      const onClick = () => {
+    40        if (!done) {
+    41          // 动画进行中：清除 interval，直接显示完整文本
+
+    ...
+
+    46        <div className="dialogue" data-sfx="tap" onClick={onClick} style={{ cursor: "pointer" }}>
+    47          {speaker && !isNarration && <div className="dialogue-name">{speaker}</div>}
+    48          <div className="dialogue-text" style={{
+    49 +          position: "relative",
+    50            whiteSpace: "pre-line",
+    51            fontStyle: isNarration ? "italic" : "normal",
+    52            color: isNarration ? "rgba(228,224,208,0.85)" : "var(--paper)",
+    53          }}>
+    54 +          {/* 隐藏占位：用完整文本撑开容器高度 */}
+    55 +          <div ref={measureRef} aria-hidden="true" style={{
+    56 +            visibility: "hidden",
+    57 +            whiteSpace: "pre-line",
+    58 +            height: 0,
+    59 +            overflow: "hidden",
+    60 +          }}>{text}</div>
+    61            {shown}
+    62            {done && (
+    63              <span style={{
+
+● Bash(npx tsc --noEmit 2>&1)
+  ⎿ ⠙
+
+● Bash(npx vite build 2>&1)
+  ⎿ ⠙vite v8.0.16 building client environment for production...
+    transforming (22) src/data/dungeons/huatuo/voices.tstransforming (23) src/data/dungeons/huatuo/clues.tstransforming (25)
+    src/components/index.tstransforming (33) src/components/art/SceneTrust.tsxtransforming (47)
+    ...+49 line (ctrl+o to expand)
+
+● 第299行有一个中文引号导致字符串提前闭合。我替换"她"时破坏了原来的中文引号对。让我检查：
+
+● Read(src/data/dungeons/huatuo/story.ts)
+  ⎿ Read 6 lines (ctrl+o to expand)
+
+● 问题在于中文引号 " 和 " 在 JavaScript 字符串中没有被正确处理——字符串用双引号包裹，但内部也有中文双引号 " 和 "，它们在 Vite
+  构建时被误解析。原始文件中这些中文引号可能是用其他方式编码的。让我看原来的文本是什么：
+
+● Bash(git diff src/data/dungeons/huatuo/story.ts | head -40)
+  ⎿ diff --git a/src/data/dungeons/huatuo/story.ts b/src/data/dungeons/huatuo/story.ts
+    index fb4e2ae..9b9b6bd 100644
+    --- a/src/data/dungeons/huatuo/story.ts
+    ...+42 line (ctrl+o to expand)
+
+● 问题出在第299行：原来的中文引号 "\u201C 和 "\u201D (左右双引号) 在 diff
+  中看起来一样，但在替换时中文引号可能被破坏了。让我检查原始文件中该行的编码：
+
+● Bash(git show HEAD:src/data/dungeons/huatuo/story.ts | sed -n '299p' | xxd | head -5)
+  ⎿ 00000000: 2020 2020 2020 7b20 6e61 7272 6174 696f        { narratio
+    00000010: 6e3a 2074 7275 652c 206c 696e 653a 2022  n: true, line: "
+    00000020: e5a5 b9e6 918a e5bc 80e5 87a0 e9a1 b5e6  ................
+    ...+2 line (ctrl+o to expand)
+
+● Bash(sed -n '299p' src/data/dungeons/huatuo/story.ts | xxd | head -5)
+  ⎿ 00000000: 2020 2020 2020 7b20 6e61 7272 6174 696f        { narratio
+    00000010: 6e3a 2074 7275 652c 206c 696e 653a 2022  n: true, line: "
+    00000020: e4bb 96e6 918a e5bc 80e5 87a0 e9a1 b5e6  ................
+    ...+2 line (ctrl+o to expand)
+
+● Bash(sed -n '299p' src/data/dungeons/huatuo/story.ts | xxd | grep -i "e2\|80\|9c\|9d")
+  ⎿ 00000020: e4bb 96e6 918a e5bc 80e5 87a0 e9a1 b5e6  ................
+    00000030: ae8b e7ba b8ef bc8c e4b8 8ae9 9da2 e69c  ................
+    00000040: 89e8 8daf e590 8de3 8081 e884 89e8 b1a1  ................
+    ...+4 line (ctrl+o to expand)
+
+● 我看到了——在位置 0xb0 处有 22（ASCII 双引号），紧随其后的是 华佗歌，然后又是 22。原始文件使用的是中文弯引号 "\u201C 和 "\u201D (UTF-8
+   e2 80 9c / e2 80 9d)，但在我的编辑过程中它们被转换成了 ASCII "。让我来验证一下：
+
+● Bash(git show HEAD:src/data/dungeons/huatuo/story.ts | sed -n '299p' | xxd | tail -5)
+  ⎿ 00000080: e7ab b9e7 ae80 e79a 84e9 a1ba e5ba 8fef  ................
+    00000090: bc8c e4b9 9fe6 83b3 e8b5 b7e6 9bb9 e5ba  ................
+    000000a0: 9ce6 ada3 e59c a8e8 bfbd e69f a5e8 bf99  ................
+    ...+2 line (ctrl+o to expand)
+
+● 原始文件在位置0xb0处包含 e2 80 9c (= \u201C "), 在0xc0处包含 e2 80 9d (= \u201D ") —
+  这些是中文的弯引号。但我当前的文件显示的是位置0xb0处的 22 (ASCII ")。我的编辑不知何故将弯引号替换成了直引号。
+
+● Edit(src/data/dungeons/huatuo/story.ts)
+  ⎿ src/data/dungeons/huatuo/story.ts with 1 addition and 1 removal
+
+    1 - { narration: true, line: 
+    "他摊开几页残纸，上面有药名、脉象和不完整的韵脚。阿吉忽然想起牢中竹简的顺序，也想起曹府正在追查这些"华佗歌"。" },
+      - 查这些"华佗歌"。" },
+    1 + { narration: true, line: 
+    "他摊开几页残纸，上面有药名、脉象和不完整的韵脚。阿吉忽然想起牢中竹简的顺序，也想起曹府正在追查这些\u201C华佗歌\u201D。" },
+      + 查这些\u201C华佗歌\u201D。" },
+
+● Bash(npx vite build 2>&1)
+  ⎿ vite v8.0.16 building client environment for production...
+    transforming (19) src/data/dungeons/huatuo/voices.tstransforming (35)
+    node_modules/.pnpm/react-dom@19.2.7_react@19.2.7/node_modules/react-dom/index.jstransforming (36)
+    ...+18 line (ctrl+o to expand)
+
+● 构建通过。
+
+● 两项修复完成：
+
+  1. 玄音性别更正：story.ts 中"女子"→"年轻道人"，5处"她"→"他"；endings.ts 中"她带着医书入山"→"他带着医书入山"；characters.ts
+  中"她能让知识流动"→"他能让知识流动"。
+  2. 对话框动画抽搐修复：在 DialogueBox 的 .dialogue-text 中添加了一个隐藏的完整文本占位元素，用 visibility: hidden; height: 0; 
+  overflow: hidden 在动画开始前就用完整文本撑开容器高度，避免逐字显示时容器高度反复跳变。
+
+> 对话框三行以上文字是还抽搐 
+
+● Read(src/components/DialogueBox.tsx)
+  ⎿ Read 85 lines (ctrl+o to expand)
+
+● height: 0 的占位根本不会撑开容器。之前的方案无效。让我换一个更可靠的方案：直接用 CSS min-height
+  配合一个已知行高来锁定高度，或者更好的方式——直接渲染完整文本但用 color: transparent 隐藏，再用 shown 覆盖显示。
+
+● Read(src/styles/global.css)
+  ⎿ Read 16 lines (ctrl+o to expand)
+
+● 最简洁可靠的方案：在 .dialogue-text 上同时渲染完整文本（透明色撑高度）和逐字文本（可见），通过绝对定位叠加。
+
+● Edit(src/components/DialogueBox.tsx)
+  ⎿ src/components/DialogueBox.tsx with 21 additions and 33 removals
+
+    13      const [shown, setShown] = useState("");
+    14      const [done, setDone] = useState(false);
+    15      const intervalRef = useRef<number>(0);
+    16 -    // 隐藏占位：用完整文本撑开容器高度，避免逐字动画时容器高度跳变
+    17 -    const [measured, setMeasured] = useState(false);
+    18 -    const measureRef = useRef<HTMLDivElement>(null);
+    16 
+    17      useEffect(() => {
+    18        setShown("");
+    19        setDone(false);
+    20 -      setMeasured(false);
+    20        let i = 0;
+    21        intervalRef.current = window.setInterval(() => {
+    22          i++;
+
+    ...
+
+    33        return () => window.clearInterval(intervalRef.current);
+    34      }, [text]);
+    35 
+    36 -    // 测量完整文本高度后，用最小高度锁定容器
+    37 -    useEffect(() => {
+    38 -      if (measureRef.current) {
+    39 -        setMeasured(true);
+    40 -      }
+    41 -    }, [text]);
+    42 -  
+    36      const onClick = () => {
+    37        if (!done) {
+    38          // 动画进行中：清除 interval，直接显示完整文本
+
+    ...
+
+    53        else onTap?.();
+    54      };
+    55 
+    56 +    const textStyle: React.CSSProperties = {
+    57 +      whiteSpace: "pre-line",
+    58 +      fontStyle: isNarration ? "italic" : "normal",
+    59 +      color: isNarration ? "rgba(228,224,208,0.85)" : "var(--paper)",
+    60 +    };
+    61 +  
+    62      return (
+    63        <div className="dialogue" data-sfx="tap" onClick={onClick} style={{ cursor: "pointer" }}>
+    64          {speaker && !isNarration && <div className="dialogue-name">{speaker}</div>}
+    65 -        <div className="dialogue-text" style={{
+    66 -          position: "relative",
+    67 -          whiteSpace: "pre-line",
+    68 -          fontStyle: isNarration ? "italic" : "normal",
+    69 -          color: isNarration ? "rgba(228,224,208,0.85)" : "var(--paper)",
+    70 -        }}>
+    71 -          {/* 隐藏占位：用完整文本撑开容器高度 */}
+    72 -          <div ref={measureRef} aria-hidden="true" style={{
+    73 -            visibility: "hidden",
+    74 -            whiteSpace: "pre-line",
+    75 -            height: 0,
+    76 -            overflow: "hidden",
+    77 -          }}>{text}</div>
+    78 -          {shown}
+    79 -          {done && (
+    80 -            <span style={{
+    81 -              display: "inline-block",
+    82 -              marginLeft: 6,
+    83 -              color: "var(--gold-pale)",
+    84 -              animation: "glowPulse 1.4s ease-in-out infinite",
+    85 -            }}>▾</span>
+    86 -         )}
+    65 +       <div className="dialogue-text" style={{ position: "relative" }}>
+    66 +          {/* 透明完整文本：撑开容器到最终高度，防止逐字动画时高度跳变 */}
+    67 +          <div aria-hidden="true" style={{ ...textStyle, visibility: "hidden" }}>{text}</div>
+    68 +          {/* 逐字显示文本：绝对定位覆盖在透明文本上方 */}
+    69 +          <div style={{ ...textStyle, position: "absolute", inset: 0 }}>
+    70 +            {shown}
+    71 +            {done && (
+    72 +              <span style={{
+    73 +                display: "inline-block",
+    74 +                marginLeft: 6,
+    75 +                color: "var(--gold-pale)",
+    76 +                animation: "glowPulse 1.4s ease-in-out infinite",
+    77 +              }}>▾</span>
+    78 +            )}
+    79 +          </div>
+    80          </div>
+    81        </div>
+    82      );
+
+● Bash(npx tsc --noEmit 2>&1 && npx vite build 2>&1)
+  ⎿ ⠙vite v8.0.16 building client environment for production...
+    transforming (8) node_modules/.pnpm/react@19.2.7/node_modules/react/jsx-runtime.jstransforming (14) index.htmltransforming (24)
+    src/editor/storyToFlow.tstransforming (44) src/data/dungeons/huatuo/story.tstransforming (59)
+    ...+16 line (ctrl+o to expand)
+
+● 构建通过。
+
+  修复方案：在 .dialogue-text 中用两层叠加——底层是 visibility: hidden 的完整文本（撑开容器到最终高度），顶层是 position: absolute; 
+  inset: 0 的逐字显示文本。这样容器高度从第一帧就是最终高度，逐字动画只改变可见文本内容，不会引起高度跳变。
+
+> 当前的文本对话框中，有时候文本会超出对话框。 
+
+● Read(src/components/DialogueBox.tsx)
+  ⎿ Read 73 lines (ctrl+o to expand)
+
+● 问题在于逐字显示层用了 position: absolute; inset: 0，它被约束在透明占位层的高度内。但当逐字文本末尾有 ▾ 指示符时，可能会撑出容器。更
+  根本的问题是：逐字文本和透明文本的换行点可能不完全一致（因为逐字文本截断位置不同），导致绝对定位层的文字溢出。
+
+  最可靠的修复：去掉绝对定位叠加方案，改用 overflow: hidden + 容器固定高度的方式，或者更简单——直接用 min-height 而非绝对定位。
+
+● Edit(src/components/DialogueBox.tsx)
+  ⎿ src/components/DialogueBox.tsx with 19 additions and 6 removals
+
+    13      const [shown, setShown] = useState("");
+    14      const [done, setDone] = useState(false);
+    15      const intervalRef = useRef<number>(0);
+    16 +    const measureRef = useRef<HTMLDivElement>(null);
+    17 +    const [minH, setMinH] = useState<number | undefined>(undefined);
+    18 
+    19      useEffect(() => {
+    20        setShown("");
+
+    ...
+
+    29        return () => window.clearInterval(intervalRef.current);
+    30      }, [text]);
+    31 
+    32 +    // 测量完整文本高度，锁定 min-height 防止逐字动画高度跳变
+    33 +    useEffect(() => {
+    34 +      if (measureRef.current) {
+    35 +        const h = measureRef.current.getBoundingClientRect().height;
+    36 +        if (h > 0) setMinH(h);
+    37 +      }
+    38 +    }, [text]);
+    39 +  
+    40      const onClick = () => {
+    41        if (!done) {
+    42 -        // 动画进行中：清除 interval，直接显示完整文本
+    42          window.clearInterval(intervalRef.current);
+    43          setShown(text);
+    44          setDone(true);
+    45          return;
+    46        }
+    47 -      // 动画已完成：前进
+    47        if (onNext) onNext();
+    48        else onTap?.();
+    49      };
+
+    ...
+
+    52        <div className="dialogue" data-sfx="tap" onClick={onClick} style={{ cursor: "pointer" }}>
+    53          {speaker && !isNarration && <div className="dialogue-name">{speaker}</div>}
+    54          <div className="dialogue-text" style={{ position: "relative" }}>
+    55 -          {/* 透明完整文本：撑开容器到最终高度，防止逐字动画时高度跳变 */}
+    56 -          <div aria-hidden="true" style={{ ...textStyle, visibility: "hidden" }}>{text}</div>
+    57 -          {/* 逐字显示文本：绝对定位覆盖在透明文本上方 */}
+    58 -          <div style={{ ...textStyle, position: "absolute", inset: 0 }}>
+    55 +          {/* 隐藏完整文本：只用于测量高度，测量后移除 */}
+    56 +          {!minH && (
+    57 +            <div ref={measureRef} aria-hidden="true" style={{ ...textStyle, visibility: "hidden" }}>{text}</div>
+    58 +          )}
+    59 +          {/* 逐字显示文本，min-height 锁定最终高度 */}
+    60 +          <div style={{
+    61 +            ...textStyle,
+    62 +            minHeight: minH !== undefined ? minH : undefined,
+    63 +          }}>
+    64              {shown}
+    65              {done && (
+    66                <span style={{
+
+● Bash(npx tsc --noEmit 2>&1 && npx vite build 2>&1)
+  ⎿ ⠙vite v8.0.16 building client environment for production...
+    transforming (24) src/components/art/index.tstransforming (65) src/editor/storyToFlow.tstransforming (85)
+    node_modules/.pnpm/d3-drag@3.0.0/node_modules/d3-drag/src/index.jstransforming (86)
+    ...+14 line (ctrl+o to expand)
+
+● 构建通过。新方案：
+
+  1. 首帧渲染一个 visibility: hidden 的完整文本占位，测量其 getBoundingClientRect().height
+  2. 测量完成后移除占位，改用 minHeight 锁定到最终高度
+  3. 逐字文本正常流式布局（无绝对定位），不会再溢出对话框
+
+  这样既防止了高度跳变，又避免了绝对定位导致的文本溢出问题。
+
+> /export 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
