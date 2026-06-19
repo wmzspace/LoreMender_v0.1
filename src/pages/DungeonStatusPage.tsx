@@ -1,5 +1,5 @@
-import { CHAPTERS, STORY } from "../data";
-import type { GameNode, GameState, GameResultRank } from "../data/types";
+import { CLUES, ITEMS } from "../data";
+import type { GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
 import { BottomNav, PageShell } from "../components";
 
@@ -8,25 +8,31 @@ interface DungeonStatusPageProps {
   gotoPage: (p: PageKey) => void;
 }
 
-const rankText: Record<GameResultRank, string> = { high: "高", mid: "中", low: "低" };
-const rankClass: Record<GameResultRank, string> = { high: "is-high", mid: "is-mid", low: "is-low" };
-const HAN = ["", "一", "二", "三", "四", "五"];
-
-function chapterGames(chapterId: string): GameNode[] {
-  return (STORY[chapterId]?.beats ?? [])
-    .map((beat) => "game" in beat ? beat.game : null)
-    .filter((game): game is GameNode => Boolean(game));
+/** 线索是否已收集：优先看 searchedClues，否则按持有物品 / 章节进度推断。 */
+function clueCollected(id: string, state: GameState, items: Set<string>): boolean {
+  if ((state.searchedClues ?? []).includes(id)) return true;
+  const ch = state.currentChapter || 1;
+  switch (id) {
+    case "fragment": return items.has("qingsang_fragment") || items.has("scattered_bamboo");
+    case "prescription": return items.has("chenbo_prescription") || items.has("chenbo_prescription_full") || ch > 2;
+    case "case_record": return items.has("wangji_document") || ch > 3;
+    case "song_page": return items.has("xuanyin_song_page") || items.has("xuanyin_song_page_complete") || ch > 4;
+    case "wanted": return (state.searchPressure || 0) > 0 || ch >= 3;
+    default: return false;
+  }
 }
 
 export function DungeonStatusPage({ state, gotoPage }: DungeonStatusPageProps) {
-  const current = state.currentChapter || 1;
   const items = new Set(state.items ?? []);
+  // 已得物品：按登记表顺序，仅展示玩家实际持有且已登记的
+  const ownedItems = Object.values(ITEMS).filter(it => items.has(it.id));
+  const collectedClues = CLUES.filter(c => clueCollected(c.id, state, items));
 
   return (
     <PageShell
-      eyebrow="VOLUME PROGRESS"
+      eyebrow="EVIDENCE"
       title="线 索 板"
-      subtitle="青 囊 残 卷"
+      subtitle="随 身 物 品 · 线 索"
       onBack={() => gotoPage("story")}
       footer={<BottomNav active="clue" onNav={gotoPage} />}
       backdrop={
@@ -38,56 +44,51 @@ export function DungeonStatusPage({ state, gotoPage }: DungeonStatusPageProps) {
       }
     >
       <div className="clue-list">
-        <div className="clue-legend">
-          <span className="clue-legend-item"><i className="dot is-current" />当前</span>
-          <span className="clue-legend-item"><i className="dot is-done" />已推进</span>
-          <span className="clue-legend-item"><i className="dot is-locked" />未解封章</span>
-          <span className="clue-legend-tip">每一章的修补进度与小游戏最佳评级</span>
-        </div>
-
-        {CHAPTERS.map(ch => {
-          const games = chapterGames(ch.id);
-          const locked = ch.num > current;
-          const active = ch.num === current;
-          const done = ch.num < current;
-          const variant = locked ? "clue-card--locked" : active ? "clue-card--current" : "clue-card--done";
-          const statusLabel = done ? "已 推 进" : active ? "当 前" : "未 解 锁";
-          const statusChip = locked ? "is-locked" : active ? "is-current" : "is-done";
-
-          return (
-            <section key={ch.id} className={"clue-card lift " + variant}>
-              <div className="clue-card-eyebrow">第 {HAN[ch.num]} 章</div>
-              <div className="clue-card-head">
-                <div className="clue-card-title">{locked ? "未 解 封 章" : ch.name}</div>
-                <span className={"clue-chip " + statusChip}>{statusLabel}</span>
-              </div>
-              <div className="clue-card-brief">
-                {locked ? "完成前章后解锁。" : ch.brief}
-              </div>
-
-              {games.length > 0 && !locked && (
-                <div className="clue-games">
-                  {games.map(game => {
-                    const result = state.gameResults?.[game.id];
-                    const hasRequired = !game.requiredItem || items.has(game.requiredItem);
-                    const rk = result?.completed
-                      ? rankClass[result.best]
-                      : hasRequired ? "is-todo" : "is-dim";
-                    const label = result?.completed
-                      ? `最佳 · ${rankText[result.best]}`
-                      : hasRequired ? "待完成" : "未点亮";
-                    return (
-                      <div key={game.id} className="clue-game-row">
-                        <span className="clue-game-name">{game.name}</span>
-                        <span className={"clue-rank " + rk}>{label}</span>
-                      </div>
-                    );
-                  })}
+        {/* ── 随身物品 ── */}
+        <section className="cb-section">
+          <div className="cb-section-head">
+            <span className="cb-section-title">随 身 物 品</span>
+            <span className="cb-section-count">{ownedItems.length}</span>
+          </div>
+          {ownedItems.length === 0 ? (
+            <div className="cb-empty">尚未拾得任何物品。在剧情场景里点击可疑之物试试。</div>
+          ) : (
+            <div className="cb-grid">
+              {ownedItems.map(it => (
+                <div key={it.id} className="cb-item lift">
+                  <div className="cb-item-icon">
+                    {it.image
+                      ? <img src={it.image} alt={it.name} loading="lazy" />
+                      : <span className="cb-item-seal">物</span>}
+                  </div>
+                  <div className="cb-item-name">{it.name}</div>
+                  {it.desc && <div className="cb-item-desc">{it.desc}</div>}
                 </div>
-              )}
-            </section>
-          );
-        })}
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* ── 已得线索 ── */}
+        <section className="cb-section">
+          <div className="cb-section-head">
+            <span className="cb-section-title">已 得 线 索</span>
+            <span className="cb-section-count">{collectedClues.length} / {CLUES.length}</span>
+          </div>
+          {collectedClues.length === 0 ? (
+            <div className="cb-empty">线索会随剧情推进逐条显现。</div>
+          ) : (
+            <div className="cb-clues">
+              {collectedClues.map(c => (
+                <div key={c.id} className="cb-clue lift">
+                  <div className="cb-clue-title">{c.title}</div>
+                  <div className="cb-clue-body">{c.body}</div>
+                  {c.note && <div className="cb-clue-note">{c.note}</div>}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </PageShell>
   );

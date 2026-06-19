@@ -8,6 +8,9 @@ export {
   CHARACTERS,
   TRUST_OPTIONS,
   CLUES,
+  ITEMS,
+  ITEM_NAME_TO_ID,
+  parseGainedItemIds,
   ENDINGS,
   ENDING_NARRATION_BODIES,
   resolveEnding,
@@ -24,3 +27,4 @@ export type {
   LevelAssetPlan,
   AiWorkflowRecord,
 } from "./competition";
+export type { ItemDef } from "./dungeons/huatuo";

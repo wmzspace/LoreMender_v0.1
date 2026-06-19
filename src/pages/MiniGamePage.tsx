@@ -565,7 +565,8 @@ const ROWS = 5;
 const KEY_ID = 1;
 const EXIT_ROW = 4; // 钥匙(1×2横)到达 row=4, col=2 占据(r4,c2)(r4,c3)即为出口
 const EXIT_COL = 2;
-const CELL_SIZE = typeof window !== "undefined" && window.innerWidth >= 1024 ? 72 : 48; // 每格像素大小(桌面端放大)
+const CELL_SIZE = typeof window !== "undefined" && window.innerWidth >= 1024 ? 92 : 56; // 每格像素大小(桌面端放大)
+const WOODENBOX_TABLE_IMG = "/images/levels/1/chapters/ch1_beats/woodenbox_table.webp";
 
 interface Block {
   id: number;
@@ -639,7 +640,13 @@ function canMove(grid: (number | null)[][], block: Block, dr: number, dc: number
   return true;
 }
 
-function WoodenBox({ finish, hardMode }: { finish: (rank: GameResultRank) => void; hardMode: boolean }) {
+function WoodenBox({ finish, hardMode, game, best, onBack }: {
+  finish: (rank: GameResultRank) => void;
+  hardMode: boolean;
+  game: GameNode;
+  best?: GameResultRank;
+  onBack: () => void;
+}) {
   const [blocks, setBlocks] = useState<Block[]>(() => hardMode ? createMediumBlocks() : createEasyBlocks());
   const [steps, setSteps] = useState(0);
   const [dragging, setDragging] = useState<number | null>(null);
@@ -712,96 +719,110 @@ function WoodenBox({ finish, hardMode }: { finish: (rank: GameResultRank) => voi
     ? { high: 50, mid: 90 }
     : { high: 30, mid: 60 };
 
-  const BLOCK_COLOR = "rgba(158,134,91,0.55)";
-  const KEY_COLOR = "rgba(205,152,62,0.85)";
-  const EMPTY_COLOR = "rgba(236,220,166,0.06)";
-  const EXIT_COLOR = "rgba(95,168,146,0.25)";
-
   const totalW = COLS * CELL_SIZE;
   const totalH = ROWS * CELL_SIZE;
-
   const diffLabel = hardMode ? "中等版" : "简单版";
 
   return (
-    <>
-      <div style={instStyle}>拖动方块，引导金钥匙抵达右下出口。步少者，医道精。</div>
-      <div style={{ fontSize: 11.5, color: "rgba(228,224,208,0.4)", letterSpacing: "0.12em", textAlign: "center", marginBottom: 8 }}>已走 {steps} 步 · {diffLabel}</div>
-      <div
-        ref={containerRef}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        style={{
-          position: "relative",
-          width: totalW,
-          height: totalH,
-          margin: "8px auto",
-          touchAction: "none",
-          userSelect: "none",
-        }}
-      >
-        {/* 背景网格 */}
-        {Array.from({ length: ROWS * COLS }, (_, i) => {
-          const r = Math.floor(i / COLS);
-          const c = i % COLS;
-          const isExit = r === ROWS - 1 && c === 3;
-          return (
-            <div
-              key={`bg-${i}`}
-              style={{
-                position: "absolute",
-                left: c * CELL_SIZE + 1,
-                top: r * CELL_SIZE + 1,
-                width: CELL_SIZE - 2,
-                height: CELL_SIZE - 2,
-                background: isExit ? EXIT_COLOR : EMPTY_COLOR,
-                borderRadius: 2,
-                border: "1px solid rgba(205,178,119,0.12)",
-              }}
-            />
-          );
-        })}
-        {/* 方块 */}
-        {blocks.map(block => {
-          const isKey = block.id === KEY_ID;
-          const isDragging = dragging === block.id;
-          return (
-            <div
-              key={block.id}
-              onPointerDown={(e) => handlePointerDown(e, block.id)}
-              style={{
-                position: "absolute",
-                left: block.c * CELL_SIZE + 2,
-                top: block.r * CELL_SIZE + 2,
-                width: block.w * CELL_SIZE - 4,
-                height: block.h * CELL_SIZE - 4,
-                background: isKey ? KEY_COLOR : BLOCK_COLOR,
-                border: isDragging ? "2px solid var(--gold-pale)" : "1px solid rgba(205,178,119,0.25)",
-                borderRadius: 5,
-                cursor: "grab",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: isDragging ? "none" : "left 0.1s ease, top 0.1s ease",
-                zIndex: isDragging ? 2 : 1,
-              }}
-            >
-              {isKey ? (
-                <span style={{ fontSize: CELL_SIZE * 0.45, lineHeight: 1 }}>🔑</span>
-              ) : null}
-            </div>
-          );
-        })}
+    <div className="wb-fs">
+      <div className="wb-fs-bg" style={{ backgroundImage: `url(${WOODENBOX_TABLE_IMG})` }} />
+      <div className="wb-fs-scrim" />
+
+      {/* 顶部浮层 */}
+      <div className="bamboo-top">
+        <button className="bamboo-back press" data-sfx="back" onClick={onBack} aria-label="返回">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M8 2 L3 6.5 L8 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <div className="bamboo-top-titles">
+          <div className="bamboo-top-title">木 盒 机 关</div>
+          {game.context && <div className="bamboo-top-sub">{game.context}</div>}
+        </div>
+        <div className="bamboo-top-right">
+          {best
+            ? <span className="bamboo-badge" style={{ color: RANK_COLOR[best], borderColor: `${RANK_COLOR[best]}55` }}>最佳 · {RANK_LABEL[best]}</span>
+            : <span className="bamboo-badge bamboo-badge--new">初 次 挑 战</span>}
+        </div>
       </div>
-      <button
-        className="btn-primary press"
-        disabled={!solved}
-        onClick={() => finish(steps <= rankThresholds.high ? "high" : steps <= rankThresholds.mid ? "mid" : "low")}
-        style={{ width: "100%", marginTop: 10 }}
-      >
-        解开木盒
-      </button>
-    </>
+
+      {/* 居中木盘 */}
+      <div className="wb-stage">
+        <div className="wb-steps">已走 <b>{steps}</b> 步 · {diffLabel}{solved ? " · 已就位" : ""}</div>
+        <div
+          ref={containerRef}
+          className="wb-board"
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          style={{ width: totalW, height: totalH }}
+        >
+          {Array.from({ length: ROWS * COLS }, (_, i) => {
+            const r = Math.floor(i / COLS);
+            const c = i % COLS;
+            const isExit = r === ROWS - 1 && c === 3;
+            return (
+              <div
+                key={`bg-${i}`}
+                className={"wb-cell" + (isExit ? " wb-cell--exit" : "")}
+                style={{ left: c * CELL_SIZE, top: r * CELL_SIZE, width: CELL_SIZE, height: CELL_SIZE }}
+              >
+                {isExit && <span className="wb-exit-mark">出</span>}
+              </div>
+            );
+          })}
+          {blocks.map(block => {
+            const isKey = block.id === KEY_ID;
+            const isDragging = dragging === block.id;
+            return (
+              <div
+                key={block.id}
+                onPointerDown={(e) => handlePointerDown(e, block.id)}
+                className={"wb-block" + (isKey ? " wb-block--key" : "") + (isDragging ? " is-dragging" : "")}
+                style={{
+                  left: block.c * CELL_SIZE + 3,
+                  top: block.r * CELL_SIZE + 3,
+                  width: block.w * CELL_SIZE - 6,
+                  height: block.h * CELL_SIZE - 6,
+                  transition: isDragging ? "none" : "left 0.12s ease, top 0.12s ease",
+                }}
+              >
+                {isKey && (
+                  <svg className="wb-key-icon" viewBox="0 0 24 24" fill="none" width={CELL_SIZE * 0.5} height={CELL_SIZE * 0.5}>
+                    <circle cx="8" cy="8" r="4.2" stroke="currentColor" strokeWidth="1.8" />
+                    <path d="M11 11 L19 19 M16.5 16.5 L19 14 M19 19 L21.5 16.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 底部浮层 */}
+      <div className="bamboo-bottom">
+        <div className="bamboo-hint">拖动方块，引导金钥匙滑到右下「出」格。步少者，医道精。</div>
+        <div className="bamboo-actions">
+          <button
+            className="btn-primary press bamboo-submit"
+            disabled={!solved}
+            onClick={() => finish(steps <= rankThresholds.high ? "high" : steps <= rankThresholds.mid ? "mid" : "low")}
+          >
+            {solved ? "解 开 木 盒" : "把 钥 匙 移 到 出 口"}
+          </button>
+        </div>
+        <div className="bamboo-dev">
+          <span className="bamboo-dev-label">开 发 者 跳 过</span>
+          {(["high", "mid", "low"] as GameResultRank[]).map(r => (
+            <button key={r} className="btn-ghost press bamboo-dev-btn"
+              onClick={() => finish(r)}
+              style={{ borderColor: `${RANK_COLOR[r]}40`, color: RANK_COLOR[r] }}>
+              {RANK_LABEL[r]}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1165,11 +1186,28 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
     );
   }
 
+  // 木盒机关：全屏沉浸场景
+  if (game.kind === "woodenBox" && !locked) {
+    return (
+      <>
+        <WoodenBox
+          finish={finish}
+          hardMode={woodenBoxHard}
+          game={game}
+          best={state.gameResults[game.id]?.best}
+          onBack={() => gotoPage("story")}
+        />
+        <Toast text={toast} onDone={() => setToast("")} />
+        {feedback !== null && (
+          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={() => gotoPage("story")} />
+        )}
+      </>
+    );
+  }
+
   let body: React.ReactNode;
   if (locked) {
     body = <p>尚未获得进入此机关所需之物。</p>;
-  } else if (game.kind === "woodenBox") {
-    body = <WoodenBox key={retryKey} finish={finish} hardMode={woodenBoxHard} />;
   } else if (game.kind === "herbMemory") {
     body = <HerbMemory key={retryKey} finish={finish} />;
   } else if (game.kind === "caseTriage") {

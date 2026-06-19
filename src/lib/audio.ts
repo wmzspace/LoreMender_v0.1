@@ -13,6 +13,11 @@ export function dialogueAudioPath(chapter: number, beatIdx: number): string {
   return `${DIALOGUE_AUDIO_BASE}/ch${chapter}/${beatIdx}.mp3`;
 }
 
+/** 探索热点对白的配音路径（见 tools/tts-generate/generate-explore-audio.ts）。 */
+export function exploreAudioPath(chapter: number, hotspotId: string, subIdx: number): string {
+  return `${DIALOGUE_AUDIO_BASE}/ch${chapter}/explore/${hotspotId}_${subIdx}.mp3`;
+}
+
 // ── 三通道音量/静音设置 ─────────────────────────────────────────
 // bgm=背景声音, dialogue=对话声音, sfx=系统声音。每个通道有 0..1 的音量与独立静音。
 export type AudioChannel = "bgm" | "dialogue" | "sfx";

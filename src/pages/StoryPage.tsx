@@ -3,10 +3,11 @@ import {
   ChoiceList, DialogueBox, ProgressDots, SoundSettings, Toast,
 } from "../components";
 import { Particles, SceneClinic, SceneFinal, SceneRaid } from "../components/art";
-import { CHARACTERS, LEVEL_ASSET_PLANS, STORY } from "../data";
+import { CHARACTERS, LEVEL_ASSET_PLANS, STORY, ITEMS, parseGainedItemIds } from "../data";
+import type { ItemDef } from "../data";
 import { buildAudioIndex } from "../data/dungeons/huatuo/audioIndex";
 import type { Beat, Choice, GameState } from "../data/types";
-import { dialogueAudioPath, playDialogueAudio, stopDialogueAudio } from "../lib/audio";
+import { dialogueAudioPath, exploreAudioPath, playDialogueAudio, playSfx, stopDialogueAudio } from "../lib/audio";
 import { loadBeat, saveBeat, saveState } from "../lib/storage";
 import type { PageKey } from "../lib/routes";
 
@@ -329,6 +330,8 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const [exploreOpen, setExploreOpen] = useState<string | null>(null); // 当前展开的热点 id
   const [exploreSub, setExploreSub] = useState(0);                     // 该热点对白的下标
   const [exploreVisited, setExploreVisited] = useState<string[]>([]);  // 已看过的热点
+  const [itemNotice, setItemNotice] = useState<string | null>(null);   // 杂项「获得」轻提示
+  const [itemModal, setItemModal] = useState<ItemDef[] | null>(null);  // 获得物品详情弹窗
 
   // 切换主 beat 时重置探索状态
   useEffect(() => { setExploreOpen(null); setExploreSub(0); setExploreVisited([]); }, [beatIdx]);
@@ -339,6 +342,11 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const exIsNarration = !!(exBeat && "narration" in exBeat && exBeat.narration);
   const exText = exBeat && "line" in exBeat ? exBeat.line : "";
   const allExplored = !!exploreScene && exploreVisited.length >= exploreScene.hotspots.length;
+
+  // 当前正在显示的台词（探索打开时取热点对白，否则取主线对白），用于「获得物品」检测
+  const activeLine = exploreOpen
+    ? exText
+    : (!isTransition && !gameNode && beat && "line" in beat ? beat.line : "");
 
   const openHotspot = (id: string) => { setExploreOpen(id); setExploreSub(0); };
   const exploreNext = () => {
@@ -365,6 +373,40 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
     playDialogueAudio(dialogueAudioPath(ch, audioIdx), () => setAudioDone(true));
     return () => stopDialogueAudio();
   }, [beat, ch, audioIdx, isTransition, gameNode]);
+
+  // 探索热点对白配音：打开热点 / 翻句时播放对应音频。
+  useEffect(() => {
+    if (!exploreScene || !exploreOpen) return;
+    const hs = exploreScene.hotspots.find(h => h.id === exploreOpen);
+    if (!hs || !hs.beats[exploreSub]) return;
+    playDialogueAudio(exploreAudioPath(ch, exploreOpen, exploreSub));
+    return () => stopDialogueAudio();
+  }, [exploreScene, exploreOpen, exploreSub, ch]);
+
+  // 获得物品：当前台词为「获得：xxx」旁白时，播放音效并弹出提示。
+  useEffect(() => {
+    const m = activeLine.match(/^获得[:：]\s*([^。\n]+)/);
+    if (!m) return;
+    playSfx("unlock");
+    // 探索旁白本身不入库，这里把可识别物品写入 state.items，供「线索板」展示
+    const newIds = parseGainedItemIds(activeLine).filter(id => !state.items.includes(id));
+    if (newIds.length) {
+      const ns: GameState = { ...state, items: [...state.items, ...newIds] };
+      setState(ns);
+      saveState(ns);
+    }
+    const defs = newIds.map(id => ITEMS[id]).filter((d): d is ItemDef => !!d);
+    if (defs.length) {
+      // 有登记的物品 → 弹出详情弹窗（带图与描述）
+      setItemModal(defs);
+    } else {
+      // 杂项「获得：xxx」（线索/无登记物品）→ 顶部轻提示
+      setItemNotice(m[1].trim());
+      const t = window.setTimeout(() => setItemNotice(null), 2800);
+      return () => window.clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLine]);
 
   // 「打字机完成 + 配音读完」后延时推进;开关打开时若当前句已读完立即生效。
   useEffect(() => {
@@ -486,9 +528,17 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
                     已了解 {exploreVisited.length}/{exploreScene.hotspots.length}
                   </span>
                 </div>
-                {allExplored && (
+                {allExplored ? (
                   <div className="story-action-btns">
                     <button className="btn-primary press" onClick={next}>继 续 剧 情</button>
+                  </div>
+                ) : (
+                  <div className="story-action-btns">
+                    <button
+                      className="btn-ghost press"
+                      style={{ minHeight: 34, fontSize: 11, letterSpacing: "0.16em", opacity: 0.65 }}
+                      onClick={() => setExploreVisited(exploreScene.hotspots.map(h => h.id))}
+                    >开 发 者 跳 过</button>
                   </div>
                 )}
               </div>
@@ -571,6 +621,45 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
             </div>
           </div>
         </>
+      )}
+
+      {/* 获得物品弹窗（带图 + 描述） */}
+      {itemModal && (
+        <div className="item-modal-backdrop" onClick={() => setItemModal(null)}>
+          <div className="item-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="item-modal-eyebrow">获 得 物 品</div>
+            <div className="item-modal-list">
+              {itemModal.map(it => (
+                <div key={it.id} className="item-modal-entry">
+                  <div className="item-modal-icon">
+                    {it.image
+                      ? <img src={it.image} alt={it.name} />
+                      : <span className="cb-item-seal">物</span>}
+                  </div>
+                  <div className="item-modal-info">
+                    <div className="item-modal-name">{it.name}</div>
+                    {it.desc && <div className="item-modal-desc">{it.desc}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button className="btn-primary press item-modal-btn" onClick={() => setItemModal(null)}>收 下</button>
+          </div>
+        </div>
+      )}
+
+      {/* 获得物品轻提示（杂项 / 线索） */}
+      {itemNotice && (
+        <div className="item-notice" key={itemNotice}>
+          <span className="item-notice-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2.5 5 L8 2 L13.5 5 L13.5 11 L8 14 L2.5 11 Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+              <path d="M2.5 5 L8 8 L13.5 5 M8 8 L8 14" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" opacity="0.7" />
+            </svg>
+          </span>
+          <span className="item-notice-label">获 得</span>
+          <span className="item-notice-name">{itemNotice}</span>
+        </div>
       )}
 
       <Toast text={toast} onDone={() => setToast("")} />

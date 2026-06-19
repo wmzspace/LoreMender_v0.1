@@ -1891,6 +1891,189 @@ button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
 }
 
 /* ── 拼竹简：实景木桌 + 三木桶分类 ── */
+/* ── 获得物品弹窗 ── */
+.item-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(5, 8, 11, 0.78);
+  backdrop-filter: blur(3px);
+  animation: fadeIn 240ms ease both;
+}
+.item-modal {
+  width: min(360px, 100%);
+  max-height: 86%;
+  overflow-y: auto;
+  padding: 20px 22px 22px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(26, 21, 13, 0.98), rgba(15, 11, 7, 0.98));
+  border: 1px solid rgba(205, 178, 119, 0.45);
+  box-shadow: 0 0 0 1px rgba(236, 220, 166, 0.1), 0 24px 70px rgba(0, 0, 0, 0.7);
+  animation: itemModalIn 320ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.item-modal-eyebrow {
+  text-align: center;
+  font-family: var(--font-han);
+  font-size: 13px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  color: var(--gold-pale);
+  opacity: 0.85;
+  margin-bottom: 16px;
+}
+.item-modal-list { display: flex; flex-direction: column; gap: 14px; }
+.item-modal-entry { display: flex; gap: 14px; align-items: center; }
+.item-modal-icon {
+  flex: none;
+  width: 84px;
+  height: 84px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, rgba(60, 45, 26, 0.6), rgba(10, 8, 5, 0.85));
+  border: 1px solid rgba(205, 178, 119, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.item-modal-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.item-modal-info { flex: 1; min-width: 0; }
+.item-modal-name {
+  font-family: var(--font-han);
+  font-size: 17px;
+  letter-spacing: 0.08em;
+  color: var(--gold-bright, #ecdca6);
+  margin-bottom: 6px;
+  text-shadow: 0 0 10px rgba(236, 220, 166, 0.25);
+}
+.item-modal-desc { font-size: 12px; line-height: 1.7; color: rgba(228, 224, 208, 0.72); }
+.item-modal-btn { width: 100%; margin-top: 20px; }
+@keyframes itemModalIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── 获得物品提示 ── */
+.item-notice {
+  position: absolute;
+  top: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 18px 9px 14px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(28, 22, 12, 0.94), rgba(18, 14, 8, 0.94));
+  border: 1px solid rgba(205, 178, 119, 0.5);
+  box-shadow: 0 0 0 1px rgba(236, 220, 166, 0.12), 0 10px 30px rgba(0, 0, 0, 0.6);
+  color: var(--gold-pale);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: itemNoticeIn 320ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.item-notice-icon { display: flex; color: var(--gold-pale); opacity: 0.9; }
+.item-notice-label {
+  font-family: var(--font-han);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  opacity: 0.7;
+}
+.item-notice-name {
+  font-family: var(--font-han);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--gold-bright, #ecdca6);
+  text-shadow: 0 0 10px rgba(236, 220, 166, 0.3);
+}
+@keyframes itemNoticeIn {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ── 线索板：随身物品 + 线索 ── */
+.cb-section { margin-bottom: 22px; }
+.cb-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(205, 178, 119, 0.2);
+}
+.cb-section-title {
+  font-family: var(--font-han);
+  font-size: 16px;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  color: var(--gold-pale);
+}
+.cb-section-count { font-size: 12px; color: rgba(228, 224, 208, 0.5); letter-spacing: 0.1em; }
+.cb-empty {
+  font-size: 12.5px;
+  color: rgba(228, 224, 208, 0.42);
+  font-style: italic;
+  letter-spacing: 0.04em;
+  padding: 10px 2px;
+}
+.cb-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 720px) { .cb-grid { grid-template-columns: repeat(3, 1fr); } }
+.cb-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 12px 14px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(20, 16, 10, 0.7), rgba(12, 9, 6, 0.7));
+  border: 1px solid rgba(205, 178, 119, 0.26);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+.cb-item-icon {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 9px;
+  background: radial-gradient(circle at 50% 40%, rgba(60, 45, 26, 0.6), rgba(10, 8, 5, 0.85));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+.cb-item-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cb-item-seal { font-family: var(--font-han); font-size: 30px; color: rgba(205, 178, 119, 0.45); }
+.cb-item-name {
+  font-family: var(--font-han);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--gold-pale);
+  margin-bottom: 4px;
+}
+.cb-item-desc { font-size: 11px; line-height: 1.6; color: rgba(228, 224, 208, 0.55); }
+.cb-clues { display: flex; flex-direction: column; gap: 12px; }
+.cb-clue {
+  padding: 13px 16px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(18, 14, 9, 0.66), rgba(10, 8, 5, 0.66));
+  border: 1px solid rgba(205, 178, 119, 0.22);
+  border-left: 3px solid rgba(205, 178, 119, 0.6);
+}
+.cb-clue-title {
+  font-family: var(--font-han);
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  color: var(--gold-pale);
+  margin-bottom: 7px;
+}
+.cb-clue-body { font-size: 12.5px; line-height: 1.8; color: rgba(228, 224, 208, 0.82); white-space: pre-line; }
+.cb-clue-note { margin-top: 8px; font-size: 11px; line-height: 1.6; color: rgba(205, 178, 119, 0.7); font-style: italic; }
+
 /* ── 拼竹简全屏沉浸 ── */
 .bamboo-fs {
   position: absolute;
@@ -2131,3 +2314,107 @@ button:disabled, .btn-primary:disabled, .btn-ghost:disabled {
 }
 .bamboo-dev-label { font-size: 9px; color: rgba(228, 224, 208, 0.32); letter-spacing: 0.18em; }
 .bamboo-dev-btn { min-width: 48px; padding: 5px 12px; font-size: 11px; letter-spacing: 0.1em; }
+
+/* ── 木盒机关全屏（复用 .bamboo-top / .bamboo-bottom 浮层） ── */
+.wb-fs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 10px 104px;
+  background: #07090c;
+  user-select: none;
+}
+.wb-fs-bg {
+  position: absolute;
+  inset: -3%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(4px) brightness(0.82);
+  transform: scale(1.04);
+}
+.wb-fs-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 55% at center, transparent 0%, rgba(5, 8, 11, 0.55) 100%),
+    linear-gradient(180deg, rgba(5, 8, 11, 0.5), transparent 22%, transparent 74%, rgba(5, 8, 11, 0.72));
+}
+.wb-stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.wb-steps {
+  font-size: 12px;
+  color: rgba(228, 224, 208, 0.62);
+  letter-spacing: 0.14em;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+}
+.wb-steps b { color: var(--gold-pale); font-weight: 600; }
+/* 木质托盘 */
+.wb-board {
+  position: relative;
+  touch-action: none;
+  border-radius: 8px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.06) 0 2px, transparent 2px 24px),
+    linear-gradient(180deg, #3a2b19, #261b0f);
+  border: 3px solid #1d140a;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.7), 0 22px 60px rgba(0, 0, 0, 0.72);
+}
+.wb-cell {
+  position: absolute;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+  outline: 1px solid rgba(0, 0, 0, 0.4);
+  outline-offset: -2px;
+}
+.wb-cell--exit {
+  background: rgba(95, 168, 146, 0.22);
+  box-shadow: inset 0 0 14px rgba(95, 168, 146, 0.5);
+}
+.wb-exit-mark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-han);
+  font-size: 18px;
+  color: rgba(150, 210, 190, 0.65);
+}
+/* 木滑块 */
+.wb-block {
+  position: absolute;
+  border-radius: 5px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 6px),
+    linear-gradient(180deg, #b08f5c, #876b3f);
+  border: 1px solid #4a3720;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.35), inset 0 -3px 5px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+.wb-block:active { cursor: grabbing; }
+.wb-block.is-dragging {
+  z-index: 3;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.4), 0 0 0 2px var(--gold-pale), 0 8px 16px rgba(0, 0, 0, 0.6);
+}
+.wb-block--key {
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.04) 0 1px, transparent 1px 6px),
+    linear-gradient(180deg, #e8c069, #c79433);
+  border-color: #6e4d12;
+  box-shadow: inset 0 1px 0 rgba(255, 248, 220, 0.6), 0 0 14px rgba(230, 190, 90, 0.5), 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+.wb-key-icon { color: #5a3c0a; }
