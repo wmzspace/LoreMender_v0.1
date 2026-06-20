@@ -3,6 +3,7 @@ import {
   ChoiceList, DialogueBox, ProgressDots, QuickMenu, SoundSettings, TitleSequence, titleCardContent, Toast,
   diffValues, type ValueDelta,
 } from "../components";
+import type { DialogueBoxHandle } from "../components/DialogueBox";
 import { Particles, SceneClinic, SceneFinal, SceneRaid } from "../components/art";
 import { CHARACTERS, CLUES, LEVEL_ASSET_PLANS, STORY, ITEMS, parseGainedItemIds, parseGainedClueIds } from "../data";
 import type { Clue, ItemDef } from "../data";
@@ -328,6 +329,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
   const [itemNotice, setItemNotice] = useState<string | null>(null);   // 杂项「获得」轻提示
   const [itemModal, setItemModal] = useState<ItemDef[] | null>(null);  // 获得物品详情弹窗
   const [clueModal, setClueModal] = useState<Clue[] | null>(null);     // 发现线索详情弹窗
+  const dialogueRef = useRef<DialogueBoxHandle>(null);                 // 点击场景插图时转发到当前对白框
 
   // 切换主 beat 时重置探索状态
   useEffect(() => { setExploreOpen(null); setExploreSub(0); setExploreVisited([]); }, [beatIdx]);
@@ -343,6 +345,12 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
   const activeLine = exploreOpen
     ? exText
     : (!isTransition && !gameNode && beat && "line" in beat ? beat.line : "");
+
+  // 当前底部是否在展示一个真实对白框(而非选项/小游戏入口/探索热点提示):
+  // 点击场景插图等同于点击对白框,转发到 dialogueRef。
+  const canTapAdvance = exploreScene
+    ? !!exploreOpen
+    : !(isTransition || gameNode || (beat && "choices" in beat));
 
   const openHotspot = (id: string) => { setExploreOpen(id); setExploreSub(0); };
   const exploreNext = () => {
@@ -449,7 +457,11 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
       )}
 
       {/* ── 全屏场景背景 ── */}
-      <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+      <div
+        style={{ position: "absolute", inset: 0, zIndex: 0, cursor: canTapAdvance ? "pointer" : "default" }}
+        data-sfx={canTapAdvance ? "tap" : undefined}
+        onClick={() => { if (canTapAdvance) dialogueRef.current?.advance(); }}
+      >
         {sceneEl}
         <AiSceneImage chapterNum={ch} beats={beats} beatIdx={beatIdx} overrideImage={gameSceneImage} />
         {exploreScene?.image && (
@@ -530,6 +542,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
           {exploreScene ? (
             exploreOpen ? (
               <DialogueBox
+                ref={dialogueRef}
                 speaker={exSpeaker?.name ?? null}
                 portrait={exSpeaker?.portrait ?? null}
                 text={exText}
@@ -621,6 +634,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
             </div>
           ) : (
             <DialogueBox
+              ref={dialogueRef}
               speaker={speakerName}
               portrait={speakerPortrait}
               text={lineText}

@@ -29,8 +29,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "aj",
               label: "阿吉",
-              x: 26,
-              y: 36,
+              x: 41,
+              y: 38,
               image: "/images/levels/1/chapters/ch1_beats/ch1_03_cloth_strip.webp",
               beats: [
                 { narration: true, line: "你低头打量自己：粗布囚衣，腕上勒痕未褪，袖口却还藏着一段破布条。" },
@@ -41,8 +41,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "huatuo",
               label: "华佗",
-              x: 78,
-              y: 30,
+              x: 66,
+              y: 34,
               image: "/images/levels/1/chapters/ch1_beats/ch1_02_huatuo_scattered_slips.webp",
               beats: [
                 { speaker: "huatuo", line: "看我做什么？我这条命已经不在你手里了。" },
@@ -53,8 +53,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "bamboo",
               label: "散落竹简",
-              x: 67,
-              y: 67,
+              x: 46,
+              y: 82,
               image: "/images/levels/1/chapters/ch1_beats/ch1_04_scattered_bamboo.webp",
               beats: [
                 { narration: true, line: "牢门边散落着断裂竹简，墨迹被血与潮气洇开。病症、医理、药方混在一处。" },
@@ -65,8 +65,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "box",
               label: "木盒",
-              x: 52,
-              y: 72,
+              x: 82,
+              y: 76,
               image: "/images/levels/1/chapters/ch1_beats/ch1_05_box_key_hint.webp",
               beats: [
                 { speaker: "aj", line: "这个盒子锁住了。" },
@@ -76,8 +76,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "straw",
               label: "墙角稻草",
-              x: 12,
-              y: 78,
+              x: 92,
+              y: 85,
               image: "/images/levels/1/chapters/ch1_beats/ch1_06_straw_key.webp",
               beats: [
                 { narration: true, line: "墙角稻草湿冷发霉。你在最底下摸到一枚生锈铜钥匙。" },
@@ -87,8 +87,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "coat",
               label: "药童衣包",
-              x: 36,
-              y: 79,
+              x: 12,
+              y: 78,
               image: "/images/levels/1/chapters/ch1_beats/ch1_07_healer_bundle_pass.webp",
               beats: [
                 { speaker: "aj", line: "这是我从前送药穿的衣服……还有半张路引。" },
@@ -99,8 +99,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "door",
               label: "牢门",
-              x: 88,
-              y: 58,
+              x: 86,
+              y: 30,
               image: "/images/levels/1/chapters/ch1_beats/ch1_11_escape_side_gate.webp",
               beats: [
                 { narration: true, line: "牢门从外面锁着。铁链拖在地上，天亮前会有人来点验。" },
@@ -299,6 +299,7 @@ export const STORY: Record<string, StoryChapter> = {
           context: "根据高热抽搐、手脚发冷、退热药过重和药材残渣判断救急方向。药签越完整，民间经验越可能变成旁人也能用的东西。",
           reward: { item: "chenbo_prescription", skill: "chenbo_trust" },
         },
+        image: "/images/levels/1/chapters/ch2_beats/clinic_table.webp"
       },
       {
         choices: [
@@ -331,34 +332,26 @@ export const STORY: Record<string, StoryChapter> = {
     scene: "cao_mansion",
     title: "曹府档案区",
     fullTitle: "第三章 · 曹府档案区 · 王济与制度边界",
-    images: {
-      0: "/images/levels/1/chapters/ch3_beats/beat00_residue_slip.webp",
-      2: "/images/levels/1/chapters/ch3_beats/beat02_cao_hall.webp",
-      3: "/images/levels/1/chapters/ch3_beats/beat03_wangji_desk.webp",
-      8: "/images/levels/1/chapters/ch3_beats/beat08_three_cases.webp",
-      18: "/images/levels/1/chapters/ch3_beats/beat18_wangji_record.webp",
-      22: "/images/levels/1/chapters/ch3_beats/beat22_fake_document.webp",
-    },
     beats: [
-      { narration: true, line: "曹府外院朱门半开，药房小吏来回搬运药箱。阿吉压低帽檐，把药童路引藏在袖中。" },
+      { narration: true, line: "曹府外院朱门半开，药房小吏来回搬运药箱。阿吉压低帽檐，把药童路引藏在袖中。", image: "/images/levels/1/chapters/ch3_beats/ch3_01_gate.webp" },
       { speaker: "clerk", line: "哪位医者门下？" },
       { speaker: "aj", line: "牢中旧药补送，按曹府药房缺册来的。" },
-      { speaker: "clerk", line: "路引。" },
+      { speaker: "clerk", line: "路引。", image: "/images/levels/1/chapters/ch3_beats/ch3_02_clerk_check.webp" },
       {
         ifKey: "boxCompartment",
         ifVal: "found",
         beats: [
-          { speaker: "clerk", line: "华佗牢里的？晦气。送完就走，别乱看。" },
+          { speaker: "clerk", line: "华佗牢里的？晦气。送完就走，别乱看。", image: "/images/levels/1/chapters/ch3_beats/ch3_03_enter_pharmacy_hall.webp" },
         ],
       },
       {
         ifKey: "boxCompartment",
         ifVal: "missed",
         beats: [
-          { narration: true, line: "路引缺角，药签也还不够干净。阿吉只能绕过守卫，从药房后窗翻入。追索压力又紧了一分。" },
+          { narration: true, line: "路引缺角，药签也还不够干净。阿吉只能绕过守卫，从药房后窗翻入。追索压力又紧了一分。", image: "/images/levels/1/chapters/ch3_beats/ch3_03_enter_pharmacy_hall.webp" },
         ],
       },
-      { speaker: "wangji", line: "翻病案柜的手，比送药的手稳。" },
+      { speaker: "wangji", line: "翻病案柜的手，比送药的手稳。", image: "/images/levels/1/chapters/ch3_beats/ch3_05_wangji_confront.webp" },
       { speaker: "aj", line: "你早就看见我了？" },
       { speaker: "wangji", line: "从你进门开始。华先生的徒弟，不该只会逃。" },
       { speaker: "aj", line: "我来拿问诊录。" },
@@ -368,13 +361,14 @@ export const STORY: Record<string, StoryChapter> = {
       {
         explore: {
           hint: "曹府喜欢按身份排序。查清三份病案，再决定谁更急。",
-          image: "/images/levels/1/chapters/ch3_beats/beat02_cao_hall.webp",
+          image: "/images/levels/1/chapters/ch3_beats/ch3_08_floorplan_plain.webp",
           hotspots: [
             {
               id: "case_cabinet",
               label: "病案柜",
-              x: 45,
-              y: 49,
+              x: 18,
+              y: 15,
+              image: "/images/levels/1/chapters/ch3_beats/ch3_07_three_cases.webp",
               beats: [
                 { speaker: "aj", line: "军士、孩童、老仆……三份病案被压在最上面。" },
                 { speaker: "wangji", line: "曹府喜欢排序。你若不喜欢，就给我一个更好的顺序。" },
@@ -383,8 +377,9 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "pharmacy",
               label: "药房",
-              x: 25,
-              y: 62,
+              x: 48,
+              y: 12,
+              image: "/images/levels/1/chapters/ch3_beats/ch3_04_pharmacy_interior.webp",
               beats: [
                 { speaker: "aj", line: "军士的止血药已经备齐。" },
                 { speaker: "wangji", line: "所以他看上去最重要，却未必最急。" },
@@ -393,8 +388,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "watch",
               label: "值班记录",
-              x: 64,
-              y: 66,
+              x: 87,
+              y: 87,
               beats: [
                 { narration: true, line: "值班记录写明：天亮后库房点验，所有文书重查。" },
                 { narration: true, line: "线索：点验时间。王济的假文书只能撑到天亮。" },
@@ -403,8 +398,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "soldier_case",
               label: "军士营房",
-              x: 78,
-              y: 56,
+              x: 10,
+              y: 62,
               beats: [
                 { narration: true, line: "军士失血甚多，但止血药和人手都已备齐。" },
                 { narration: true, line: "线索：失血记录。" },
@@ -413,8 +408,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "child_case",
               label: "孩童病房",
-              x: 36,
-              y: 32,
+              x: 88,
+              y: 48,
               beats: [
                 { speaker: "aj", line: "这孩子和街市那个一样，高热惊厥。" },
                 { narration: true, line: "若持有陈伯药签，此处会提醒：先稳住气息，切忌猛灌汤药。" },
@@ -423,8 +418,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "old_servant",
               label: "老仆房",
-              x: 16,
-              y: 44,
+              x: 12,
+              y: 87,
               beats: [
                 { narration: true, line: "老仆久咳体虚，需调养，却不在立刻断气的关口。" },
                 { narration: true, line: "线索：久咳体虚记录。" },
@@ -433,8 +428,9 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "desk",
               label: "王济案桌",
-              x: 58,
-              y: 42,
+              x: 82,
+              y: 12,
+              image: "/images/levels/1/chapters/ch3_beats/ch3_05_wangji_confront.webp",
               beats: [
                 { speaker: "wangji", line: "证据不足时，不能贸然动案。你若要改曹府的顺序，就先拿出比身份更硬的理由。" },
               ],
@@ -452,6 +448,7 @@ export const STORY: Record<string, StoryChapter> = {
           context: "根据病案柜、药房、值班记录和病房线索排序：不是看身份贵贱，而是看谁更急。",
           reward: { item: "wangji_document", skill: "wangji_trust" },
         },
+        image: "  /images/levels/1/chapters/ch3_beats/ch3_07_three_cases.webp"
       },
       {
         choices: [
@@ -460,9 +457,9 @@ export const STORY: Record<string, StoryChapter> = {
           { label: "坚持记录“先病后身”", set: { ch3: "patient_first", system_tendency: 2, wangji_trust: 1 }, toast: "王济信任上升：制度先受医德约束。" },
         ],
       },
-      { speaker: "wangji", line: "孩童、军士、老仆。你没有按身份排。" },
+      { speaker: "wangji", line: "孩童、军士、老仆。你没有按身份排。", image: "/images/levels/1/chapters/ch3_beats/ch3_11_cases_discussion.webp" },
       { speaker: "aj", line: "病不会因为谁穿甲、谁穿布衣就让路。" },
-      { speaker: "wangji", line: "这句话若写进府库，很多人会不高兴。" },
+      { speaker: "wangji", line: "这句话若写进府库，很多人会不高兴。", image: "/images/levels/1/chapters/ch3_beats/ch3_12_cases_discussion2.webp" },
       { speaker: "aj", line: "那就更该写。" },
       {
         choices: [
@@ -470,7 +467,7 @@ export const STORY: Record<string, StoryChapter> = {
           { label: "「先救最急的人，并把这条写进府库的规矩里。」", set: { asked_heart: 1, medical_skill: 1, system_tendency: 1 }, toast: "王济沉默地记下了这一条。" },
         ],
       },
-      { speaker: "wangji", line: "这是“残卷已焚”的归档文书，只能撑到天亮。" },
+      { speaker: "wangji", line: "这是“残卷已焚”的归档文书，只能撑到天亮。", image: "/images/levels/1/chapters/ch3_beats/ch3_09_documents_handoff.webp" },
       { speaker: "aj", line: "你为什么帮我？" },
       { speaker: "wangji", line: "因为你还没有把青囊交给任何一扇门。人在门外时，反而可能看清门里有什么。" },
       {
@@ -482,7 +479,7 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "wangji", line: "府里正在追查街上的华佗歌。若那些歌唱错，害的人不会比错方子少。" },
       { speaker: "aj", line: "歌？" },
       { speaker: "wangji", line: "字会被烧，歌会乱跑。去听听吧，华先生的小弟子。" },
-      { narration: true, line: "阿吉从曹府侧门离开。巷口有人唱错救急歌诀，若错误扩散，青囊即使传下去也会变成祸患。" },
+      { narration: true, line: "阿吉从曹府侧门离开。巷口有人唱错救急歌诀，若错误扩散，青囊即使传下去也会变成祸患。", image: "/images/levels/1/chapters/ch3_beats/ch3_10_leave_to_street.webp" },
       { gotoChapter: "ch4" },
     ],
   },

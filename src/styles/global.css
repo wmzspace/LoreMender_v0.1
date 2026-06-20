@@ -2887,11 +2887,6 @@ button:disabled,
   gap: 10px;
 }
 
-.mg-grid-2 {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 
 /* —— 通用网格工具类(移动端默认单列,桌面端 @media≥1024 内多列) —— */
 .grid-2 {
@@ -3403,12 +3398,6 @@ button:disabled,
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 14px;
-  }
-
-  .mg-grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
   }
 }
 
@@ -4144,6 +4133,335 @@ button:disabled,
   padding: 5px 12px;
   font-size: 11px;
   letter-spacing: 0.1em;
+}
+
+/* ── 配药救急全屏（药庐场景衬底，复用 .bamboo-top / .bamboo-bottom 浮层） ── */
+.clinic-fs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 84px 18px 128px;
+  background: #100a07;
+  user-select: none;
+}
+
+.clinic-fs-bg {
+  position: absolute;
+  inset: -4%;
+  background-size: cover;
+  background-position: center 38%;
+  filter: blur(3px) brightness(0.86) saturate(1.08);
+  transform: scale(1.05);
+}
+
+.clinic-fs-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 62% 58% at center, transparent 0%, rgba(8, 5, 3, 0.42) 100%),
+    linear-gradient(180deg, rgba(8, 5, 3, 0.5), transparent 26%, transparent 68%, rgba(8, 5, 3, 0.78));
+}
+
+.clinic-stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 620px;
+  max-height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.clinic-timer {
+  font-family: var(--font-han);
+  font-size: 16px;
+  letter-spacing: 0.18em;
+  color: var(--gold-pale);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+}
+
+.clinic-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+/* 药签卡片：暖色羊皮纸质感 */
+.clinic-card {
+  width: 100%;
+  border-radius: 10px;
+  padding: 16px 20px;
+  background: linear-gradient(180deg, rgba(36, 24, 13, 0.78), rgba(20, 13, 7, 0.86));
+  border: 1px solid rgba(205, 178, 119, 0.3);
+  box-shadow: inset 0 1px 0 rgba(236, 220, 166, 0.1), 0 8px 24px rgba(0, 0, 0, 0.4);
+  text-align: left;
+}
+
+.clinic-card--intro {
+  text-align: center;
+  padding: 28px 24px;
+}
+
+.clinic-card--herb {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.clinic-card-thumb {
+  display: block;
+  width: 100%;
+  height: 92px;
+  border-radius: 7px;
+  object-fit: cover;
+  object-position: center;
+  background: rgba(6, 10, 14, 0.92);
+  border: 1px solid rgba(205, 178, 119, 0.32);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+.clinic-card-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.clinic-card-title {
+  font-family: var(--font-han);
+  font-size: 21px;
+  letter-spacing: 0.2em;
+  color: var(--gold-pale);
+  margin-bottom: 14px;
+}
+
+.clinic-card-text {
+  font-size: 15px;
+  line-height: 1.85;
+  color: rgba(228, 224, 208, 0.75);
+  font-style: italic;
+}
+
+.clinic-card-name {
+  font-family: var(--font-han);
+  font-size: 18px;
+  letter-spacing: 0.16em;
+  color: var(--gold-pale);
+  margin-bottom: 8px;
+}
+
+.clinic-card-herbs {
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  color: rgba(228, 224, 208, 0.85);
+  line-height: 1.6;
+}
+
+.clinic-card-herbs--placed {
+  color: rgba(228, 224, 208, 0.55);
+  font-style: italic;
+}
+
+.clinic-card--target {
+  cursor: pointer;
+  transition: border-color 0.16s, box-shadow 0.16s;
+}
+
+.clinic-card--target:hover {
+  border-color: rgba(205, 178, 119, 0.55);
+}
+
+.clinic-card--target.is-dragover {
+  border-color: var(--gold-pale);
+  box-shadow: inset 0 1px 0 rgba(236, 220, 166, 0.1), 0 0 0 2px rgba(236, 220, 166, 0.35), 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.clinic-placed-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.clinic-placed-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-style: normal;
+  letter-spacing: 0.04em;
+  color: rgba(228, 224, 208, 0.85);
+  background: rgba(205, 178, 119, 0.16);
+  border: 1px solid rgba(205, 178, 119, 0.4);
+  cursor: pointer;
+  transition: border-color 0.16s, color 0.16s;
+}
+
+.clinic-placed-chip:hover {
+  color: var(--gold-pale);
+  border-color: var(--gold-pale);
+}
+
+.clinic-placed-chip-x {
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+.clinic-herb-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+}
+
+.clinic-herb-tag {
+  padding: 9px 18px;
+  border-radius: 20px;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: rgba(228, 224, 208, 0.85);
+  background: rgba(20, 13, 7, 0.6);
+  border: 1px solid rgba(205, 178, 119, 0.32);
+  cursor: grab;
+  transition: border-color 0.16s, color 0.16s, box-shadow 0.16s, opacity 0.16s;
+}
+
+.clinic-herb-tag:active {
+  cursor: grabbing;
+}
+
+.clinic-herb-tag.is-dragging {
+  opacity: 0.45;
+}
+
+.clinic-herb-tag.is-selected {
+  color: var(--gold-pale);
+  border-color: var(--gold-pale);
+  box-shadow: 0 0 12px rgba(236, 220, 166, 0.4);
+}
+
+/* ── 曹府查案：病案文件三联卡（复用 .clinic-fs / .bamboo-top/.bamboo-bottom 浮层） ── */
+.case-triage-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+}
+
+.case-file-wrap {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 200px;
+}
+
+.case-file {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.case-file-frame {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(205, 178, 119, 0.32);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.16s, box-shadow 0.16s;
+}
+
+.case-file-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 430 / 853;
+  object-fit: cover;
+  object-position: center;
+  background: rgba(6, 10, 14, 0.92);
+}
+
+.case-file-zoom {
+  display: block;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(54vw, 380px);
+  aspect-ratio: 430 / 853;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 10px;
+  border: 1px solid var(--gold-pale);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  transform: translate(-50%, -50%) scale(0.9);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 50;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.case-triage-row > .case-file-wrap:nth-child(1) .case-file-zoom {
+  left: 20%;
+}
+
+.case-triage-row > .case-file-wrap:nth-child(2) .case-file-zoom,
+.case-triage-row > .case-file-wrap:nth-child(3) .case-file-zoom {
+  left: 80%;
+}
+
+.case-file-wrap:hover .case-file-zoom {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.case-file.is-picked .case-file-frame {
+  border-color: var(--gold-pale);
+  box-shadow: 0 0 0 2px rgba(236, 220, 166, 0.35), 0 8px 22px rgba(0, 0, 0, 0.55);
+  transform: translateY(-3px);
+}
+
+.case-file-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-han);
+  font-size: 13px;
+  color: #0e0a07;
+  background: var(--gold-pale);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.case-file-caption {
+  font-size: 13px;
+  line-height: 1.55;
+  letter-spacing: 0.03em;
+  color: rgba(228, 224, 208, 0.78);
+}
+
+.case-file-caption strong {
+  display: block;
+  font-family: var(--font-han);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  color: var(--gold-pale);
+  margin-bottom: 2px;
 }
 
 /* ── 木盒机关全屏（复用 .bamboo-top / .bamboo-bottom 浮层） ── */

@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+
+export interface DialogueBoxHandle {
+  /** 推进对白:未打完则立即显示全文,已打完则进入下一句。供场景插图点击复用。 */
+  advance: () => void;
+}
 
 interface DialogueBoxProps {
   speaker?: string | null;
@@ -39,10 +44,10 @@ function IconMenu() {
   return <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4 H13 M3 8 H13 M3 12 H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>;
 }
 
-export function DialogueBox({
+export const DialogueBox = forwardRef<DialogueBoxHandle, DialogueBoxProps>(function DialogueBox({
   speaker, portrait, text, isNarration, onTap, onPrev, onNext,
   canPrev, autoOn, onToggleAuto, onOpenLog, onMenu, onTypingDone,
-}: DialogueBoxProps) {
+}, ref) {
   const [count, setCount] = useState(0);
   const [done, setDone] = useState(false);
   const intervalRef = useRef<number>(0);
@@ -86,6 +91,8 @@ export function DialogueBox({
     else onTap?.();
   };
 
+  useImperativeHandle(ref, () => ({ advance }));
+
   // 控制条按钮点击不应冒泡到正文的「轻触继续」
   const stop = (fn?: () => void) => (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -128,4 +135,4 @@ export function DialogueBox({
       </div>
     </div>
   );
-}
+});

@@ -96,24 +96,24 @@ function applyNarrativeResult(state: GameState, game: GameNode, rank: GameResult
   if (game.id === "herb_memory") {
     const qualityItem =
       rank === "high" ? "chenbo_prescription_full" :
-      rank === "mid" ? "chenbo_prescription_partial" :
-      "chenbo_prescription_stained";
+        rank === "mid" ? "chenbo_prescription_partial" :
+          "chenbo_prescription_stained";
     next = { ...next, items: addUnique(next.items, qualityItem) };
   }
 
   if (game.id === "case_triage") {
     const qualityItem =
       rank === "high" ? "case_record_full" :
-      rank === "mid" ? "case_record_partial" :
-      "case_record_flawed";
+        rank === "mid" ? "case_record_partial" :
+          "case_record_flawed";
     next = { ...next, items: addItems(next.items, [qualityItem, "wangji_fake_doc"]) };
   }
 
   if (game.id === "song_formula") {
     const qualityItem =
       rank === "high" ? "xuanyin_song_page_complete" :
-      rank === "mid" ? "xuanyin_song_page_corrected" :
-      "xuanyin_song_page_unclean";
+        rank === "mid" ? "xuanyin_song_page_corrected" :
+          "xuanyin_song_page_unclean";
     const extraItems = rank === "high" ? [qualityItem, "forbidden_record"] : [qualityItem];
     next = { ...next, items: addItems(next.items, extraItems) };
   }
@@ -125,28 +125,28 @@ function applyNarrativeResult(state: GameState, game: GameNode, rank: GameResult
 const GAME_FEEDBACK: Record<string, Record<GameResultRank, { title: string; text: string }>> = {
   bambooPuzzle: {
     high: { title: "竹简归位", text: "华佗说：「书能拼起，只是第一步。但你摸到了它的脉络——字句之间有一套活的逻辑。」" },
-    mid:  { title: "大半复原", text: "华佗说：「差一点。再想想字句背后的意思。医书不是目录，每一排都有它的位置。」" },
-    low:  { title: "残缺犹存", text: "华佗说：「这就是残卷为何难传的原因。能拼起的，不只是竹简，是看懂它的人。」" },
+    mid: { title: "大半复原", text: "华佗说：「差一点。再想想字句背后的意思。医书不是目录，每一排都有它的位置。」" },
+    low: { title: "残缺犹存", text: "华佗说：「这就是残卷为何难传的原因。能拼起的，不只是竹简，是看懂它的人。」" },
   },
   woodenBox: {
     high: { title: "机关已解", text: "华佗说：「能用最少的代价解开困局，这才是医道——不浪费，不强求，走最短的路。」" },
-    mid:  { title: "峰回路转", text: "华佗说：「能出来就好。多走了些弯路，但弯路也是路，你走过了。」" },
-    low:  { title: "曲折出关", text: "华佗说：「步步错落，靠摸索才得出路。不要紧——每一次试探都刻进了手里。」" },
+    mid: { title: "峰回路转", text: "华佗说：「能出来就好。多走了些弯路，但弯路也是路，你走过了。」" },
+    low: { title: "曲折出关", text: "华佗说：「步步错落，靠摸索才得出路。不要紧——每一次试探都刻进了手里。」" },
   },
   herbMemory: {
     high: { title: "药案整理完备", text: "华佗说：「认药如识人，你记住了它们各自的模样。一味草药，背后是无数人的试验。」" },
-    mid:  { title: "大体整妥", text: "华佗说：「药名好记，药性需亲历方知。你记住了大半，剩下的靠经验来补。」" },
-    low:  { title: "药案残缺", text: "华佗说：「草药不认识你，你也需要先认识它们。不懂时，就先不用——这也是一条规矩。」" },
+    mid: { title: "大体整妥", text: "华佗说：「药名好记，药性需亲历方知。你记住了大半，剩下的靠经验来补。」" },
+    low: { title: "药案残缺", text: "华佗说：「草药不认识你，你也需要先认识它们。不懂时，就先不用——这也是一条规矩。」" },
   },
   caseTriage: {
     high: { title: "病案顺序正确", text: "华佗说：「医者不论贵贱，只看谁更需要这双手。你做到了这一点。」" },
-    mid:  { title: "轻重有序", text: "华佗说：「有时候，多看一眼就是多一条命。你快到了，下次再准一点。」" },
-    low:  { title: "顺序待正", text: "华佗说：「把人命排出轻重，这是医者最难过的关。规则只有一条：看谁更需要被救。」" },
+    mid: { title: "轻重有序", text: "华佗说：「有时候，多看一眼就是多一条命。你快到了，下次再准一点。」" },
+    low: { title: "顺序待正", text: "华佗说：「把人命排出轻重，这是医者最难过的关。规则只有一条：看谁更需要被救。」" },
   },
   songFormula: {
     high: { title: "歌成定界", text: "玄音看着你划去的几句重方，轻轻点头。「原来传医理，不是唱得越多越好。能救急的，让百姓记住；会误人的，留给医者。」歌声从巷尾散开——你第一次觉得，纸以外也能有书。" },
-    mid:  { title: "界限微差", text: "玄音哼了两句又停下。「大体能传，可还有一两句拿不准。歌可以快，医理不能乱——再想想哪些该留下。」" },
-    low:  { title: "界限未明", text: "玄音刚拨响琴弦，又按住了弦。「这一句若传开，怕是会有人照着乱用。小郎中，歌可以快，医理不能乱。」" },
+    mid: { title: "界限微差", text: "玄音哼了两句又停下。「大体能传，可还有一两句拿不准。歌可以快，医理不能乱——再想想哪些该留下。」" },
+    low: { title: "界限未明", text: "玄音刚拨响琴弦，又按住了弦。「这一句若传开，怕是会有人照着乱用。小郎中，歌可以快，医理不能乱。」" },
   },
 };
 
@@ -155,8 +155,8 @@ function RankSeal({ rank }: { rank: GameResultRank }) {
   const c = rank === "high"
     ? { ring: "#5fa892", text: "#a6dccb", glow: "rgba(95,168,146,0.45)" }
     : rank === "mid"
-    ? { ring: "#cdb277", text: "#ecdca6", glow: "rgba(205,178,119,0.4)" }
-    : { ring: "rgba(228,224,208,0.5)", text: "rgba(228,224,208,0.75)", glow: "rgba(228,224,208,0.12)" };
+      ? { ring: "#cdb277", text: "#ecdca6", glow: "rgba(205,178,119,0.4)" }
+      : { ring: "rgba(228,224,208,0.5)", text: "rgba(228,224,208,0.75)", glow: "rgba(228,224,208,0.12)" };
   const sz = 92, r = sz / 2;
   return (
     <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}
@@ -166,7 +166,7 @@ function RankSeal({ rank }: { rank: GameResultRank }) {
       <circle cx={r} cy={r} r={r - 7} fill="none" stroke={c.ring} strokeWidth="1.8" />
       <text x={r} y={r + 11} textAnchor="middle"
         fontFamily="var(--font-han)" fontSize="32" fill={c.text}>
-        { rank === "high" ? "优" : rank === "mid" ? "良" : "勉" }
+        {rank === "high" ? "优" : rank === "mid" ? "良" : "勉"}
       </text>
     </svg>
   );
@@ -299,6 +299,117 @@ function Shell({
   );
 }
 
+const CASE_TRIAGE_IMG = "/images/levels/1/chapters/ch3_beats/ch3_07_three_cases.webp";
+
+const CASE_FILES = [
+  { id: "child", name: "孩童", img: "/images/levels/1/chapters/ch3_beats/cases/case_child.webp" },
+  { id: "soldier", name: "军士", img: "/images/levels/1/chapters/ch3_beats/cases/case_soldier.webp" },
+  { id: "servant", name: "老仆", img: "/images/levels/1/chapters/ch3_beats/cases/case_servant.webp" },
+];
+const CASE_TRIAGE_CORRECT = ["child", "soldier", "servant"];
+
+function shuffled<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/** 曹府查案：全屏沉浸场景，依次点选病案文件排出救治顺序（复用 .clinic-fs / .bamboo-top/.bamboo-bottom 浮层）。 */
+function CaseTriage({ finish, game, best, onBack }: {
+  finish: (rank: GameResultRank) => void;
+  game: GameNode;
+  best?: GameResultRank;
+  onBack: () => void;
+}) {
+  const [order, setOrder] = useState<string[]>([]);
+  const [files] = useState(() => shuffled(CASE_FILES));
+
+  const toggle = (id: string) => {
+    setOrder(o => o.includes(id) ? o.filter(x => x !== id) : [...o, id]);
+  };
+  const reset = () => setOrder([]);
+  const submit = () => {
+    const exact = order.length === CASE_TRIAGE_CORRECT.length && order.every((x, i) => x === CASE_TRIAGE_CORRECT[i]);
+    const firstTwo = order.slice(0, 2).every((x, i) => x === CASE_TRIAGE_CORRECT[i]);
+    finish(exact ? "high" : firstTwo ? "mid" : "low");
+  };
+
+  return (
+    <div className="clinic-fs">
+      <div className="clinic-fs-bg" style={{ backgroundImage: `url(${CASE_TRIAGE_IMG})` }} />
+      <div className="clinic-fs-scrim" />
+
+      <div className="bamboo-top">
+        <button className="bamboo-back press" data-sfx="back" onClick={onBack} aria-label="返回">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M8 2 L3 6.5 L8 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <div className="bamboo-top-titles">
+          <div className="bamboo-top-title">曹 府 查 案</div>
+          {game.context && <div className="bamboo-top-sub">{game.context}</div>}
+        </div>
+        <div className="bamboo-top-right">
+          {best
+            ? <span className="bamboo-badge" style={{ color: RANK_COLOR[best], borderColor: `${RANK_COLOR[best]}55` }}>最佳 · {RANK_LABEL[best]}</span>
+            : <span className="bamboo-badge bamboo-badge--new">初 次 挑 战</span>}
+        </div>
+      </div>
+
+      <div className="clinic-stage">
+        <div className="clinic-card clinic-card--intro">
+          <div className="clinic-card-title">由 急 至 缓</div>
+          <div className="clinic-card-text">三人候诊，不论身份贵贱——依次点选病案，按最先救治的顺序排列。</div>
+        </div>
+
+        <div className="case-triage-row">
+          {files.map(c => {
+            const idx = order.indexOf(c.id);
+            return (
+              <div key={c.id} className="case-file-wrap">
+                <button
+                  className={"case-file press" + (idx >= 0 ? " is-picked" : "")}
+                  onClick={() => toggle(c.id)}
+                >
+                  <div className="case-file-frame">
+                    <img src={c.img} alt="" className="case-file-img" draggable={false} />
+                    {idx >= 0 && <span className="case-file-badge">{idx + 1}</span>}
+                  </div>
+                  <div className="case-file-caption">
+                    <strong>{c.name}</strong>
+                  </div>
+                </button>
+                <img src={c.img} alt="" className="case-file-zoom" draggable={false} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="bamboo-bottom">
+        <div className="bamboo-actions">
+          <button className="btn-ghost press" onClick={reset}>重 排</button>
+          <button className="btn-primary press bamboo-submit" disabled={order.length !== CASE_FILES.length} onClick={submit}>
+            提 交 病 案
+          </button>
+        </div>
+        <div className="bamboo-dev">
+          <span className="bamboo-dev-label">开 发 者 跳 过</span>
+          {(["high", "mid", "low"] as GameResultRank[]).map(r => (
+            <button key={r} className="btn-ghost press bamboo-dev-btn"
+              onClick={() => finish(r)}
+              style={{ borderColor: `${RANK_COLOR[r]}40`, color: RANK_COLOR[r] }}>
+              {RANK_LABEL[r]}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 const BAMBOO_TABLE_IMG = "/images/levels/1/chapters/ch1_beats/bamboo_table.webp";
 const slipImg = (word: string) => `/images/levels/1/chapters/ch1_beats/slips/${encodeURIComponent(word)}.webp`;
 
@@ -608,14 +719,14 @@ interface Block {
 // [木F][   ][   ][出 ]   ← 出口(r4,c3)
 function createEasyBlocks(): Block[] {
   return [
-    { id: 1,  w: 2, h: 1, r: 1, c: 1 }, // 钥匙 横1×2
-    { id: 2,  w: 2, h: 1, r: 0, c: 0 }, // 木A 横2×1
-    { id: 3,  w: 2, h: 1, r: 0, c: 2 }, // 木B 横2×1
-    { id: 4,  w: 1, h: 2, r: 1, c: 0 }, // 木C 竖1×2
-    { id: 5,  w: 1, h: 2, r: 1, c: 3 }, // 木D 竖1×2
-    { id: 6,  w: 1, h: 1, r: 2, c: 1 }, // 木E 1×1
-    { id: 7,  w: 1, h: 2, r: 3, c: 0 }, // 木F 竖1×2
-    { id: 8,  w: 2, h: 1, r: 3, c: 2 }, // 木G 横2×1
+    { id: 1, w: 2, h: 1, r: 1, c: 1 }, // 钥匙 横1×2
+    { id: 2, w: 2, h: 1, r: 0, c: 0 }, // 木A 横2×1
+    { id: 3, w: 2, h: 1, r: 0, c: 2 }, // 木B 横2×1
+    { id: 4, w: 1, h: 2, r: 1, c: 0 }, // 木C 竖1×2
+    { id: 5, w: 1, h: 2, r: 1, c: 3 }, // 木D 竖1×2
+    { id: 6, w: 1, h: 1, r: 2, c: 1 }, // 木E 1×1
+    { id: 7, w: 1, h: 2, r: 3, c: 0 }, // 木F 竖1×2
+    { id: 8, w: 2, h: 1, r: 3, c: 2 }, // 木G 横2×1
   ];
 }
 
@@ -627,15 +738,15 @@ function createEasyBlocks(): Block[] {
 // [木G][   ][木H][出 ]   ← 木H1×1(r4,c2), 出口(r4,c3)
 function createMediumBlocks(): Block[] {
   return [
-    { id: 1,  w: 2, h: 1, r: 1, c: 1 }, // 钥匙 横1×2
-    { id: 2,  w: 2, h: 1, r: 0, c: 0 }, // 木A 横2×1
-    { id: 3,  w: 2, h: 1, r: 0, c: 2 }, // 木B 横2×1
-    { id: 4,  w: 1, h: 2, r: 1, c: 0 }, // 木C 竖1×2
-    { id: 5,  w: 1, h: 2, r: 1, c: 3 }, // 木D 竖1×2
-    { id: 6,  w: 1, h: 1, r: 2, c: 1 }, // 木E 1×1
-    { id: 7,  w: 2, h: 1, r: 3, c: 2 }, // 木F 横2×1
-    { id: 8,  w: 1, h: 2, r: 3, c: 0 }, // 木G 竖1×2
-    { id: 9,  w: 1, h: 1, r: 4, c: 2 }, // 木H 1×1
+    { id: 1, w: 2, h: 1, r: 1, c: 1 }, // 钥匙 横1×2
+    { id: 2, w: 2, h: 1, r: 0, c: 0 }, // 木A 横2×1
+    { id: 3, w: 2, h: 1, r: 0, c: 2 }, // 木B 横2×1
+    { id: 4, w: 1, h: 2, r: 1, c: 0 }, // 木C 竖1×2
+    { id: 5, w: 1, h: 2, r: 1, c: 3 }, // 木D 竖1×2
+    { id: 6, w: 1, h: 1, r: 2, c: 1 }, // 木E 1×1
+    { id: 7, w: 2, h: 1, r: 3, c: 2 }, // 木F 横2×1
+    { id: 8, w: 1, h: 2, r: 3, c: 0 }, // 木G 竖1×2
+    { id: 9, w: 1, h: 1, r: 4, c: 2 }, // 木H 1×1
   ];
 }
 
@@ -850,18 +961,37 @@ function WoodenBox({ finish, hardMode, game, best, onBack }: {
   );
 }
 
+const CLINIC_TABLE_IMG = "/images/levels/1/chapters/ch2_beats/clinic_table.webp";
+
 const prescriptions = [
-  { name: "桂枝汤", herbs: ["桂枝", "芍药", "甘草", "生姜", "大枣"] },
-  { name: "四君子汤", herbs: ["人参", "白术", "茯苓", "甘草"] },
-  { name: "生脉散", herbs: ["人参", "麦冬", "五味子"] },
+  { name: "桂枝汤", herbs: ["桂枝", "芍药", "甘草", "生姜", "大枣"], img: "/images/levels/1/chapters/ch2_beats/clinic_herbs_guizhi.webp" },
+  { name: "四君子汤", herbs: ["人参", "白术", "茯苓", "甘草"], img: "/images/levels/1/chapters/ch2_beats/clinic_herbs_sijunzi.webp" },
+  { name: "生脉散", herbs: ["人参", "麦冬", "五味子"], img: "/images/levels/1/chapters/ch2_beats/clinic_herbs_shengmai.webp" },
 ];
 
-function HerbMemory({ finish }: { finish: (rank: GameResultRank) => void }) {
+/** 配药救急：全屏沉浸场景（药庐场景衬底，复用 .bamboo-top/.bamboo-bottom 浮层）。 */
+function HerbMemory({ finish, game, best, onBack }: {
+  finish: (rank: GameResultRank) => void;
+  game: GameNode;
+  best?: GameResultRank;
+  onBack: () => void;
+}) {
   const [started, setStarted] = useState(false);
   const [remaining, setRemaining] = useState(60);
   const [selected, setSelected] = useState<string | null>(null);
   const [placed, setPlaced] = useState<Record<string, string[]>>({});
+  const [dragOver, setDragOver] = useState<string | null>(null);
   const herbs = Array.from(new Set(prescriptions.flatMap(p => p.herbs))).sort();
+
+  const placeHerb = (presc: string, herb: string) => {
+    setPlaced(prev => {
+      const list = prev[presc] || [];
+      return list.includes(herb) ? prev : { ...prev, [presc]: [...list, herb] };
+    });
+  };
+  const removeHerb = (presc: string, herb: string) => {
+    setPlaced(prev => ({ ...prev, [presc]: (prev[presc] || []).filter(h => h !== herb) }));
+  };
 
   useEffect(() => {
     if (!started || remaining <= 0) return;
@@ -869,31 +999,10 @@ function HerbMemory({ finish }: { finish: (rank: GameResultRank) => void }) {
     return () => window.clearTimeout(id);
   }, [started, remaining]);
 
-  if (!started) {
-    return (
-      <>
-        <div style={instStyle}>先记住三张药方与各自药材，计时结束后凭记忆归整。</div>
-        <button className="btn-primary press" onClick={() => setStarted(true)} style={{ width: "100%" }}>开 始 记 忆</button>
-      </>
-    );
-  }
-
-  if (remaining > 0) {
-    return (
-      <>
-        <p>记忆时间：{remaining} 秒</p>
-        {prescriptions.map(p => (
-          <div key={p.name} className="dialogue" style={{ margin: "10px 0" }}>
-            <div className="dialogue-name">{p.name}</div>
-            <div>{p.herbs.join("、")}</div>
-          </div>
-        ))}
-        <button className="btn-primary press" onClick={() => setRemaining(0)} style={{ width: "100%", marginTop: 12 }}>
-          开始整理（跳过记忆）
-        </button>
-      </>
-    );
-  }
+  const memorizing = started && remaining > 0;
+  const assembling = started && remaining <= 0;
+  const placedCount = Object.values(placed).reduce((n, l) => n + l.length, 0);
+  const totalHerbCount = prescriptions.reduce((n, p) => n + p.herbs.length, 0);
 
   const submit = () => {
     let correct = 0;
@@ -909,88 +1018,142 @@ function HerbMemory({ finish }: { finish: (rank: GameResultRank) => void }) {
   };
 
   return (
-    <>
-      <p>药方已经收起。先点药材，再点药方框。</p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-        {herbs.map(h => (
-          <button key={h} className="btn-ghost press" onClick={() => setSelected(h)}
-            style={{ borderColor: selected === h ? "var(--jade)" : undefined }}>{h}</button>
-        ))}
-      </div>
-      <div className="mg-grid-3">
-        {prescriptions.map(p => (
-          <button key={p.name} className="choice press" onClick={() => {
-            if (!selected) return;
-            setPlaced(prev => {
-              const list = prev[p.name] || [];
-              return { ...prev, [p.name]: list.includes(selected) ? list : [...list, selected] };
-            });
-            setSelected(null);
-          }}>
-            <span className="choice-label">{p.name}: {(placed[p.name] || []).join("、") || "待整理"}</span>
-          </button>
-        ))}
-      </div>
-      <button className="btn-primary press" onClick={submit} style={{ width: "100%", marginTop: 16 }}>提交验方</button>
-    </>
-  );
-}
+    <div className="clinic-fs" >
+      <div className="clinic-fs-bg" style={{ backgroundImage: `url(${CLINIC_TABLE_IMG})` }} />
+      <div className="clinic-fs-scrim" />
 
-function SimpleOrderGame({
-  intro, items, correct, finishLabel, finish, hints,
-}: {
-  intro: string;
-  items: string[];
-  correct: string[];
-  finishLabel: string;
-  finish: (rank: GameResultRank) => void;
-  hints?: Record<string, string>;
-}) {
-  const [pool, setPool] = useState(items);
-  const [answer, setAnswer] = useState<string[]>([]);
-  const choose = (item: string) => {
-    setPool(p => p.filter(x => x !== item));
-    setAnswer(a => [...a, item]);
-  };
-  const reset = () => {
-    setPool(items);
-    setAnswer([]);
-  };
-  const submit = () => {
-    const exact = answer.every((x, i) => x === correct[i]);
-    const firstTwo = answer.slice(0, 2).every((x, i) => x === correct[i]);
-    finish(exact ? "high" : firstTwo ? "mid" : "low");
-  };
-  return (
-    <>
-      <div style={instStyle}>{intro}</div>
-      <div className="dialogue" style={{ margin: "10px 0" }}>
-        <div className="dialogue-name">你的排序</div>
-        <div>{answer.join(" → ") || "尚未选择"}</div>
+      <div className="bamboo-top">
+        <button className="bamboo-back press" data-sfx="back" onClick={onBack} aria-label="返回">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M8 2 L3 6.5 L8 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <div className="bamboo-top-titles">
+          <div className="bamboo-top-title">配 药 救 急</div>
+          {game.context && <div className="bamboo-top-sub">{game.context}</div>}
+        </div>
+        <div className="bamboo-top-right">
+          {best
+            ? <span className="bamboo-badge" style={{ color: RANK_COLOR[best], borderColor: `${RANK_COLOR[best]}55` }}>最佳 · {RANK_LABEL[best]}</span>
+            : <span className="bamboo-badge bamboo-badge--new">初 次 挑 战</span>}
+        </div>
       </div>
-      <div className="mg-grid-2">
-        {pool.map(item => (
-          <div key={item}>
-            <button className="choice press" onClick={() => choose(item)} style={{ width: "100%" }}>
-              <span className="choice-label">{item}</span>
-            </button>
-            {hints?.[item] && (
-              <div style={{
-                marginTop: 4, padding: "4px 10px",
-                fontSize: 11, fontStyle: "italic",
-                color: "rgba(200,168,88,0.85)",
-                letterSpacing: "0.03em", lineHeight: 1.6,
-                borderLeft: "2px solid rgba(200,168,88,0.5)",
-              }}>{hints[item]}</div>
-            )}
+
+      <div className="clinic-stage">
+        {!started && (
+          <div className="clinic-card clinic-card--intro">
+            <div className="clinic-card-title">先 记 住 药 方</div>
+            <div className="clinic-card-text">三张药方与各自药材，计时结束后凭记忆归整。</div>
           </div>
-        ))}
+        )}
+
+        {memorizing && (
+          <>
+            <div className="clinic-timer">记 忆 时 间 · {remaining} 秒</div>
+            <div className="clinic-cards">
+              {prescriptions.map(p => (
+                <div key={p.name} className="clinic-card clinic-card--herb">
+                  <img src={p.img} alt="" className="clinic-card-thumb" draggable={false} />
+                  <div className="clinic-card-body">
+                    <div className="clinic-card-name">{p.name}</div>
+                    <div className="clinic-card-herbs">{p.herbs.join("、")}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {assembling && (
+          <>
+            <div className="clinic-herb-pool">
+              {herbs.map(h => (
+                <button key={h}
+                  className={"clinic-herb-tag press" + (selected === h ? " is-selected" : "")}
+                  draggable
+                  onDragStart={(e) => { e.dataTransfer.setData("text/plain", h); setSelected(h); }}
+                  onClick={() => setSelected(h)}>{h}</button>
+              ))}
+            </div>
+            <div className="bamboo-hint">拖拽药材到药方框，或先点选药材再点药方框；点已配药材可取出重置。</div>
+            <div className="clinic-cards clinic-cards--target">
+              {prescriptions.map(p => (
+                <div key={p.name}
+                  role="button"
+                  tabIndex={0}
+                  className={"clinic-card clinic-card--herb clinic-card--target press" + (dragOver === p.name ? " is-dragover" : "")}
+                  onClick={() => {
+                    if (!selected) return;
+                    placeHerb(p.name, selected);
+                    setSelected(null);
+                  }}
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(p.name); }}
+                  onDragLeave={() => setDragOver(prev => (prev === p.name ? null : prev))}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const h = e.dataTransfer.getData("text/plain");
+                    if (h) placeHerb(p.name, h);
+                    setSelected(null);
+                    setDragOver(null);
+                  }}
+                >
+                  <img src={p.img} alt="" className="clinic-card-thumb" draggable={false} />
+                  <div className="clinic-card-body">
+                    <div className="clinic-card-name">{p.name}</div>
+                    <div className="clinic-card-herbs clinic-card-herbs--placed">
+                      {(placed[p.name] || []).length ? (
+                        <div className="clinic-placed-chips">
+                          {(placed[p.name] || []).map(h => (
+                            <span key={h} className="clinic-placed-chip"
+                              onClick={(e) => { e.stopPropagation(); removeHerb(p.name, h); }}>
+                              {h}<span className="clinic-placed-chip-x">×</span>
+                            </span>
+                          ))}
+                        </div>
+                      ) : "待 整 理"}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16 }}>
-        <button className="btn-ghost press" onClick={reset}>重排</button>
-        <button className="btn-primary press" disabled={answer.length !== items.length} onClick={submit}>{finishLabel}</button>
+
+      <div className="bamboo-bottom">
+        {!started && (
+          <div className="bamboo-actions">
+            <button className="btn-primary press bamboo-submit" onClick={() => setStarted(true)}>开 始 记 忆</button>
+          </div>
+        )}
+
+        {memorizing && (
+          <div className="bamboo-actions">
+            <button className="btn-ghost press bamboo-submit" onClick={() => setRemaining(0)}>开 始 整 理（跳 过 记 忆）</button>
+          </div>
+        )}
+
+        {assembling && (
+          <>
+            <div className="bamboo-actions">
+              <button className="btn-primary press bamboo-submit" onClick={submit}>
+                提 交 验 方（{placedCount}/{totalHerbCount}）
+              </button>
+            </div>
+            <div className="bamboo-dev">
+              <span className="bamboo-dev-label">开 发 者 跳 过</span>
+              {(["high", "mid", "low"] as GameResultRank[]).map(r => (
+                <button key={r} className="btn-ghost press bamboo-dev-btn"
+                  onClick={() => finish(r)}
+                  style={{ borderColor: `${RANK_COLOR[r]}40`, color: RANK_COLOR[r] }}>
+                  {RANK_LABEL[r]}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -1213,6 +1376,25 @@ export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniG
     );
   }
 
+  // 配药救急：全屏沉浸场景（药庐衬底）
+  if (game.kind === "herbMemory" && !locked) {
+    return (
+      <>
+        <HerbMemory
+          key={retryKey}
+          finish={finish}
+          game={game}
+          best={state.gameResults[game.id]?.best}
+          onBack={() => gotoPage("story")}
+        />
+        <Toast text={toast} onDone={() => setToast("")} />
+        {feedback !== null && (
+          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={() => gotoPage("story")} />
+        )}
+      </>
+    );
+  }
+
   // 木盒机关：全屏沉浸场景
   if (game.kind === "woodenBox" && !locked) {
     return (
@@ -1232,27 +1414,28 @@ export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniG
     );
   }
 
+  // 曹府查案：全屏沉浸场景（病案文件三联卡衬底）
+  if (game.kind === "caseTriage" && !locked) {
+    return (
+      <>
+        <CaseTriage
+          key={retryKey}
+          finish={finish}
+          game={game}
+          best={state.gameResults[game.id]?.best}
+          onBack={() => gotoPage("story")}
+        />
+        <Toast text={toast} onDone={() => setToast("")} />
+        {feedback !== null && (
+          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={() => gotoPage("story")} />
+        )}
+      </>
+    );
+  }
+
   let body: React.ReactNode;
   if (locked) {
     body = <p>尚未获得进入此机关所需之物。</p>;
-  } else if (game.kind === "herbMemory") {
-    body = <HerbMemory key={retryKey} finish={finish} />;
-  } else if (game.kind === "caseTriage") {
-    body = (
-      <SimpleOrderGame
-        key={retryKey}
-        intro="三人候诊，不论身份贵贱——只看谁更需要这双手，由急至缓排定顺序。"
-        items={["军士：外伤失血，尚可止血", "孩童：高热惊厥，需立刻处置", "老仆：久咳体虚，可稍后调养"]}
-        correct={["孩童：高热惊厥，需立刻处置", "军士：外伤失血，尚可止血", "老仆：久咳体虚，可稍后调养"]}
-        finishLabel="提交病案"
-        finish={finish}
-        hints={
-          state.gameResults["herb_memory"]?.best === "high"
-            ? { "孩童：高热惊厥，需立刻处置": "陈伯药签：此症先固住阳气，切忌猛灌汤药——街市上那个孩子，也是这样救回来的。" }
-            : undefined
-        }
-      />
-    );
   } else {
     body = <SongBoundary key={retryKey} finish={finish} />;
   }
