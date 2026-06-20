@@ -1,9 +1,29 @@
 import { useState } from "react";
-import { TRUST_OPTIONS } from "../data";
-import type { GameState } from "../data/types";
+import { STORY, TRUST_OPTIONS } from "../data";
+import type { Beat, GameState } from "../data/types";
 import { saveBeat, saveState } from "../lib/storage";
 import type { PageKey } from "../lib/routes";
 import { PageShell } from "../components";
+
+/** 与 StoryPage.flattenBeats 一致地展开 ch5，返回「gotoTrust 之后一句」的下标（resume 点）。 */
+function resumeIndexAfterTrust(state: GameState): number {
+  const map = state as unknown as Record<string, unknown>;
+  const box = map.boxCompartment ?? "missed"; // 与 flattenBeats 的默认一致
+  const flat: Beat[] = [];
+  const walk = (bs: Beat[]) => {
+    for (const b of bs) {
+      if ("ifKey" in b) {
+        const v = b.ifKey === "boxCompartment" ? box : map[b.ifKey];
+        if (String(v ?? "") === b.ifVal) walk(b.beats);
+      } else {
+        flat.push(b);
+      }
+    }
+  };
+  walk(STORY.ch5?.beats ?? []);
+  const idx = flat.findIndex(b => "gotoTrust" in b);
+  return idx >= 0 ? idx + 1 : 0;
+}
 
 interface TrustRoutePageProps {
   state: GameState;
@@ -53,9 +73,8 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
     };
     setState(ns);
     saveState(ns);
-    // 保存到 ch5 中 gotoTrust 之后的位置（"你已经做出选择..."）
-    // 需要根据 flattenBeats 动态计算，但 ch5 无条件分支，所以固定为 beat 8
-    saveBeat(5, 8);
+    // 动态定位到「gotoTrust 之后一句」，避免重放，也避免停在 gotoTrust 转场 beat 上卡死。
+    saveBeat(5, resumeIndexAfterTrust(ns));
     gotoPage("story");
   };
 

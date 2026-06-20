@@ -221,7 +221,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const gameLocked = !!(gameNode?.requiredItem && !state.items.includes(gameNode.requiredItem));
   const isTransition = isTransitionBeat(beat);
 
-  const runTransition = (b: Beat | undefined): boolean => {
+  const runTransition = (b: Beat | undefined, atIdx: number): boolean => {
     if (!b) return false;
     if ("gotoChapter" in b) {
       const nextCh = parseInt(b.gotoChapter.replace("ch", ""), 10);
@@ -232,9 +232,10 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
       return true;
     }
     if ("gotoTrust" in b) {
-      // 如果已经做出了最终选择，跳过信任页，直接前进到下一个 beat
+      // 如果已经做出了最终选择，跳过信任页，前进到「该 gotoTrust beat 的下一个 beat」。
+      // 注意必须用转场 beat 自身的下标 atIdx，而不是当前 beatIdx——否则会停在 gotoTrust 上卡死。
       if (state.finalChoice) {
-        setBeatIdx(beatIdx + 1);
+        setBeatIdx(atIdx + 1);
         return true;
       }
       gotoPage("trust");
@@ -262,7 +263,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
     const clamped = Math.max(0, Math.min(beats.length - 1, idx));
     const target = beats[clamped];
     if (isTransitionBeat(target)) {
-      runTransition(target);
+      runTransition(target, clamped);
       return;
     }
     setBeatIdx(clamped);
@@ -276,7 +277,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const next = () => {
     if (!beat) return;
     if (gameNode && !gameDone) return;
-    if (runTransition(beat)) return;
+    if (runTransition(beat, beatIdx)) return;
     goToIndex(beatIdx + 1);
   };
 
@@ -537,7 +538,20 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
                     <button
                       className="btn-ghost press"
                       style={{ minHeight: 34, fontSize: 11, letterSpacing: "0.16em", opacity: 0.65 }}
-                      onClick={() => setExploreVisited(exploreScene.hotspots.map(h => h.id))}
+                      onClick={() => {
+                        // 开发者跳过：自动收集本场景所有热点的可登记物品（线索板的线索由物品/进度推导）
+                        const ids: string[] = [];
+                        exploreScene.hotspots.forEach(h => h.beats.forEach(b => {
+                          if ("line" in b) parseGainedItemIds(b.line).forEach(id => { if (!ids.includes(id)) ids.push(id); });
+                        }));
+                        const newIds = ids.filter(id => !state.items.includes(id));
+                        if (newIds.length) {
+                          const ns: GameState = { ...state, items: [...state.items, ...newIds] };
+                          setState(ns);
+                          saveState(ns);
+                        }
+                        setExploreVisited(exploreScene.hotspots.map(h => h.id));
+                      }}
                     >开 发 者 跳 过</button>
                   </div>
                 )}

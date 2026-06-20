@@ -1145,7 +1145,9 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
     let ns = applyNarrativeResult(applyResult(state, game, rank), game, rank);
     // 木盒夹层：困难难度高完成度=藏卷成功(found)，其余完成=险些被搜出(missed)
     if (game.kind === "woodenBox") {
-      const found = woodenBoxHard && rank === "high";
+      // 藏卷成功只看完成度（高完成度=藏好夹层），与难易无关；
+      // 之前误加了 woodenBoxHard 条件，导致易模式即使高分也判为藏匿失败。
+      const found = rank === "high";
       ns = {
         ...ns,
         boxCompartment: found ? "found" : "missed",

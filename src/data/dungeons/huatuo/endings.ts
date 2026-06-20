@@ -76,11 +76,11 @@ function hasItem(state: GameState, item: string): boolean {
 }
 
 function searchPressure(state: GameState): number {
+  // 注意：ch2 show_fragment、ch3 over_search、woodenBox 藏匿失败(boxCompartment=missed)
+  // 以及各小游戏低完成度，都已在「游玩时」直接累加进 state.searchPressure，这里不可重复计入。
+  // 仅补上「歌诀边传边改、且纠错不足」这一未在游玩时即时累加的来源。
   let pressure = state.searchPressure || 0;
-  if (state.ch2 === "show_fragment") pressure += 1;
-  if (state.ch3 === "over_search") pressure += 1;
   if (state.ch4 === "spread_then_fix" && !isAtLeastMid(state, "song_formula")) pressure += 1;
-  if (state.boxCompartment === "missed") pressure += 1;
   return pressure;
 }
 
