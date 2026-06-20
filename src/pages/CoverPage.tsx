@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ShowcasePage } from "./ShowcasePage";
 import { stopBgm } from "../lib/audio";
 import { isPrologueSeen, markPrologueSeen } from "../lib/storage";
-import { TitleCard } from "../components";
+import { TitleSequence, titleCardContent, studioCardContent, DialogueBox, ProgressDots } from "../components";
 
 interface CoverPageProps {
   /** 进入游戏(播完开场动画后由 App 跳转到卷宗)。 */
@@ -17,51 +17,59 @@ const PROLOGUE_LINES = [
 ];
 
 /**
- * 序幕场景：文化博物馆库房。顶部「序幕 · 典故修补者」，底部逐句对白（整句淡入，不用打字机以免文字跳动）。
- * replay=true 时用于「查看设定」重看，末句提示「轻触返回」。
+ * 序幕场景：文化博物馆库房。
+ * 先黑屏过场序列（序幕标题卡 → 拾遗工作室署名卡），再进底部对话框逐句旁白
+ * （复用章节同款 DialogueBox：打字机 + 上一句/自动/快进控制条），与正文一致。
  */
-function PrologueScene({ onDone, replay }: { onDone: () => void; replay?: boolean }) {
+function PrologueScene({ onDone }: { onDone: () => void; replay?: boolean }) {
   const [idx, setIdx] = useState(0);
-  const [showTitle, setShowTitle] = useState(true); // 先黑屏标题卡，再进对白
+  // intro=黑屏过场序列；dialogue=底部对话框旁白。
+  const [stage, setStage] = useState<"intro" | "dialogue">("intro");
+  const [autoOn, setAutoOn] = useState(false);
+  const autoTimer = useRef<number>(0);
   const last = idx >= PROLOGUE_LINES.length - 1;
   // 序幕 BGM 用剧情外统一主题曲，由 App（cover 页）统一播放，这里无需单独管理。
 
-  const advance = () => {
-    if (showTitle) return; // 标题卡显示时，点击交给标题卡自身处理
+  const next = () => {
     if (!last) setIdx(idx + 1);
     else onDone();
   };
+  const prev = () => { if (idx > 0) setIdx(idx - 1); };
 
-  const endHint = replay ? "轻 触 返 回" : "轻 触 进 入";
+  const clearAuto = () => { if (autoTimer.current) { window.clearTimeout(autoTimer.current); autoTimer.current = 0; } };
+  useEffect(() => clearAuto, []);
 
   return (
-    <div className="prologue-scene" onClick={advance} role="button" aria-label="轻触继续">
+    <div className="prologue-scene" role="button" aria-label="序幕">
       <img src="/images/cover.jpg" className="prologue-bg" alt="" />
       <div className="prologue-scrim" />
       <div className="grain" />
 
-      <div className="prologue-top">
-        <div className="prologue-eyebrow">序 幕</div>
-        <div className="prologue-title">典 故 修 补 者</div>
-        <div className="prologue-scene-label">文 化 博 物 馆 · 库 房</div>
-      </div>
-
-      {showTitle ? (
-        <TitleCard eyebrow="序 幕" title="典 故 修 补 者" onDone={() => setShowTitle(false)} />
+      {stage === "intro" ? (
+        <TitleSequence
+          cards={[titleCardContent("序 幕", "典 故 修 补 者"), studioCardContent()]}
+          onDone={() => setStage("dialogue")}
+        />
       ) : (
-        <div className="prologue-dialogue">
-          <div className="prologue-lines">
-            {/* 整句淡入；已读句保留在上方、略压暗，不再逐字跳动 */}
-            {PROLOGUE_LINES.slice(0, idx + 1).map((ln, i) => (
-              <p key={i} className={"prologue-line" + (i < idx ? " is-past" : "")}>{ln}</p>
-            ))}
-          </div>
-          <div className="prologue-progress">
-            {PROLOGUE_LINES.map((_, i) => (
-              <span key={i} className={"prologue-dot" + (i <= idx ? " is-on" : "")} />
-            ))}
-          </div>
-          <div className="prologue-hint">{last ? endHint : "轻 触 继 续"} ▶</div>
+        <div style={{
+          position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 3,
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
+          padding: "0 24px calc(18px + env(safe-area-inset-bottom, 0px))",
+        }}>
+          <ProgressDots total={PROLOGUE_LINES.length} current={idx + 1} />
+          <DialogueBox
+            key={idx}
+            text={PROLOGUE_LINES[idx]}
+            isNarration
+            onNext={next}
+            onPrev={prev}
+            canPrev={idx > 0}
+            autoOn={autoOn}
+            onToggleAuto={() => setAutoOn(v => !v)}
+            onTypingDone={() => {
+              if (autoOn) { clearAuto(); autoTimer.current = window.setTimeout(next, 1600); }
+            }}
+          />
         </div>
       )}
     </div>

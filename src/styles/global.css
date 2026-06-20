@@ -2503,11 +2503,11 @@ button:disabled,
 
 .title-card-eyebrow {
   font-family: var(--font-han);
-  font-size: 15px;
+  font-size: 21px;
   letter-spacing: 0.42em;
   text-indent: 0.42em;
   color: var(--gold-pale);
-  opacity: 0.78;
+  opacity: 0.82;
 }
 
 .title-card-rule {
@@ -2519,11 +2519,49 @@ button:disabled,
 
 .title-card-title {
   font-family: var(--font-han);
-  font-size: clamp(28px, 7vmin, 40px);
+  font-size: clamp(36px, 9vmin, 52px);
   letter-spacing: 0.32em;
   text-indent: 0.32em;
   color: var(--gold-pale);
   text-shadow: 0 0 22px rgba(236, 220, 166, 0.4), 0 2px 14px rgba(0, 0, 0, 0.9);
+}
+
+/* 过场序列：单层持续黑底，首尾淡入/淡出一次（卡间不闪场景） */
+.title-card--seq {
+  animation: fadeIn 360ms ease both;
+}
+.title-card--seq.is-exiting {
+  animation: titleSeqOut 360ms ease forwards;
+}
+@keyframes titleSeqOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+/* 卡内：随 key 变化重挂载、每张独立做文字淡入→停留→淡出 */
+.title-seq-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 24px;
+  animation: titleCardText 2600ms ease forwards;
+}
+
+/* 工作室署名卡（序幕标题卡之后） */
+.studio-card-logo {
+  width: clamp(180px, 46vmin, 280px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 22px rgba(236, 220, 166, 0.22));
+}
+.studio-card-sub {
+  margin-top: 18px;
+  font-family: var(--font-han);
+  font-size: 18px;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  color: var(--gold-pale);
+  opacity: 0.62;
 }
 
 /* ============================================================
@@ -2545,15 +2583,14 @@ button:disabled,
   height: 100%;
   object-fit: cover;
   object-position: center top;
-  opacity: 0.5;
-  filter: saturate(0.92) brightness(0.78);
 }
 
 .prologue-scrim {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(5, 8, 11, 0.72) 0%, rgba(5, 8, 11, 0.32) 30%, rgba(5, 8, 11, 0.55) 64%, rgba(3, 5, 8, 0.97) 100%);
+  /* 顶部叠字已移除，图本身带标题：顶部只做极轻压暗，底部托住对话框 */
+  background: linear-gradient(180deg, rgba(4, 7, 10, 0.32) 0%, rgba(5, 8, 11, 0.12) 12%, transparent 28%, transparent 62%, rgba(5, 8, 11, 0.45) 86%, rgba(3, 5, 8, 0.82) 100%);
 }
 
 .prologue-top {
@@ -2568,30 +2605,32 @@ button:disabled,
 
 .prologue-eyebrow {
   font-family: var(--font-han);
-  font-size: 14px;
+  font-size: 19px;
   letter-spacing: 0.5em;
   text-indent: 0.5em;
   color: var(--gold-pale);
-  opacity: 0.68;
-  margin-bottom: 10px;
+  opacity: 0.78;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
 }
 
 .prologue-title {
   font-family: var(--font-han);
-  font-size: 26px;
+  font-size: 34px;
   letter-spacing: 0.32em;
   text-indent: 0.32em;
   color: var(--gold-pale);
-  text-shadow: 0 0 18px rgba(236, 220, 166, 0.4), 0 2px 12px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 0 18px rgba(236, 220, 166, 0.4), 0 2px 12px rgba(0, 0, 0, 0.95);
 }
 
 .prologue-scene-label {
-  margin-top: 12px;
+  margin-top: 14px;
   font-family: var(--font-han);
-  font-size: 14px;
+  font-size: 17px;
   letter-spacing: 0.3em;
   text-indent: 0.3em;
-  color: rgba(228, 224, 208, 0.6);
+  color: rgba(228, 224, 208, 0.78);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
 }
 
 .prologue-dialogue {

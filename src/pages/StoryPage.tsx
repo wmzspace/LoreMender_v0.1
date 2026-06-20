@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ChoiceList, DialogueBox, ProgressDots, QuickMenu, SoundSettings, TitleCard, Toast,
+  ChoiceList, DialogueBox, ProgressDots, QuickMenu, SoundSettings, TitleSequence, titleCardContent, Toast,
   diffValues, type ValueDelta,
 } from "../components";
 import { Particles, SceneClinic, SceneFinal, SceneRaid } from "../components/art";
@@ -139,6 +139,9 @@ function applyChoiceSet(state: GameState, set: Choice["set"]): GameState {
   return next;
 }
 
+/** 章号中文数字（用于章首过场「第 N 章」）。 */
+const CN_NUM = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
+
 export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas }: StoryPageProps) {
   const ch = state.currentChapter || 1;
   const chKey = "ch" + ch;
@@ -152,7 +155,9 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
   const [logOpen, setLogOpen] = useState(false);
   const autoTimer = useRef<number>(0);
   // 章首开场标题卡：进入新一章（beatIdx 0）时黑屏过场；从小游戏返回(beatIdx≠0)不重复。
-  const [showTitleCard, setShowTitleCard] = useState(false);
+  // 进入第一卷时先播「第一卷·青囊残卷」卷卡，再播「第N章·章名」章卡（队列依次播放）。
+  const [titleQueue, setTitleQueue] = useState<{ eyebrow: string; title: string }[]>([]);
+  const showTitleCard = titleQueue.length > 0;
   const announcedChRef = useRef<number | null>(null);
   const clearAuto = () => {
     if (autoTimer.current) { window.clearTimeout(autoTimer.current); autoTimer.current = 0; }
@@ -181,8 +186,13 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
   useEffect(() => {
     if (beatIdx === 0 && announcedChRef.current !== ch) {
       announcedChRef.current = ch;
-      setShowTitleCard(true);
+      const cards: { eyebrow: string; title: string }[] = [];
+      // 进入第一卷（=第一章入口）时，先播一张卷卡
+      if (ch === 1) cards.push({ eyebrow: "第 一 卷", title: "青 囊 残 卷" });
+      cards.push({ eyebrow: `第 ${CN_NUM[ch] ?? ch} 章`, title: chapter?.title ?? "" });
+      setTitleQueue(cards);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ch, beatIdx]);
 
   const beat = beats[beatIdx];
@@ -430,12 +440,11 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
 
   return (
     <div className="page" style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
-      {/* ── 章首开场标题卡（黑屏 + 第N卷·青囊残卷 / 章名） ── */}
+      {/* ── 章首开场过场（单层黑底，卷卡→章卡连播不闪） ── */}
       {showTitleCard && (
-        <TitleCard
-          eyebrow="第 一 卷 · 青 囊 残 卷"
-          title={chapter?.title ?? ""}
-          onDone={() => setShowTitleCard(false)}
+        <TitleSequence
+          cards={titleQueue.map(c => titleCardContent(c.eyebrow, c.title))}
+          onDone={() => setTitleQueue([])}
         />
       )}
 

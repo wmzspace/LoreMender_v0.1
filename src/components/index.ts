@@ -16,4 +16,4 @@ export { LockedDungeon } from "./LockedDungeon";
 export { SoundSettings } from "./SoundSettings";
 export { SideNav } from "./SideNav";
 export { QuickMenu } from "./QuickMenu";
-export { TitleCard } from "./TitleCard";
+export { TitleSequence, titleCardContent, studioCardContent } from "./TitleCard";
