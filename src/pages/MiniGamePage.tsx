@@ -197,19 +197,19 @@ function GameFeedbackOverlay({ rank, game, onDismiss }: {
         <RankSeal rank={rank} />
       </div>
       <div className="title-han fade-in" style={{
-        fontSize: 19, color: "var(--gold-pale)",
+        fontSize: 26, color: "var(--gold-pale)",
         letterSpacing: "0.22em", textAlign: "center",
-        marginBottom: 14, animationDelay: "180ms",
+        marginBottom: 16, animationDelay: "180ms",
       }}>{fb.title}</div>
       <div className="fade-in" style={{
-        fontSize: 13, color: "rgba(228,224,208,0.78)",
-        lineHeight: 1.95, letterSpacing: "0.04em",
-        textAlign: "center", maxWidth: 292,
-        marginBottom: 40, fontStyle: "italic",
+        fontSize: 16.5, color: "rgba(228,224,208,0.82)",
+        lineHeight: 2, letterSpacing: "0.04em",
+        textAlign: "center", maxWidth: 360,
+        marginBottom: 42, fontStyle: "italic",
         animationDelay: "320ms",
       }}>{fb.text}</div>
       <div className="fade-in" style={{
-        fontSize: 11, color: "rgba(228,224,208,0.35)",
+        fontSize: 14, color: "rgba(228,224,208,0.4)",
         letterSpacing: "0.35em", animationDelay: "550ms",
       }}>轻 触 继 续</div>
     </div>
@@ -224,8 +224,8 @@ const RANK_COLOR: Record<GameResultRank, string> = {
 
 // 游戏说明文字样式（统一的美术风格）
 const instStyle: React.CSSProperties = {
-  fontSize: 12.5,
-  color: "rgba(228,224,208,0.58)",
+  fontSize: 15,
+  color: "rgba(228,224,208,0.62)",
   lineHeight: 1.9,
   letterSpacing: "0.04em",
   textAlign: "center",
@@ -280,8 +280,8 @@ function Shell({
         {game.context && (
           <div style={{
             textAlign: "center",
-            fontSize: 12.5, fontStyle: "italic",
-            color: "rgba(228,224,208,0.52)",
+            fontSize: 15, fontStyle: "italic",
+            color: "rgba(228,224,208,0.58)",
             letterSpacing: "0.04em", lineHeight: 1.85,
             padding: "4px 8px 16px",
             borderBottom: "1px solid rgba(205,178,119,0.12)",
