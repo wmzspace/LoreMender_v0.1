@@ -2,6 +2,31 @@ import type { GameState } from "../data/types";
 
 export const STORAGE_KEY = "loremender:huatuo:v4";
 
+// —— 序幕是否已看过：首次开始游戏自动播放一次，之后开始游戏直接进开场动画；「查看设定」可重看 ——
+const PROLOGUE_SEEN_KEY = "loremender:prologueSeen";
+export function isPrologueSeen(): boolean {
+  try { return localStorage.getItem(PROLOGUE_SEEN_KEY) === "1"; } catch { return false; }
+}
+export function markPrologueSeen(): void {
+  try { localStorage.setItem(PROLOGUE_SEEN_KEY, "1"); } catch { /* 无痕模式忽略 */ }
+}
+
+/**
+ * 进度重置：删除本应用的本地存储（存档、章节进度、序幕标记等）。
+ * 保留音量设置（loremender:huatuo:audio），重置不影响声音偏好。
+ */
+const AUDIO_SETTINGS_KEY = "loremender:huatuo:audio";
+export function clearAllStorage(): void {
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith("loremender:") && k !== AUDIO_SETTINGS_KEY) keys.push(k);
+    }
+    keys.forEach(k => localStorage.removeItem(k));
+  } catch { /* 无痕模式忽略 */ }
+}
+
 export function defaultState(): GameState {
   return {
     firstImpression: null,

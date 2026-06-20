@@ -1,10 +1,71 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { WorldPage } from "./WorldPage";
 import { ShowcasePage } from "./ShowcasePage";
+import { stopBgm } from "../lib/audio";
+import { isPrologueSeen, markPrologueSeen } from "../lib/storage";
+import { TitleCard } from "../components";
 
 interface CoverPageProps {
   /** 进入游戏(播完开场动画后由 App 跳转到卷宗)。 */
   onStart: () => void;
+}
+
+/** 序幕主线设定对白（漩涡点击后立即出现，逐句累积、轻触推进；最多 3 轮）。 */
+const PROLOGUE_LINES = [
+  "深夜，文化博物馆数字修复组。一名年轻研究员在库房深处，触到一卷没有编号、无从考证来源的古卷——《拾遗残卷》。刹那间馆中古物被逐一点亮，一道通往历史的裂隙在眼前裂开。",
+  "他成了「典故修补者」，被送往一个个历史节点，去见那些被写进史书、却仍留下遗憾的人。他的任务不是改写历史，而是理解遗憾、修补缺口——凭对话、选择与解谜取得信任，助他们完成未竟之愿。",
+  "每修补一段典故，便能得到一件信物：一枚药签、一页残诗、一段曲谱，或只是一句终于被记下来的话；《拾遗残卷》也随之点亮一处空白。第一道裂隙，停在了建安十三年的许昌。",
+];
+
+/**
+ * 序幕场景：文化博物馆库房。顶部「序幕 · 典故修补者」，底部逐句对白（整句淡入，不用打字机以免文字跳动）。
+ * replay=true 时用于「查看设定」重看，末句提示「轻触返回」。
+ */
+function PrologueScene({ onDone, replay }: { onDone: () => void; replay?: boolean }) {
+  const [idx, setIdx] = useState(0);
+  const [showTitle, setShowTitle] = useState(true); // 先黑屏标题卡，再进对白
+  const last = idx >= PROLOGUE_LINES.length - 1;
+  // 序幕 BGM 用剧情外统一主题曲，由 App（cover 页）统一播放，这里无需单独管理。
+
+  const advance = () => {
+    if (showTitle) return; // 标题卡显示时，点击交给标题卡自身处理
+    if (!last) setIdx(idx + 1);
+    else onDone();
+  };
+
+  const endHint = replay ? "轻 触 返 回" : "轻 触 进 入";
+
+  return (
+    <div className="prologue-scene" onClick={advance} role="button" aria-label="轻触继续">
+      <img src="/images/cover.jpg" className="prologue-bg" alt="" />
+      <div className="prologue-scrim" />
+      <div className="grain" />
+
+      <div className="prologue-top">
+        <div className="prologue-eyebrow">序 幕</div>
+        <div className="prologue-title">典 故 修 补 者</div>
+        <div className="prologue-scene-label">文 化 博 物 馆 · 库 房</div>
+      </div>
+
+      {showTitle ? (
+        <TitleCard eyebrow="序 幕" title="典 故 修 补 者" onDone={() => setShowTitle(false)} />
+      ) : (
+        <div className="prologue-dialogue">
+          <div className="prologue-lines">
+            {/* 整句淡入；已读句保留在上方、略压暗，不再逐字跳动 */}
+            {PROLOGUE_LINES.slice(0, idx + 1).map((ln, i) => (
+              <p key={i} className={"prologue-line" + (i < idx ? " is-past" : "")}>{ln}</p>
+            ))}
+          </div>
+          <div className="prologue-progress">
+            {PROLOGUE_LINES.map((_, i) => (
+              <span key={i} className={"prologue-dot" + (i <= idx ? " is-on" : "")} />
+            ))}
+          </div>
+          <div className="prologue-hint">{last ? endHint : "轻 触 继 续"} ▶</div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 /** 封面弹层:设定 / 档案以居中对话框呈现(带遮罩、限高),停留在封面,不进入游戏内、不暴露侧栏。 */
@@ -109,13 +170,34 @@ function IntroVideo({ onDone }: { onDone: () => void }) {
 }
 
 export function CoverPage({ onStart }: CoverPageProps) {
-  const [playingIntro, setPlayingIntro] = useState(false);
-  const [modal, setModal] = useState<null | "world" | "showcase">(null);
+  // 流程：cover(封面) → [首次] prologue(序幕对白) → intro(开场动画) → onStart(卷宗页)
+  //       序幕只首次自动播一次；「查看设定」可重看序幕（看完返回封面）。
+  const [phase, setPhase] = useState<"cover" | "prologue" | "prologue-replay" | "intro">("cover");
+  const [modal, setModal] = useState<null | "showcase">(null);
 
-  // 弹层内的「进入」也走开场动画,确保动画必被看到
-  const enterGame = () => { setModal(null); setPlayingIntro(true); };
+  // 开始游戏（点击漩涡 / 弹层「进入」）：未看过序幕 → 先播序幕；已看过 → 直接开场动画
+  const beginGame = () => {
+    setModal(null);
+    if (isPrologueSeen()) setPhase("intro");
+    else setPhase("prologue");
+  };
 
-  if (playingIntro) {
+  // 查看设定：重看序幕，看完返回封面（不进入游戏）
+  const replayPrologue = () => { setModal(null); setPhase("prologue-replay"); };
+
+  // 开场动画阶段停掉主题曲，让 start.mp4 自身音频清晰播放；动画结束进卷宗页后 App 会续播主题曲。
+  useEffect(() => {
+    if (phase === "intro") stopBgm();
+  }, [phase]);
+
+  if (phase === "prologue") {
+    // 首次：看完标记已看过 → 进开场动画
+    return <PrologueScene onDone={() => { markPrologueSeen(); setPhase("intro"); }} />;
+  }
+  if (phase === "prologue-replay") {
+    return <PrologueScene replay onDone={() => setPhase("cover")} />;
+  }
+  if (phase === "intro") {
     return <IntroVideo onDone={onStart} />;
   }
 
@@ -174,7 +256,7 @@ export function CoverPage({ onStart }: CoverPageProps) {
         <button
           className="cover-portal press"
           data-sfx="nav"
-          onClick={() => setPlayingIntro(true)}
+          onClick={beginGame}
           aria-label="点击传送门，开始修补"
         >
           <span className="cover-portal-ring" aria-hidden="true" />
@@ -190,6 +272,8 @@ export function CoverPage({ onStart }: CoverPageProps) {
         justifyContent: "flex-end",
         alignItems: "center",
         padding: "0 28px calc(40px + var(--safe-bottom))",
+        // 整块容器铺满全屏,但空白区不可拦截点击——否则会盖住中央传送门。
+        pointerEvents: "none",
       }}>
         <div className="fade-up cover-actions" style={{
           display: "flex",
@@ -198,20 +282,16 @@ export function CoverPage({ onStart }: CoverPageProps) {
           width: "100%",
           maxWidth: 440,
           animationDelay: "200ms",
+          pointerEvents: "auto",
         }}>
-          <button className="btn-ghost press" onClick={() => setModal("world")}>查看设定</button>
+          <button className="btn-ghost press" onClick={replayPrologue}>查看设定</button>
           <button className="btn-ghost press" onClick={() => setModal("showcase")}>参赛档案</button>
         </div>
       </div>
 
-      {modal === "world" && (
-        <CoverModal onClose={() => setModal(null)}>
-          <WorldPage onBack={() => setModal(null)} onEnter={enterGame} />
-        </CoverModal>
-      )}
       {modal === "showcase" && (
         <CoverModal onClose={() => setModal(null)}>
-          <ShowcasePage onBack={() => setModal(null)} onEnter={enterGame} />
+          <ShowcasePage onBack={() => setModal(null)} onEnter={beginGame} />
         </CoverModal>
       )}
     </div>

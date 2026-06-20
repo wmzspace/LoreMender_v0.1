@@ -223,9 +223,17 @@ export function primeAudio(): void {
   // 之后切换 src 再播放就不再受 iOS 自动播放限制。
   if (!_dialogueEl) _dialogueEl = new Audio();
   if (!_bgmEl) { _bgmEl = new Audio(); _bgmEl.loop = true; }
-  for (const el of [_dialogueEl, _bgmEl]) {
-    el.src = SILENT_WAV;
-    el.play().then(() => { el.pause(); el.currentTime = 0; }).catch(() => {});
+  // 对话元素用静音 WAV 解锁。
+  _dialogueEl.src = SILENT_WAV;
+  _dialogueEl.play().then(() => { _dialogueEl!.pause(); _dialogueEl!.currentTime = 0; }).catch(() => {});
+  // BGM：若解锁前已请求过某曲（自动播放被拦截），就在本次手势内直接播该曲补上；否则静音解锁。
+  if (currentBgmSrc) {
+    _bgmEl.src = currentBgmSrc;
+    _bgmEl.loop = true;
+    _bgmEl.play().catch(() => {});
+  } else {
+    _bgmEl.src = SILENT_WAV;
+    _bgmEl.play().then(() => { _bgmEl!.pause(); _bgmEl!.currentTime = 0; }).catch(() => {});
   }
   // 将 BGM/对话接入 WebAudio 图，用 GainNode 控制音量（iOS 忽略 element.volume）。
   // createMediaElementSource 每个元素只能调用一次，故用 _xxxSource 守卫。

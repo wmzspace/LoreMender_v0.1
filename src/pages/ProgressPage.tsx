@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
-import { defaultState, saveBeat, saveState } from "../lib/storage";
+import { clearAllStorage } from "../lib/storage";
 import { PageShell, BottomNav } from "../components";
 
 interface ProgressPageProps {
@@ -292,7 +292,7 @@ function ExpandedCard({
 }
 
 // ── 主组件 ──────────────────────────────────────────────────────
-export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
+export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
   const cur = state.currentChapter || 1;
   const [expanded, setExpanded] = useState<number>(cur);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -304,12 +304,9 @@ export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
       setConfirmReset(true);
       return;
     }
-    const ns = { ...defaultState(), unlockedEndings: state.unlockedEndings };
-    setState(ns);
-    saveState(ns);
-    saveBeat(1, 0);
-    setConfirmReset(false);
-    gotoPage("story");
+    // 删除所有本地数据与存储，刷新页面回到主界面（封面）。
+    clearAllStorage();
+    window.location.reload();
   };
 
   const NODE_COL = 64;

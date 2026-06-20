@@ -2,6 +2,7 @@ import { useState } from "react";
 import { STORY, TRUST_OPTIONS } from "../data";
 import type { Beat, GameState } from "../data/types";
 import { saveBeat, saveState } from "../lib/storage";
+import { matchIf } from "../lib/beats";
 import type { PageKey } from "../lib/routes";
 import { PageShell } from "../components";
 
@@ -14,7 +15,7 @@ function resumeIndexAfterTrust(state: GameState): number {
     for (const b of bs) {
       if ("ifKey" in b) {
         const v = b.ifKey === "boxCompartment" ? box : map[b.ifKey];
-        if (String(v ?? "") === b.ifVal) walk(b.beats);
+        if (matchIf(v, b.ifVal, b.ifCmp)) walk(b.beats);
       } else {
         flat.push(b);
       }

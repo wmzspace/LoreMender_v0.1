@@ -52,17 +52,17 @@ export function SideNav({ active, open, onNav, onCollapse, onMouseEnter, onMouse
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="en-small" style={{
-              fontSize: 9, letterSpacing: "0.34em",
+              fontSize: 10, letterSpacing: "0.32em",
               color: "var(--gold-pale)", opacity: 0.5,
               marginBottom: 6,
             }}>THE LOREMENDER</div>
             <div className="title-han" style={{
-              fontSize: 17, color: "var(--gold-pale)",
+              fontSize: 19, color: "var(--gold-pale)",
               letterSpacing: "0.28em", textIndent: "0.28em",
               textShadow: "0 0 12px rgba(236,220,166,0.3)",
             }}>典故修补者</div>
             <div style={{
-              fontSize: 10, color: "rgba(228,224,208,0.4)",
+              fontSize: 12, color: "rgba(228,224,208,0.45)",
               letterSpacing: "0.2em", marginTop: 4,
               fontFamily: "var(--font-han)",
             }}>青 囊 残 卷</div>

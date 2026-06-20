@@ -132,7 +132,9 @@ export type Beat =
   | { gotoTrust: true }
   | { gotoEnding: true }
   | { unlockEnding: string; generatePoster?: boolean }
-  | { ifKey: string; ifVal: string; beats: Beat[] };
+  // ifCmp：比较方式。默认 "eq"（字符串精确相等，用于 boxCompartment/ch4 等字符串状态）；
+  // "gte"/"lte" 用于数值阈值（如 medical_skill 累加值 ≥1 / ≤0），避免精确相等漏判。
+  | { ifKey: string; ifVal: string; ifCmp?: "eq" | "gte" | "lte"; beats: Beat[] };
 
 export type SceneKind =
   | "xuchang_prison"

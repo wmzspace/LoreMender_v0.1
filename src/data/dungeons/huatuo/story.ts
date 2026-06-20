@@ -649,17 +649,19 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "aj", line: "可我还是不知道该交给谁。" },
       { speaker: "aj", line: "这是从牢里拼回来的。缺口还在。" },
       {
-        // medical_skill 现为「高+1/低-1/中0」刻度：高分=1
+        // medical_skill 为累加值（对白+小游戏，可达 2~4）：≥1 视为「学过医术」
         ifKey: "medical_skill",
         ifVal: "1",
+        ifCmp: "gte",
         beats: [
           { narration: true, line: "残页上的字虽然断裂，但病症、医理、药方尚能相互照应。" },
         ],
       },
       {
-        // 中评=0
+        // ≤0 视为「医术未入门」
         ifKey: "medical_skill",
         ifVal: "0",
+        ifCmp: "lte",
         beats: [
           { narration: true, line: "有几处字仍然模糊，像没有来得及说完的话。" },
         ],

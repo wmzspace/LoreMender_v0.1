@@ -119,8 +119,9 @@ export function resolveEnding(state: GameState): EndingId {
         ? "chenbo_true"
         : "chenbo_fallback";
     case "xuanyin":
-      // 2. 启用 spread_tendency；边传边改(spread_then_fix)无法进真结局
-      return completeSongPage && hasForbiddenRecord && highCount >= 2 && (state.spread_tendency || 0) >= 1 && state.ch4 !== "spread_then_fix"
+      // 2. 三线对称：玄音线也以 xuanyin_trust≥2 作为「真结局」信任门槛，
+      //    与陈伯/王济线一致；并保留歌页完整 + 禁录同行 + spread_tendency≥1 + 非边传边改。
+      return state.xuanyin_trust >= 2 && completeSongPage && hasForbiddenRecord && highCount >= 2 && (state.spread_tendency || 0) >= 1 && state.ch4 !== "spread_then_fix"
         ? "xuanyin_true"
         : "xuanyin_fallback";
     case "wangji":

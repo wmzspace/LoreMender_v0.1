@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ChoiceList, DialogueBox, ProgressDots, QuickMenu, SoundSettings, Toast,
+  ChoiceList, DialogueBox, ProgressDots, QuickMenu, SoundSettings, TitleCard, Toast,
   diffValues, type ValueDelta,
 } from "../components";
 import { Particles, SceneClinic, SceneFinal, SceneRaid } from "../components/art";
@@ -10,6 +10,7 @@ import { buildAudioIndex } from "../data/dungeons/huatuo/audioIndex";
 import type { Beat, Choice, GameState } from "../data/types";
 import { dialogueAudioPath, exploreAudioPath, playDialogueAudio, playSfx, stopDialogueAudio } from "../lib/audio";
 import { loadBeat, saveBeat, saveState } from "../lib/storage";
+import { matchIf } from "../lib/beats";
 import type { PageKey } from "../lib/routes";
 
 interface StoryPageProps {
@@ -108,7 +109,7 @@ function flattenBeats(beats: Beat[], state: GameState): Beat[] {
   }
   return beats.flatMap(beat => {
     if ("ifKey" in beat) {
-      return String(stateMap[beat.ifKey] ?? "") === beat.ifVal
+      return matchIf(stateMap[beat.ifKey], beat.ifVal, beat.ifCmp)
         ? flattenBeats(beat.beats, state)
         : [];
     }
@@ -150,6 +151,9 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
   const [autoplay, setAutoplay] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
   const autoTimer = useRef<number>(0);
+  // 章首开场标题卡：进入新一章（beatIdx 0）时黑屏过场；从小游戏返回(beatIdx≠0)不重复。
+  const [showTitleCard, setShowTitleCard] = useState(false);
+  const announcedChRef = useRef<number | null>(null);
   const clearAuto = () => {
     if (autoTimer.current) { window.clearTimeout(autoTimer.current); autoTimer.current = 0; }
   };
@@ -170,6 +174,15 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
 
   useEffect(() => {
     saveBeat(ch, beatIdx);
+  }, [ch, beatIdx]);
+
+  // 章首过场：仅当处于该章开头(beatIdx 0)、且本章尚未播过标题卡时触发。
+  // 从小游戏返回会重挂载本组件，但此时 beatIdx≠0，故不会重复播放。
+  useEffect(() => {
+    if (beatIdx === 0 && announcedChRef.current !== ch) {
+      announcedChRef.current = ch;
+      setShowTitleCard(true);
+    }
   }, [ch, beatIdx]);
 
   const beat = beats[beatIdx];
@@ -337,6 +350,8 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
   // 配音:每个 beat 重置进度。有配音则等 onended,无配音视为「已读完」。
   useEffect(() => {
     setTypingDone(false);
+    // 章首标题卡显示期间不播配音；标题卡结束后本 effect 会因 showTitleCard 变化重跑并播放。
+    if (showTitleCard) { stopDialogueAudio(); return; }
     if (!beat || isTransition || gameNode || audioIdx === undefined) {
       stopDialogueAudio();
       setAudioDone(true);
@@ -345,7 +360,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
     setAudioDone(false);
     playDialogueAudio(dialogueAudioPath(ch, audioIdx), () => setAudioDone(true));
     return () => stopDialogueAudio();
-  }, [beat, ch, audioIdx, isTransition, gameNode]);
+  }, [beat, ch, audioIdx, isTransition, gameNode, showTitleCard]);
 
   // 探索热点对白配音：打开热点 / 翻句时播放对应音频。
   useEffect(() => {
@@ -406,15 +421,24 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
   useEffect(() => {
     clearAuto();
     if (!autoplay || logOpen) return;
-    if (!beat || isTransition || gameNode || exploreScene || "choices" in beat) return;
+    if (!beat || isTransition || gameNode || exploreScene || showTitleCard || "choices" in beat) return;
     if (typingDone && audioDone) {
       autoTimer.current = window.setTimeout(() => { next(); }, 700);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoplay, logOpen, typingDone, audioDone, beat, isTransition, gameNode]);
+  }, [autoplay, logOpen, typingDone, audioDone, beat, isTransition, gameNode, showTitleCard]);
 
   return (
     <div className="page" style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      {/* ── 章首开场标题卡（黑屏 + 第N卷·青囊残卷 / 章名） ── */}
+      {showTitleCard && (
+        <TitleCard
+          eyebrow="第 一 卷 · 青 囊 残 卷"
+          title={chapter?.title ?? ""}
+          onDone={() => setShowTitleCard(false)}
+        />
+      )}
+
       {/* ── 全屏场景背景 ── */}
       <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
         {sceneEl}
@@ -465,7 +489,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
       <div className="scene-overlay-top story-top">
         <div className="story-top-titles">
           <div className="en-small story-top-vol" style={{
-            fontSize: 12, letterSpacing: "0.34em",
+            fontSize: 13.5, letterSpacing: "0.32em",
             color: "var(--gold-pale)", opacity: 0.82,
             textShadow: "0 0 12px rgba(0,0,0,0.9)",
           }}>第 一 卷 · 青 囊 残 卷</div>

@@ -16,6 +16,11 @@ const SFX_SELECTOR = "[data-sfx], .press, .choice, .navitem, .btn-primary, .btn-
 /** Pages that share the same chapter BGM — switching among them keeps the music playing. */
 const BGM_PAGES: PageKey[] = ["story", "minigame"];
 
+/** 剧情外界面统一主题曲（封面/序幕/卷宗/设定/档案/图鉴/线索板/进程）。 */
+const MENU_THEME = "/audio/menu_theme.mp3";
+/** 自带音频/留白、不放主题曲的页面：结局(旁白配音)、信任抉择(留白)。 */
+const NO_THEME_PAGES: PageKey[] = ["ending", "trust"];
+
 /** 沉浸页:无 SideNav 概念(封面/结局)。剧情页参与正常侧栏体系:默认收起=全屏 + 左上展开键,展开则显示侧栏。 */
 const IMMERSIVE_PAGES: PageKey[] = ["cover", "ending"];
 
@@ -50,13 +55,17 @@ export default function App() {
   // 这样即便选择后立刻转场/换章导致 StoryPage 重挂载，提示仍能完整存活其生命周期。
   const [valueDeltas, setValueDeltas] = useState<ValueDelta[]>([]);
 
-  // 章节 BGM 由 App 统一管理，跨越剧情↔小游戏的页面切换持续播放（同源 src 时 playBgm 为 no-op）。
+  // BGM 由 App 统一管理：剧情/小游戏=章节 BGM；结局(旁白)/信任(留白)=停；其余剧情外界面=主题曲。
+  // 同源 src 时 playBgm 为 no-op，故主题曲在各菜单页间连续不断。
+  // 注：封面页(cover)的开场动画阶段由 CoverPage 自行停 BGM 让视频出声。
   useEffect(() => {
     if (BGM_PAGES.includes(page)) {
       const src = bgmPath(state.currentChapter || 1);
       if (src) playBgm(src);
-    } else {
+    } else if (NO_THEME_PAGES.includes(page)) {
       stopBgm();
+    } else {
+      playBgm(MENU_THEME);
     }
   }, [page, state.currentChapter]);
 
