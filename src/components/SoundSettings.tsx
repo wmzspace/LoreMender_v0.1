@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AUDIO_CHANNELS, useAudioSettings, setChannelVolume, setChannelMuted,
   type AudioChannel,
@@ -79,56 +79,52 @@ function ChannelRow({ ch }: { ch: AudioChannel }) {
   );
 }
 
-/** 右上角音量设置：点击弹出面板，分别调节背景/对话/系统声音的音量与静音。 */
-export function SoundSettings() {
+/**
+ * 音量设置：悬停喇叭图标弹出面板，分别调节背景/对话/系统声音的音量与静音。
+ * placement="up" 时面板向上展开（用于侧栏底部，避免溢出屏幕）。
+ * 点击仍作触屏兜底。
+ */
+export function SoundSettings({ placement = "down" }: { placement?: "up" | "down" } = {}) {
   const [open, setOpen] = useState(false);
   const settings = useAudioSettings();
   // 任一通道静音时图标显示静音态，作为整体提示
   const anyMuted = AUDIO_CHANNELS.some(ch => settings[ch].muted);
 
+  // 悬停展开、移开延时收缩（延时桥接按钮与面板间的间隙）。
+  const closeTimer = useRef<number>(0);
+  const cancelClose = () => {
+    if (closeTimer.current) { window.clearTimeout(closeTimer.current); closeTimer.current = 0; }
+  };
+  const scheduleClose = () => {
+    cancelClose();
+    closeTimer.current = window.setTimeout(() => setOpen(false), 160);
+  };
+  useEffect(() => cancelClose, []);
+
   return (
-    <>
+    <div
+      className="sound-settings"
+      onMouseEnter={() => { cancelClose(); setOpen(true); }}
+      onMouseLeave={scheduleClose}
+    >
       <button
-        className="icon-btn press"
-        onClick={() => setOpen(true)}
+        className={"icon-btn press" + (open ? " is-open" : "")}
+        onClick={() => setOpen(o => !o)}
         aria-label="音量设置"
+        aria-expanded={open}
       >
         <SpeakerIcon muted={anyMuted} />
       </button>
 
       {open && (
         <div
-          onClick={() => setOpen(false)}
-          style={{
-            // fixed 而非 absolute：.topbar 是定位祖先，absolute 只会覆盖顶栏一条，
-            // 导致点击下方内容区无法命中遮罩。fixed 铺满整屏（移动端即整个手机屏）。
-            position: "fixed", inset: 0, zIndex: 50,
-            background: "rgba(7,11,14,0.55)",
-            display: "flex", alignItems: "flex-start", justifyContent: "flex-end",
-            padding: "calc(8px + var(--safe-top, 0px)) 12px 0",
-          }}
+          className={"sound-settings-panel" + (placement === "up" ? " is-up" : "")}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              marginTop: 44,
-              width: "min(80%, 280px)",
-              background: "linear-gradient(180deg, rgba(34,24,14,0.98), rgba(11,17,20,0.99))",
-              border: "1px solid rgba(205,178,119,0.6)",
-              borderRadius: 3,
-              boxShadow: "inset 0 1px 0 rgba(236,220,166,0.22), 0 10px 32px rgba(0,0,0,0.75)",
-              padding: "16px 18px 8px",
-              animation: "fadeIn 200ms ease both",
-            }}
-          >
-            <div style={{
-              fontFamily: "var(--font-han)", fontSize: 13, letterSpacing: "0.28em",
-              color: "var(--gold-pale)", textAlign: "center", marginBottom: 16,
-            }}>音 量 设 置</div>
-            {AUDIO_CHANNELS.map(ch => <ChannelRow key={ch} ch={ch} />)}
-          </div>
+          <div className="sound-settings-title">音 量 设 置</div>
+          {AUDIO_CHANNELS.map(ch => <ChannelRow key={ch} ch={ch} />)}
         </div>
       )}
-    </>
+    </div>
   );
 }

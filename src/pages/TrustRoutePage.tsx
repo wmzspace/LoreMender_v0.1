@@ -48,12 +48,12 @@ function preChoiceHint(state: GameState): string | null {
     { v: state.wangji_trust || 0, line: "你记得问诊录上那行「医术当以济世为先」。" },
     { v: state.xuanyin_trust || 0, line: "你记得巷尾那首终于唱对的歌。" },
   ];
-  // 焚毁倾向：至少两个小游戏低完成度 + 至少一条信任为零 → 对传承之路失望
-  const burnishHint = lowGrades >= 2 && trusts.some(t => t.v === 0)
+  // 焚毁倾向：至少两个小游戏低完成度 + 至少一条信任未建立(≤0) → 对传承之路失望
+  const burnishHint = lowGrades >= 2 && trusts.some(t => t.v <= 0)
     ? "你一路看见医术被私藏、被锁住、被唱错，也看见它可能造成的危险。"
     : null;
   const top = trusts.slice().sort((a, b) => b.v - a.v)[0];
-  if (top.v >= 2) return top.line; // 有明确的高信任 → 给对应回忆
+  if (top.v >= 1) return top.line; // 有明确的高信任(对应小游戏达高分) → 给对应回忆
   if (burnishHint) return burnishHint; // 焚毁倾向优先于低完成度提醒
   if (lowGrades >= 2) return "你还没有完全理解青囊，但天已经快亮了。";
   if (top.v > 0) return top.line;

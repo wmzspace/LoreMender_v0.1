@@ -35,16 +35,18 @@ export function calcScore(state: GameState): ScoreResult {
   const gameMax = games.length * 2;
   const gamesDone = games.filter(g => state.gameResults?.[g.id]?.completed).length;
 
+  // 信任/医术为累加值(小游戏±1 + 共情对白±1)；每项对总评的贡献封顶 2，低分会扣分。
+  const cap2 = (n: number | undefined) => Math.min(Number(n || 0), 2);
   const trustScore =
-    (state.chenbo_trust || 0) +
-    (state.wangji_trust || 0) +
-    (state.xuanyin_trust || 0) +
-    (state.medical_skill || 0) +
-    (state.asked_heart || 0) +
-    Math.min(state.record_tendency || 0, 2) +
-    Math.min(state.system_tendency || 0, 2) +
-    Math.min(state.spread_tendency || 0, 2);
-  const trustMax = 16;
+    cap2(state.chenbo_trust) +
+    cap2(state.wangji_trust) +
+    cap2(state.xuanyin_trust) +
+    cap2(state.medical_skill) +
+    cap2(state.asked_heart) +
+    cap2(state.record_tendency) +
+    cap2(state.system_tendency) +
+    cap2(state.spread_tendency);
+  const trustMax = 16; // 5 项技能 ×2 + 3 项倾向 ×2
 
   const CHOICE_SCORE: Record<string, Record<string, number>> = {
     ch2: { record_network: 3, oral_only: 2, show_fragment: 1 },

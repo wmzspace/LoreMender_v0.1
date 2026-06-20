@@ -3,9 +3,9 @@ import { GoldDivider, PaperPanel, SealTag } from "../components";
 import {
   Particles, SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
 } from "../components/art";
-import { ENDINGS, resolveEnding, getEndingBody, getEndingAudioId } from "../data";
+import { ENDINGS, ITEMS, resolveEnding, getEndingBody, getEndingAudioId } from "../data";
 import type { EndingId, GameState } from "../data/types";
-import { defaultState, saveState } from "../lib/storage";
+import { defaultState, saveState, saveBeat } from "../lib/storage";
 import { playSfx, playDialogueAudio, stopDialogueAudio, useAudioMuted } from "../lib/audio";
 import { calcScore } from "../lib/score";
 import type { PageKey } from "../lib/routes";
@@ -15,9 +15,9 @@ const ENDING_NARRATION: Record<string, string> = {
   chenbo_true:        "/audio/levels/1/dialogue/endings/chenbo_true.mp3",
   chenbo_fallback:    "/audio/levels/1/dialogue/endings/chenbo_fallback.mp3",
   xuanyin_true:       "/audio/levels/1/dialogue/endings/xuanyin_true.mp3",
-  wangji_trap_low:    "/audio/levels/1/dialogue/endings/wangji_trap_low.mp3",
-  wangji_trap_stable: "/audio/levels/1/dialogue/endings/wangji_trap_stable.mp3",
   xuanyin_fallback:   "/audio/levels/1/dialogue/endings/xuanyin_fallback.mp3",
+  wangji_archive:     "/audio/levels/1/dialogue/endings/wangji_archive.mp3",
+  wangji_trap:        "/audio/levels/1/dialogue/endings/wangji_trap.mp3",
   burn_ending:        "/audio/levels/1/dialogue/endings/burn_ending.mp3",
 };
 
@@ -26,6 +26,7 @@ const ENDING_VIDEOS: Record<string, string> = {
   chenbo_true:      "/videos/levels/1/ending_chenbo_A_humble_village_doctor_s_hand.mp4",
   chenbo_fallback:  "/videos/levels/1/ending_chenbo_A_humble_village_doctor_s_hand.mp4",
   xuanyin_true:     "/videos/levels/1/ending_xuanyin.mp4",
+  wangji_archive:   "/videos/levels/1/ending_wangji_Lacquered_chest_closes_over_scroll_202606161241.mp4",
   wangji_trap:      "/videos/levels/1/ending_wangji_Lacquered_chest_closes_over_scroll_202606161241.mp4",
   xuanyin_fallback: "/videos/levels/1/ending_xuanyin.mp4",
   burn_ending:      "/videos/levels/1/ending_burn.mp4",
@@ -37,6 +38,7 @@ const ENDING_IMAGES: Record<string, string> = {
   chenbo_fallback: "/images/levels/1/chapters/endings/ending_chenbo_caomu.webp",
   xuanyin_true: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
   xuanyin_fallback: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
+  wangji_archive: "/images/levels/1/chapters/endings/ending_wangji.webp", // TODO 占位：待生成 ending_wangji_archive.webp
   wangji_trap: "/images/levels/1/chapters/endings/ending_wangji.webp",
   burn_ending: "/images/levels/1/chapters/endings/ending_burn.webp",
 };
@@ -71,6 +73,55 @@ function EndingSceneImage({ endId }: { endId: string }) {
 const BREAKDOWN_COLORS = ["#2e7a62", "#8a6830", "#9e6e28"];
 
 // ── 一卷总评分数面板 ───────────────────────────────────────────
+/** 典故信物面板：依据是否获得「华佗手书残句」展示已收得 / 未收得两态。 */
+function TokenPanel({ state }: { state: GameState }) {
+  const token = ITEMS["huatuo_manuscript"];
+  const obtained = state.items.includes("huatuo_manuscript");
+  return (
+    <div style={{ margin: "0 18px 18px" }}>
+      <PaperPanel style={{ padding: "16px 20px 20px" }}>
+        <GoldDivider label="典 故 信 物" labelStyle={{ fontSize: 16, opacity: 0.92 }} />
+        {obtained ? (
+          <div style={{ textAlign: "center", marginTop: 12 }}>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "5px 16px", borderRadius: 2,
+              background: "rgba(44,102,87,0.16)", border: "1px solid rgba(44,102,87,0.45)",
+            }}>
+              <span style={{ color: "#2c6657", fontSize: 13, letterSpacing: "0.06em" }}>✦ 已收得</span>
+            </div>
+            <div className="title-han" style={{
+              fontSize: 19, color: "var(--ink-deep)", marginTop: 14, letterSpacing: "0.08em",
+            }}>{token.name}</div>
+            <div style={{
+              fontSize: 13, lineHeight: 1.95, color: "rgba(70,62,38,0.82)",
+              marginTop: 10, letterSpacing: "0.03em",
+            }}>{token.desc}</div>
+            <div style={{
+              fontFamily: "var(--font-han)", fontSize: 11.5, color: "rgba(44,102,87,0.78)",
+              letterSpacing: "0.16em", marginTop: 14,
+            }}>《拾遗残卷》被点亮一处空白</div>
+          </div>
+        ) : (
+          <div style={{ textAlign: "center", marginTop: 12 }}>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "5px 16px", borderRadius: 2,
+              background: "rgba(110,98,70,0.12)", border: "1px solid rgba(110,98,70,0.32)",
+            }}>
+              <span style={{ color: "rgba(110,98,70,0.85)", fontSize: 13, letterSpacing: "0.06em" }}>○ 未收得</span>
+            </div>
+            <div style={{
+              fontSize: 13, lineHeight: 1.95, color: "rgba(70,62,38,0.66)",
+              marginTop: 14, letterSpacing: "0.03em",
+            }}>这一程，你与华佗的羁绊还不足以让他把那句话亲手交予你。<br/>多一些理解与守护（与华佗的羁绊达「相契」以上），典故信物便会留在你手中。</div>
+          </div>
+        )}
+      </PaperPanel>
+    </div>
+  );
+}
+
 function ScorePanel({ state }: { state: GameState }) {
   const { total, maxTotal, pct, grade, gradeColor, breakdown } = calcScore(state);
   const [visible, setVisible] = useState(false);
@@ -332,21 +383,15 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
     const ns: GameState = { ...defaultState(), unlockedEndings: state.unlockedEndings };
     setState(ns);
     saveState(ns);
+    saveBeat(1, 0);
     gotoPage("cover");
   };
   const replay = () => {
-    const ns: GameState = {
-      ...state,
-      firstImpression: null, trust_huatuo: null,
-      found_clue: null, suspect: null,
-      cao_suspicion: null, caoCunning: null,
-      finalChoice: null,
-      searchedClues: [],
-      trustedPerson: null, currentChapter: 1, lastEnding: null,
-      firstChoice: null, ch2: null, ch3: null, ch4: null, finalDecision: null,
-    };
+    // 重新选择=从头再走一遍：除已解锁结局(图鉴)外，数值/小游戏成绩/物品/进度全部清零。
+    const ns: GameState = { ...defaultState(), unlockedEndings: state.unlockedEndings };
     setState(ns);
     saveState(ns);
+    saveBeat(1, 0);
     gotoPage("story");
   };
 
@@ -553,6 +598,11 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
                 }}>· 全 章 终 ·</div>
               </PaperPanel>
             </div>
+          </div>
+
+          {/* ── 典故信物（与华佗羁绊≥3 时点亮《拾遗残卷》） ── */}
+          <div className="content-wrap content-wrap--narrow">
+            <TokenPanel state={state} />
           </div>
 
           {/* ── 一卷总评 ── */}

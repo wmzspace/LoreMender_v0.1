@@ -24,6 +24,9 @@ export const ITEMS: Record<string, ItemDef> = {
   // 后续章节物品（暂无专属图标，用默认印记展示）
   travel_pass:         { id: "travel_pass", name: "药童路引", desc: "补过华佗印记的路引，能解释阿吉为何能在城中短时间行动。" },
   wooden_box:          { id: "wooden_box", name: "藏卷木盒" },
+  herb_residue:        { id: "herb_residue", name: "药材残渣", desc: "泥水里捡出的几味可辨药材，是判断孩子误服了什么的实证。" },
+  song_fragment_correct: { id: "song_fragment_correct", name: "正确歌词碎片", desc: "残纸上抄对的救急句，能入歌、可传唱。" },
+  song_fragment_wrong:   { id: "song_fragment_wrong", name: "错误歌词碎片", desc: "夹在残纸里的危险重方细节，若随歌传开会害人，必须另列禁录。" },
   chenbo_prescription: { id: "chenbo_prescription", name: "陈伯药签" },
   chenbo_prescription_full: { id: "chenbo_prescription_full", name: "完整药签" },
   wangji_document:     { id: "wangji_document", name: "曹府问诊录" },
@@ -31,6 +34,9 @@ export const ITEMS: Record<string, ItemDef> = {
   xuanyin_song_page:   { id: "xuanyin_song_page", name: "玄音歌页" },
   xuanyin_song_page_complete: { id: "xuanyin_song_page_complete", name: "完整歌页" },
   forbidden_record:    { id: "forbidden_record", name: "禁录" },
+
+  // 典故信物：与华佗羁绊≥3、在结局达成时由华佗亲手授予，点亮《拾遗残卷》一处空白。
+  huatuo_manuscript:   { id: "huatuo_manuscript", name: "华佗手书残句", desc: "「没有不会断的路，只有不断修的人。」——华佗临别留给阿吉的一句话，终于被记了下来。这是《青囊残术》这卷典故的信物。" },
 };
 
 /** 探索旁白「获得：<名>」→ item id（名称取「获得：」后、「。」前，可用「、」分隔多件）。 */
@@ -43,6 +49,16 @@ export const ITEM_NAME_TO_ID: Record<string, string> = {
   "路引": "entry_pass",
   "药童路引": "travel_pass",
   "青囊残页": "qingsang_fragment",
+  "药材残渣": "herb_residue",
+  "正确歌词碎片": "song_fragment_correct",
+  "错误歌词碎片": "song_fragment_wrong",
+};
+
+/** 探索旁白「线索：<名>」→ clue id（线索为调查信息，进「线索板·已得线索」而非随身物品）。 */
+export const CLUE_NAME_TO_ID: Record<string, string> = {
+  "点验时间": "inspection_time",
+  "失血记录": "bleeding_record",
+  "久咳体虚记录": "chronic_cough_record",
 };
 
 /** 从一段「获得：A、B。…」旁白里解析出可入库的 item id 列表。 */
@@ -52,5 +68,15 @@ export function parseGainedItemIds(line: string): string[] {
   return m[1]
     .split(/[、，,]/)
     .map(s => ITEM_NAME_TO_ID[s.trim()])
+    .filter((id): id is string => !!id);
+}
+
+/** 从一段「线索：A、B。…」旁白里解析出可入板的 clue id 列表。 */
+export function parseGainedClueIds(line: string): string[] {
+  const m = line.match(/^线索[:：]\s*([^。\n]+)/);
+  if (!m) return [];
+  return m[1]
+    .split(/[、，,]/)
+    .map(s => CLUE_NAME_TO_ID[s.trim()])
     .filter((id): id is string => !!id);
 }

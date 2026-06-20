@@ -21,6 +21,7 @@ export function defaultState(): GameState {
     activeGameId: null,
     medical_skill: 0,
     asked_heart: 0,
+    huatuo_trust: 0,
     chenbo_trust: 0,
     wangji_trust: 0,
     xuanyin_trust: 0,
@@ -48,6 +49,7 @@ export function normalizeState(value: Partial<GameState> | null | undefined): Ga
   merged.gameResults = merged.gameResults && typeof merged.gameResults === "object" ? merged.gameResults : {};
   merged.medical_skill = Number(merged.medical_skill || 0);
   merged.asked_heart = Number(merged.asked_heart || 0);
+  merged.huatuo_trust = Number(merged.huatuo_trust || 0);
   merged.chenbo_trust = Number(merged.chenbo_trust || 0);
   merged.wangji_trust = Number(merged.wangji_trust || 0);
   merged.xuanyin_trust = Number(merged.xuanyin_trust || 0);

@@ -4,9 +4,14 @@ import { SoundSettings } from "./SoundSettings";
 
 interface SideNavProps {
   active: PageKey;
+  /** 是否展开(覆盖层滑入);收起时滑出屏幕外。 */
+  open?: boolean;
   onNav: (key: PageKey) => void;
   /** 点击收起(完全隐藏侧栏,由 App 改为单列全宽)。 */
   onCollapse?: () => void;
+  /** 悬停进入/离开:用于「移开侧栏后自动收缩」。 */
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
 interface NavItem {
@@ -16,8 +21,12 @@ interface NavItem {
 }
 
 /** 桌面端持久左侧导航。CSS 默认 display:none,在 @media (min-width:1024px) 显示。 */
-export function SideNav({ active, onNav, onCollapse }: SideNavProps) {
+export function SideNav({ active, open, onNav, onCollapse, onMouseEnter, onMouseLeave }: SideNavProps) {
   const items: NavItem[] = [
+    {
+      key: "cover", label: "返回主界面",
+      icon: <HomeIcon />,
+    },
     {
       key: "story", label: "剧情故事",
       icon: <ScrollIcon />,
@@ -26,18 +35,7 @@ export function SideNav({ active, onNav, onCollapse }: SideNavProps) {
       key: "chapters", label: "副本卷宗",
       icon: <VolumeIcon />,
     },
-    {
-      key: "clue", label: "线索板",
-      icon: <LanternIcon />,
-    },
-    {
-      key: "map", label: "副本进程",
-      icon: <NodeIcon />,
-    },
-    {
-      key: "gallery", label: "结局图鉴",
-      icon: <SealIcon />,
-    },
+    // 「线索板 / 副本进程 / 结局图鉴」已移入右上角快捷菜单（QuickMenu）。
     {
       key: "world", label: "典籍设定",
       icon: <BookIcon />,
@@ -49,7 +47,7 @@ export function SideNav({ active, onNav, onCollapse }: SideNavProps) {
   ];
 
   return (
-    <nav className="sidenav" aria-label="主导航">
+    <nav className={"sidenav" + (open ? " is-open" : "")} aria-label="主导航" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <div className="sidenav-logo">
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -108,13 +106,22 @@ export function SideNav({ active, onNav, onCollapse }: SideNavProps) {
 
       <div className="sidenav-footer">
         <span className="sidenav-save-hint">· 已 自 动 存 档 ·</span>
-        <SoundSettings />
+        <SoundSettings placement="up" />
       </div>
     </nav>
   );
 }
 
 /* —— 简洁线性图标(沿用金色描边风格) —— */
+function HomeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M2.5 7.5 L8 2.5 L13.5 7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 7 V13 H12 V7" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M6.5 13 V9.5 H9.5 V13" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" opacity="0.7" />
+    </svg>
+  );
+}
 function ScrollIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -130,34 +137,6 @@ function VolumeIcon() {
       <rect x="3" y="3" width="10" height="10" stroke="currentColor" strokeWidth="1.2" />
       <rect x="5" y="5" width="6" height="6" stroke="currentColor" strokeWidth="0.9" opacity="0.6" />
       <path d="M6 1 H10 M6 15 H10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-    </svg>
-  );
-}
-function LanternIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M8 1 V3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-      <ellipse cx="8" cy="8" rx="4" ry="5" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M5 4 H11 M5 12 H11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-      <path d="M8 13 V15" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-    </svg>
-  );
-}
-function NodeIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="4" cy="4" r="1.8" stroke="currentColor" strokeWidth="1.1" />
-      <circle cx="12" cy="8" r="1.8" stroke="currentColor" strokeWidth="1.1" />
-      <circle cx="4" cy="12" r="1.8" stroke="currentColor" strokeWidth="1.1" />
-      <path d="M5.5 4.6 L10.5 7.4 M10.5 8.6 L5.5 11.4" stroke="currentColor" strokeWidth="1" opacity="0.7" />
-    </svg>
-  );
-}
-function SealIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="3" y="3" width="10" height="10" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M6 6 H10 V10 H6 Z" stroke="currentColor" strokeWidth="1" opacity="0.7" />
     </svg>
   );
 }

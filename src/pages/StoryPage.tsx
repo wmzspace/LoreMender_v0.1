@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ChoiceList, DialogueBox, ProgressDots, SoundSettings, Toast,
+  ChoiceList, DialogueBox, ProgressDots, QuickMenu, SoundSettings, Toast,
+  diffValues, type ValueDelta,
 } from "../components";
 import { Particles, SceneClinic, SceneFinal, SceneRaid } from "../components/art";
-import { CHARACTERS, LEVEL_ASSET_PLANS, STORY, ITEMS, parseGainedItemIds } from "../data";
-import type { ItemDef } from "../data";
+import { CHARACTERS, CLUES, LEVEL_ASSET_PLANS, STORY, ITEMS, parseGainedItemIds, parseGainedClueIds } from "../data";
+import type { Clue, ItemDef } from "../data";
 import { buildAudioIndex } from "../data/dungeons/huatuo/audioIndex";
 import type { Beat, Choice, GameState } from "../data/types";
 import { dialogueAudioPath, exploreAudioPath, playDialogueAudio, playSfx, stopDialogueAudio } from "../lib/audio";
@@ -16,60 +17,8 @@ interface StoryPageProps {
   setState: (s: GameState) => void;
   gotoPage: (p: PageKey) => void;
   gotoEnding: () => void;
+  onValueDeltas?: (d: ValueDelta[]) => void;
 }
-
-const LINE_IMAGES: Record<string, Record<number, string>> = {
-  ch1: {
-    0: "/images/levels/1/chapters/ch1_beats/ch1_01_wake_cell.webp",
-    2: "/images/levels/1/chapters/ch1_beats/ch1_02_huatuo_scattered_slips.webp",
-    4: "/images/levels/1/chapters/ch1_beats/ch1_04_scattered_bamboo.webp",
-    8: "/images/levels/1/chapters/ch1_beats/ch1_08_box_success.webp",
-    10: "/images/levels/1/chapters/ch1_beats/ch1_09_box_failure.webp",
-    11: "/images/levels/1/chapters/ch1_beats/ch1_05_box_key_hint.webp",
-    13: "/images/levels/1/chapters/ch1_beats/ch1_10_guard_checks_box.webp",
-    19: "/images/levels/1/chapters/ch1_beats/ch1_11_escape_side_gate.webp",
-  },
-  ch2: {
-    0: "/images/levels/1/chapters/ch2_beats/beat00_dawn_shop.webp",
-    1: "/images/levels/1/chapters/ch2_beats/beat01_child_fever.webp",
-    4: "/images/levels/1/chapters/ch2_beats/beat04_chenbo_stall.webp",
-    6: "/images/levels/1/chapters/ch2_beats/beat06_chenbo_steady.webp",
-    9: "/images/levels/1/chapters/ch2_beats/beat09_sniff_herbs.webp",
-    14: "/images/levels/1/chapters/ch2_beats/beat14_slips_to_aji.webp",
-    20: "/images/levels/1/chapters/ch2_beats/beat20_half_song.webp",
-  },
-  ch3: {
-    0: "/images/levels/1/chapters/ch3_beats/beat00_residue_slip.webp",
-    2: "/images/levels/1/chapters/ch3_beats/beat02_cao_hall.webp",
-    3: "/images/levels/1/chapters/ch3_beats/beat03_wangji_desk.webp",
-    8: "/images/levels/1/chapters/ch3_beats/beat08_three_cases.webp",
-    18: "/images/levels/1/chapters/ch3_beats/beat18_wangji_record.webp",
-    22: "/images/levels/1/chapters/ch3_beats/beat22_fake_document.webp",
-  },
-  ch4: {
-    0: "/images/levels/1/chapters/ch4_beats/beat00_xuanyin_song.webp",
-    2: "/images/levels/1/chapters/ch4_beats/beat02_xuanyin_pipa.webp",
-    5: "/images/levels/1/chapters/ch4_beats/beat05_torn_paper.webp",
-    14: "/images/levels/1/chapters/ch4_beats/beat14_fingertips.webp",
-    20: "/images/levels/1/chapters/ch4_beats/beat20_song_spreads.webp",
-    24: "/images/levels/1/chapters/ch4_beats/beat24_leave_for_shrine.webp",
-  },
-  ch5: {
-    0: "/images/levels/1/chapters/ch5_beats/beat00_old_shrine.webp",
-    1: "/images/levels/1/chapters/ch5_beats/beat01_three_relics.webp",
-    3: "/images/levels/1/chapters/ch5_beats/beat03_wind_candle.webp",
-    4: "/images/levels/1/chapters/ch5_beats/beat04_huatuo_wisdom.webp",
-    6: "/images/levels/1/chapters/ch5_beats/beat06_glowing_slip.webp",
-    8: "/images/levels/1/chapters/ch5_beats/beat08_farewell.webp",
-  },
-};
-
-const GAME_BEAT_IMAGES: Record<string, Record<number, string>> = {
-  ch1: {
-    5: "/images/levels/1/chapters/ch1_beats/ch1_04_scattered_bamboo.webp",
-    10: "/images/levels/1/chapters/ch1_beats/ch1_05_box_key_hint.webp",
-  },
-};
 
 const preloaded = new Set<string>();
 
@@ -82,39 +31,42 @@ function preloadImages(paths: string[]) {
   }
 }
 
-function chapterImagePaths(chKey: string): string[] {
-  return [
-    ...Object.values(LINE_IMAGES[chKey] || {}),
-    ...Object.values(GAME_BEAT_IMAGES[chKey] || {}),
-  ];
+function collectImagePaths(beats: Beat[]): string[] {
+  const out: string[] = [];
+  const walk = (bs: Beat[]) => {
+    for (const beat of bs) {
+      if ("image" in beat && beat.image) out.push(beat.image);
+      if ("game" in beat && beat.game.nextBeatUnlockedImage) out.push(beat.game.nextBeatUnlockedImage);
+      if ("ifKey" in beat) walk(beat.beats);
+    }
+  };
+  walk(beats);
+  return out;
 }
 
-function resolveImagePath(chapter: number, imageIdx: number, beatIdx: number, isGame: boolean): string | undefined {
-  const chKey = "ch" + chapter;
-  if (isGame) {
-    const gameMap = GAME_BEAT_IMAGES[chKey] || {};
-    if (gameMap[beatIdx]) return gameMap[beatIdx];
+function resolveImagePath(beats: Beat[], beatIdx: number, chapterNum: number, overrideImage?: string): string | undefined {
+  if (overrideImage) return overrideImage;
+  for (let i = beatIdx; i >= 0; i--) {
+    const beat = beats[i];
+    if (beat && "image" in beat && beat.image) return beat.image;
   }
-  const map = LINE_IMAGES[chKey] || {};
-  const keys = Object.keys(map).map(Number).sort((a, b) => b - a);
-  const matched = keys.find(k => k <= imageIdx);
-  const asset = LEVEL_ASSET_PLANS.find(level => level.chapter === chapter);
-  return matched !== undefined ? map[matched] : asset?.imagePath;
+  const asset = LEVEL_ASSET_PLANS.find(level => level.chapter === chapterNum);
+  return asset?.imagePath;
 }
 
-function AiSceneImage({ chapter, imageIdx, beatIdx, isGame }: {
-  chapter: number;
-  imageIdx: number;
+function AiSceneImage({ chapterNum, beats, beatIdx, overrideImage }: {
+  chapterNum: number;
+  beats: Beat[];
   beatIdx: number;
-  isGame: boolean;
+  overrideImage?: string;
 }) {
-  const imagePath = resolveImagePath(chapter, imageIdx, beatIdx, isGame);
+  const imagePath = resolveImagePath(beats, beatIdx, chapterNum, overrideImage);
   const [currentSrc, setCurrentSrc] = useState<string | undefined>(imagePath);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    preloadImages(chapterImagePaths("ch" + chapter));
-  }, [chapter]);
+    preloadImages(collectImagePaths(beats));
+  }, [beats]);
 
   useEffect(() => {
     if (!imagePath || imagePath === currentSrc) return;
@@ -125,8 +77,11 @@ function AiSceneImage({ chapter, imageIdx, beatIdx, isGame }: {
   if (!currentSrc) return null;
   return (
     <img
+      // 缓存命中时 img 的 load 事件可能在 onLoad 绑定前就已触发（load 不冒泡），
+      // 用 ref 回调检查 complete 兜底，避免 loaded 卡在 false 导致图片始终透明。
+      ref={(el) => { if (el?.complete && el.naturalWidth > 0) setLoaded(true); }}
       src={currentSrc}
-      alt={`第${chapter}章剧情插图`}
+      alt={`第${chapterNum}章剧情插图`}
       onLoad={() => setLoaded(true)}
       style={{
         position: "absolute",
@@ -161,21 +116,29 @@ function flattenBeats(beats: Beat[], state: GameState): Beat[] {
   });
 }
 
+// 所有数值字段统一为「累加」：对白选择各只能选一次，与小游戏的 delta 贡献叠加在同一字段上。
+const NUMERIC_FIELDS = new Set<string>([
+  "medical_skill", "asked_heart", "huatuo_trust",
+  "chenbo_trust", "wangji_trust", "xuanyin_trust",
+  "record_tendency", "system_tendency", "spread_tendency", "burn_tendency",
+  "searchPressure",
+]);
+
 function applyChoiceSet(state: GameState, set: Choice["set"]): GameState {
   const next = { ...state };
+  const map = next as unknown as Record<string, unknown>;
   for (const [key, value] of Object.entries(set ?? {})) {
-    if (key === "searchPressure") {
-      next.searchPressure = Math.max(0, (next.searchPressure || 0) + Number(value || 0));
-    } else if (key === "record_tendency" || key === "spread_tendency" || key === "burn_tendency") {
-      next[key] = Math.max(Number(next[key] || 0), Number(value || 0));
+    if (NUMERIC_FIELDS.has(key)) {
+      const v = Number(map[key] || 0) + Number(value || 0);
+      map[key] = key === "searchPressure" ? Math.max(0, v) : v; // 压力不为负
     } else {
-      (next as unknown as Record<string, unknown>)[key] = value;
+      map[key] = value; // ch2/ch3/ch4 等字符串状态：直接赋值
     }
   }
   return next;
 }
 
-export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPageProps) {
+export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas }: StoryPageProps) {
   const ch = state.currentChapter || 1;
   const chKey = "ch" + ch;
   const chapter = STORY[chKey];
@@ -216,9 +179,9 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const audioIdx = beat ? audioIndexMap.get(beat) : undefined;
   const gameNode = beat && "game" in beat ? beat.game : null;
   const exploreScene = beat && "explore" in beat ? beat.explore : null;
-  const imageIdx = !gameNode && audioIdx !== undefined ? audioIdx : beatIdx;
   const gameDone = !!(gameNode && state.gameResults[gameNode.id]?.completed);
   const gameLocked = !!(gameNode?.requiredItem && !state.items.includes(gameNode.requiredItem));
+  const gameSceneImage = gameDone ? gameNode?.nextBeatUnlockedImage : undefined;
   const isTransition = isTransitionBeat(beat);
 
   const runTransition = (b: Beat | undefined, atIdx: number): boolean => {
@@ -251,9 +214,17 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const handleChoice = (choice: Choice) => {
     if (choice.set) {
       const ns = applyChoiceSet(state, choice.set);
+      // 计算并展示数值变化（《底特律》式右上角提示）
+      const deltas = diffValues(
+        state as unknown as Record<string, unknown>,
+        ns as unknown as Record<string, unknown>,
+        Date.now(),
+      );
+      if (deltas.length) onValueDeltas?.(deltas);
       setState(ns);
       saveState(ns);
     }
+    // toast 与右上角数值卡片可同时显示（叙事提示与数值反馈并存）。
     if (choice.toast) setToast(choice.toast);
     // 选择后前进到下一个 beat
     goToIndex(beatIdx + 1);
@@ -333,6 +304,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
   const [exploreVisited, setExploreVisited] = useState<string[]>([]);  // 已看过的热点
   const [itemNotice, setItemNotice] = useState<string | null>(null);   // 杂项「获得」轻提示
   const [itemModal, setItemModal] = useState<ItemDef[] | null>(null);  // 获得物品详情弹窗
+  const [clueModal, setClueModal] = useState<Clue[] | null>(null);     // 发现线索详情弹窗
 
   // 切换主 beat 时重置探索状态
   useEffect(() => { setExploreOpen(null); setExploreSub(0); setExploreVisited([]); }, [beatIdx]);
@@ -384,27 +356,48 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
     return () => stopDialogueAudio();
   }, [exploreScene, exploreOpen, exploreSub, ch]);
 
-  // 获得物品：当前台词为「获得：xxx」旁白时，播放音效并弹出提示。
+  // 获得物品 /发现线索：当前台词为「获得：xxx」或「线索：xxx」旁白时，播放音效并弹出对应弹窗。
   useEffect(() => {
-    const m = activeLine.match(/^获得[:：]\s*([^。\n]+)/);
-    if (!m) return;
-    playSfx("unlock");
-    // 探索旁白本身不入库，这里把可识别物品写入 state.items，供「线索板」展示
-    const newIds = parseGainedItemIds(activeLine).filter(id => !state.items.includes(id));
-    if (newIds.length) {
-      const ns: GameState = { ...state, items: [...state.items, ...newIds] };
-      setState(ns);
-      saveState(ns);
+    // —— 物品：「获得：xxx」→ 带图详情弹窗（未登记则顶部轻提示） ——
+    const mi = activeLine.match(/^获得[:：]\s*([^。\n]+)/);
+    if (mi) {
+      playSfx("unlock");
+      const newIds = parseGainedItemIds(activeLine).filter(id => !state.items.includes(id));
+      if (newIds.length) {
+        const ns: GameState = { ...state, items: [...state.items, ...newIds] };
+        setState(ns);
+        saveState(ns);
+      }
+      const defs = newIds.map(id => ITEMS[id]).filter((d): d is ItemDef => !!d);
+      if (defs.length) {
+        setItemModal(defs);
+      } else {
+        setItemNotice(mi[1].trim());
+        const t = window.setTimeout(() => setItemNotice(null), 2800);
+        return () => window.clearTimeout(t);
+      }
+      return;
     }
-    const defs = newIds.map(id => ITEMS[id]).filter((d): d is ItemDef => !!d);
-    if (defs.length) {
-      // 有登记的物品 → 弹出详情弹窗（带图与描述）
-      setItemModal(defs);
-    } else {
-      // 杂项「获得：xxx」（线索/无登记物品）→ 顶部轻提示
-      setItemNotice(m[1].trim());
-      const t = window.setTimeout(() => setItemNotice(null), 2800);
-      return () => window.clearTimeout(t);
+    // —— 线索：「线索：xxx」→ 线索详情弹窗 + 写入 searchedClues（进线索板·已得线索） ——
+    const mc = activeLine.match(/^线索[:：]\s*([^。\n]+)/);
+    if (mc) {
+      playSfx("unlock");
+      const had = state.searchedClues ?? [];
+      const newIds = parseGainedClueIds(activeLine).filter(id => !had.includes(id));
+      if (newIds.length) {
+        const ns: GameState = { ...state, searchedClues: [...had, ...newIds] };
+        setState(ns);
+        saveState(ns);
+      }
+      const defs = newIds.map(id => CLUES.find(c => c.id === id)).filter((c): c is Clue => !!c);
+      if (defs.length) {
+        setClueModal(defs);
+      } else {
+        setItemNotice(mc[1].trim());
+        const t = window.setTimeout(() => setItemNotice(null), 2800);
+        return () => window.clearTimeout(t);
+      }
+      return;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLine]);
@@ -425,7 +418,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
       {/* ── 全屏场景背景 ── */}
       <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
         {sceneEl}
-        <AiSceneImage chapter={ch} imageIdx={imageIdx} beatIdx={beatIdx} isGame={!!gameNode} />
+        <AiSceneImage chapterNum={ch} beats={beats} beatIdx={beatIdx} overrideImage={gameSceneImage} />
         {exploreScene?.image && (
           <img src={exploreScene.image} alt="" style={{
             position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
@@ -486,11 +479,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
 
         <div className="story-top-actions">
           <SoundSettings />
-          <button className="icon-btn press" onClick={() => gotoPage("map")} aria-label="副本进程">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 3 H12 M2 7 H12 M2 11 H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-            </svg>
-          </button>
+          <QuickMenu onNav={gotoPage} />
         </div>
       </div>
 
@@ -516,10 +505,10 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
                 onPrev={explorePrev}
                 onNext={exploreNext}
                 autoOn={false}
-                onToggleAuto={() => {}}
+                onToggleAuto={() => { }}
                 onOpenLog={() => setLogOpen(true)}
                 onMenu={() => gotoPage("map")}
-                onTypingDone={() => {}}
+                onTypingDone={() => { }}
               />
             ) : (
               <div className="galgame-dialogue story-action fade-in">
@@ -539,14 +528,24 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
                       className="btn-ghost press"
                       style={{ minHeight: 34, fontSize: 11, letterSpacing: "0.16em", opacity: 0.65 }}
                       onClick={() => {
-                        // 开发者跳过：自动收集本场景所有热点的可登记物品（线索板的线索由物品/进度推导）
+                        // 开发者跳过：自动收集本场景所有热点的可登记物品与线索
                         const ids: string[] = [];
+                        const clueIds: string[] = [];
                         exploreScene.hotspots.forEach(h => h.beats.forEach(b => {
-                          if ("line" in b) parseGainedItemIds(b.line).forEach(id => { if (!ids.includes(id)) ids.push(id); });
+                          if ("line" in b) {
+                            parseGainedItemIds(b.line).forEach(id => { if (!ids.includes(id)) ids.push(id); });
+                            parseGainedClueIds(b.line).forEach(id => { if (!clueIds.includes(id)) clueIds.push(id); });
+                          }
                         }));
                         const newIds = ids.filter(id => !state.items.includes(id));
-                        if (newIds.length) {
-                          const ns: GameState = { ...state, items: [...state.items, ...newIds] };
+                        const hadClues = state.searchedClues ?? [];
+                        const newClues = clueIds.filter(id => !hadClues.includes(id));
+                        if (newIds.length || newClues.length) {
+                          const ns: GameState = {
+                            ...state,
+                            items: [...state.items, ...newIds],
+                            searchedClues: [...hadClues, ...newClues],
+                          };
                           setState(ns);
                           saveState(ns);
                         }
@@ -658,6 +657,27 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding }: StoryPagePr
               ))}
             </div>
             <button className="btn-primary press item-modal-btn" onClick={() => setItemModal(null)}>收 下</button>
+          </div>
+        </div>
+      )}
+
+      {/* 发现线索弹窗（标题 + 详述，写入线索板） */}
+      {clueModal && (
+        <div className="item-modal-backdrop" onClick={() => setClueModal(null)}>
+          <div className="item-modal item-modal--clue" onClick={(e) => e.stopPropagation()}>
+            <div className="item-modal-eyebrow">发 现 线 索</div>
+            <div className="item-modal-list">
+              {clueModal.map(c => (
+                <div key={c.id} className="item-modal-entry">
+                  <div className="item-modal-icon"><span className="cb-item-seal">索</span></div>
+                  <div className="item-modal-info">
+                    <div className="item-modal-name">{c.title}</div>
+                    <div className="item-modal-desc" style={{ whiteSpace: "pre-line" }}>{c.body}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button className="btn-primary press item-modal-btn" onClick={() => setClueModal(null)}>记 下</button>
           </div>
         </div>
       )}

@@ -4,12 +4,13 @@ import type { GameNode, GameResultRank, GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
 import { saveState } from "../lib/storage";
 import { playSfx } from "../lib/audio";
-import { Toast, PageShell } from "../components";
+import { Toast, PageShell, diffValues, type ValueDelta } from "../components";
 
 interface MiniGamePageProps {
   state: GameState;
   setState: (s: GameState) => void;
   gotoPage: (p: PageKey) => void;
+  onValueDeltas?: (d: ValueDelta[]) => void;
 }
 
 const RANK_WEIGHT: Record<GameResultRank, number> = { low: 0, mid: 1, high: 2 };
@@ -27,44 +28,77 @@ function addItems(list: string[], items: string[]) {
   return items.reduce(addUnique, list);
 }
 
+// 各小游戏对「数值」的按最佳成绩贡献函数。实际写入用 delta=新-旧，
+// 既保证重玩幂等(刷高会提升、重玩不反复叠加)，又能与「对白选择的累加」共存于同一字段。
+type RankContrib = (r: GameResultRank) => number;
+const skillContrib: RankContrib = r => (r === "high" ? 1 : r === "low" ? -1 : 0); // 技能/信任：高+1/低-1/中0
+const tendContrib: RankContrib = r => (r === "high" ? 2 : r === "mid" ? 1 : 0);   // 倾向：高2/中1/低0
+const lowPressure: RankContrib = r => (r === "low" ? 1 : 0);                       // 低分加搜查压力
+const boxPressure: RankContrib = r => (r === "high" ? 0 : 1);                      // 木盒未藏稳(非高)加压
+const huatuoHigh: RankContrib = r => (r === "high" ? 1 : 0);                       // 华佗羁绊(小游戏封顶+1)
+
+interface GameValueEffect { field: keyof GameState; contrib: RankContrib; }
+const GAME_VALUE_EFFECTS: Record<string, GameValueEffect[]> = {
+  bamboo_puzzle: [
+    { field: "medical_skill", contrib: skillContrib },
+    { field: "record_tendency", contrib: r => (r === "low" ? 0 : 1) },
+    { field: "huatuo_trust", contrib: huatuoHigh },
+  ],
+  wooden_box: [
+    { field: "asked_heart", contrib: skillContrib },
+    { field: "searchPressure", contrib: boxPressure },
+    { field: "huatuo_trust", contrib: huatuoHigh },
+  ],
+  herb_memory: [
+    { field: "chenbo_trust", contrib: skillContrib },
+    { field: "record_tendency", contrib: tendContrib },
+    { field: "searchPressure", contrib: lowPressure },
+  ],
+  case_triage: [
+    { field: "wangji_trust", contrib: skillContrib },
+    { field: "system_tendency", contrib: tendContrib },
+    { field: "searchPressure", contrib: lowPressure },
+  ],
+  song_formula: [
+    { field: "xuanyin_trust", contrib: skillContrib },
+    { field: "spread_tendency", contrib: tendContrib },
+    { field: "searchPressure", contrib: lowPressure },
+  ],
+};
+
 function applyResult(state: GameState, game: GameNode, rank: GameResultRank): GameState {
   const prev = state.gameResults[game.id];
+  const oldBest = prev?.best;
   const best = !prev || RANK_WEIGHT[rank] > RANK_WEIGHT[prev.best] ? rank : prev.best;
-  const skill = game.reward.skill;
-  return {
+  const next: GameState = {
     ...state,
     items: addUnique(addUnique(state.items, game.unlockItem), game.reward.item),
     gameResults: {
       ...state.gameResults,
       [game.id]: { best, attempts: (prev?.attempts || 0) + 1, completed: true },
     },
-    ...(skill ? { [skill]: Math.max(Number(state[skill] || 0), RANK_WEIGHT[rank]) } : {}),
   };
+  // 数值：按「最佳成绩」算 delta=新-旧后累加，幂等且可与对白累加叠加。
+  const map = next as unknown as Record<string, number>;
+  for (const eff of GAME_VALUE_EFFECTS[game.id] ?? []) {
+    const delta = eff.contrib(best) - (oldBest ? eff.contrib(oldBest) : 0);
+    if (delta === 0) continue;
+    const cur = Number(map[eff.field] || 0);
+    map[eff.field] = eff.field === "searchPressure" ? Math.max(0, cur + delta) : cur + delta;
+  }
+  return next;
 }
 
+// 小游戏的叙事副作用：仅发放「质量物品」(分数决定残页/病案/歌页的完整度)。数值已统一在 applyResult 处理。
 function applyNarrativeResult(state: GameState, game: GameNode, rank: GameResultRank): GameState {
-  const inc = rank === "high" ? 2 : rank === "mid" ? 1 : 0;
   let next = { ...state };
-
-  if (game.id === "bamboo_puzzle") {
-    next.record_tendency = Math.max(next.record_tendency || 0, inc >= 1 ? 1 : 0);
-  }
-
-  if (game.id === "wooden_box") {
-    next.searchPressure = Math.max(0, (next.searchPressure || 0) + (rank === "low" ? 1 : 0));
-  }
 
   if (game.id === "herb_memory") {
     const qualityItem =
       rank === "high" ? "chenbo_prescription_full" :
       rank === "mid" ? "chenbo_prescription_partial" :
       "chenbo_prescription_stained";
-    next = {
-      ...next,
-      items: addUnique(next.items, qualityItem),
-      record_tendency: Math.max(next.record_tendency || 0, rank === "high" ? 2 : rank === "mid" ? 1 : 0),
-      searchPressure: Math.max(0, (next.searchPressure || 0) + (rank === "low" ? 1 : 0)),
-    };
+    next = { ...next, items: addUnique(next.items, qualityItem) };
   }
 
   if (game.id === "case_triage") {
@@ -72,12 +106,7 @@ function applyNarrativeResult(state: GameState, game: GameNode, rank: GameResult
       rank === "high" ? "case_record_full" :
       rank === "mid" ? "case_record_partial" :
       "case_record_flawed";
-    next = {
-      ...next,
-      items: addItems(next.items, [qualityItem, "wangji_fake_doc"]),
-      system_tendency: Math.max(next.system_tendency || 0, rank === "high" ? 2 : rank === "mid" ? 1 : 0),
-      searchPressure: Math.max(0, (next.searchPressure || 0) + (rank === "low" ? 1 : 0)),
-    };
+    next = { ...next, items: addItems(next.items, [qualityItem, "wangji_fake_doc"]) };
   }
 
   if (game.id === "song_formula") {
@@ -86,12 +115,7 @@ function applyNarrativeResult(state: GameState, game: GameNode, rank: GameResult
       rank === "mid" ? "xuanyin_song_page_corrected" :
       "xuanyin_song_page_unclean";
     const extraItems = rank === "high" ? [qualityItem, "forbidden_record"] : [qualityItem];
-    next = {
-      ...next,
-      items: addItems(next.items, extraItems),
-      spread_tendency: Math.max(next.spread_tendency || 0, inc),
-      searchPressure: Math.max(0, (next.searchPressure || 0) + (rank === "low" ? 1 : 0)),
-    };
+    next = { ...next, items: addItems(next.items, extraItems) };
   }
 
   return next;
@@ -1130,7 +1154,7 @@ function SongBin({ title, accent, border, list, onTap, empty }: {
   );
 }
 
-export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
+export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniGamePageProps) {
   const game = allGameNodes().find(g => g.id === state.activeGameId) || allGameNodes()[0];
   const [toast, setToast] = useState("");
   const [localClassifyRetry, setLocalClassifyRetry] = useState<boolean | null>(state.classifyRetry);
@@ -1143,19 +1167,20 @@ export function MiniGamePage({ state, setState, gotoPage }: MiniGamePageProps) {
   const finish = (rank: GameResultRank) => {
     playSfx("unlock"); // 完成机关/游戏的成功音（优先级高于点击 tap，会在 30ms 内胜出）
     let ns = applyNarrativeResult(applyResult(state, game, rank), game, rank);
-    // 木盒夹层：困难难度高完成度=藏卷成功(found)，其余完成=险些被搜出(missed)
+    // 木盒夹层：高完成度=藏卷成功(found)，其余=险些被搜出(missed)。
+    // 搜查压力已由 applyResult 的 boxPressure(非高+1) 幂等处理，此处只标记藏匿结果。
     if (game.kind === "woodenBox") {
-      // 藏卷成功只看完成度（高完成度=藏好夹层），与难易无关；
-      // 之前误加了 woodenBoxHard 条件，导致易模式即使高分也判为藏匿失败。
-      const found = rank === "high";
-      ns = {
-        ...ns,
-        boxCompartment: found ? "found" : "missed",
-        searchPressure: Math.max(0, (ns.searchPressure || 0) + (found ? 0 : 1)),
-      };
+      ns = { ...ns, boxCompartment: rank === "high" ? "found" : "missed" };
     }
     setState(ns);
     saveState(ns);
+    // 结算后弹出右上角数值卡片（与剧情选择同款；卡片在 App 层，返回剧情后仍存活）
+    const deltas = diffValues(
+      state as unknown as Record<string, unknown>,
+      ns as unknown as Record<string, unknown>,
+      Date.now(),
+    );
+    if (deltas.length) onValueDeltas?.(deltas);
     setFeedback(rank);
   };
 

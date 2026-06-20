@@ -5,10 +5,21 @@ export const STORY: Record<string, StoryChapter> = {
     scene: "xuchang_prison",
     title: "许昌大牢",
     fullTitle: "第一章 · 许昌大牢 · 青囊残术",
+    images: {
+      8: "/images/levels/1/chapters/ch1_beats/ch1_08_box_success.webp",
+      10: "/images/levels/1/chapters/ch1_beats/ch1_09_box_failure.webp",
+      11: "/images/levels/1/chapters/ch1_beats/ch1_05_box_key_hint.webp",
+      13: "/images/levels/1/chapters/ch1_beats/ch1_10_guard_checks_box.webp",
+      19: "/images/levels/1/chapters/ch1_beats/ch1_11_escape_side_gate.webp",
+    },
+    gameImages: {
+      5: "/images/levels/1/chapters/ch1_beats/ch1_04_scattered_bamboo.webp",
+      10: "/images/levels/1/chapters/ch1_beats/ch1_05_box_key_hint.webp",
+    },
     beats: [
-      { narration: true, line: "建安十三年，许昌大牢。黑暗中，阿吉从草席旁醒来。" },
+      { narration: true, line: "建安十三年，许昌大牢。黑暗中，阿吉从草席旁醒来。", image: "/images/levels/1/chapters/ch1_beats/ch1_01_wake_cell.webp" },
       { speaker: "aj", line: "这里是……" },
-      { speaker: "aj", line: "师父？" },
+      { speaker: "aj", line: "师父？", image: "/images/levels/1/chapters/ch1_beats/ch1_02_huatuo_scattered_slips.webp" },
       { speaker: "huatuo", line: "没时间解释。先把地上的东西捡起来。" },
       {
         explore: {
@@ -106,14 +117,22 @@ export const STORY: Record<string, StoryChapter> = {
           kind: "bambooPuzzle",
           unlockItem: "qingsang_fragment",
           nextBeatUnlocked: "竹简被归入病症、医理、药方三组。残页仍有缺口，却终于能读出一条活路。",
+          nextBeatUnlockedImage: "/images/levels/1/chapters/ch1_beats/bamboo_table_finished.webp",
           context: "在牢房中找出散落竹简，并把它们归入病症、医理、药方三组。拼起的不是完整答案，而是青囊残术继续被验证的资格。",
           reward: { item: "qingsang_fragment", skill: "medical_skill" },
         },
+        image: "/images/levels/1/chapters/ch1_beats/bamboo_table.webp"
       },
-      { speaker: "aj", line: "拼好了，可还是缺。" },
+      { speaker: "aj", line: "拼好了，可还是缺。", image: "/images/levels/1/chapters/ch1_beats/bamboo_table_finished.webp" },
       { speaker: "huatuo", line: "本来就缺。世上没有一卷书能替人把路走完。" },
       { speaker: "aj", line: "那你还让我带它走？" },
       { speaker: "huatuo", line: "因为缺的地方，要你一路去补。" },
+      {
+        choices: [
+          { label: "「先带它出去再说，活命要紧。」", set: { huatuo_trust: -1 }, toast: "华佗看了你一眼，没有说话。" },
+          { label: "「我不只想带它走，也想学您救人的法子。」", set: { huatuo_trust: 1, medical_skill: 1 }, toast: "华佗对你的选择感到欣慰" },
+        ],
+      },
       {
         game: {
           id: "wooden_box",
@@ -122,33 +141,49 @@ export const STORY: Record<string, StoryChapter> = {
           unlockItem: "travel_pass",
           requiredItem: "qingsang_fragment",
           nextBeatUnlocked: "木盒暗格合上，残页暂时藏住。半张路引也补上华佗印记，补成药童路引，足以骗过牢门。",
+          nextBeatUnlockedImage: "/images/levels/1/chapters/ch1_beats/woodenbox_table_finished.webp",
           context: "用生锈铜钥匙解开木盒机关，再把青囊残页藏入夹层，补全药童路引。藏得越稳，后续追索压力越低。",
           reward: { item: "travel_pass", skill: "asked_heart" },
         },
+        image: "/images/levels/1/chapters/ch1_beats/ch1_05_box_key_hint.webp"
       },
+
       {
         ifKey: "boxCompartment",
         ifVal: "found",
         beats: [
-          { speaker: "aj", line: "师父，我把它藏好了。" },
-          { speaker: "huatuo", line: "不是藏好了，是暂时没死。" },
+          { speaker: "aj", line: "师父，我把它藏好了。", image: "/images/levels/1/chapters/ch1_beats/ch1_08_box_success.webp" },
+          { speaker: "huatuo", line: "不是藏好了，是暂时没死。", image: "/images/levels/1/chapters/ch1_beats/ch1_17_huatuo_warns_trust_hate.webp" },
         ],
+
       },
       {
         ifKey: "boxCompartment",
         ifVal: "missed",
         beats: [
-          { narration: true, line: "夹层合得不够稳。华佗咳血引开狱卒，阿吉仍能离开，但木盒在搜身时险些露馅。" },
+          { narration: true, line: "夹层合得不够稳。华佗咳血引开狱卒，阿吉仍能离开，但木盒在搜身时险些露馅。", image: "/images/levels/1/chapters/ch1_beats/ch1_10_guard_checks_box.webp" },
         ],
       },
-      { speaker: "aj", line: "我会把它交给可靠的人。" },
+      { speaker: "aj", line: "我会把它交给可靠的人。", image: "/images/levels/1/chapters/ch1_beats/ch1_17_huatuo_warns_trust_hate.webp" },
       { speaker: "huatuo", line: "别急着说可靠。看他怎么救人，怎么看穷人，怎么对待错字，再决定。" },
-      { speaker: "guard", line: "送药的？这么晚还出去？" },
+      {
+        choices: [
+          { label: "「我会照您说的，先看人怎么对待错字。」", set: { huatuo_trust: 1 }, toast: "你把这句叮嘱记进了心里。" },
+          { label: "「我自有分寸。」", set: { huatuo_trust: -1 } },
+        ],
+      },
+      { speaker: "guard", line: "送药的？这么晚还出去？", image: "/images/levels/1/chapters/ch1_beats/ch1_16_chains_soldier_arrives.webp" },
       { speaker: "aj", line: "曹府要的退热药，误了时辰，小的担不起。" },
-      { speaker: "guard", line: "低头。盒子打开。" },
+      { speaker: "guard", line: "低头。盒子打开。", image: "/images/levels/1/chapters/ch1_beats/ch1_18_body_search_tension.webp" },
       { speaker: "aj", line: "里面是空盒，装药包用的。" },
-      { speaker: "guard", line: "快滚。天亮前别让我再看见你。" },
+      { speaker: "guard", line: "快点走，天亮前别让我再看见你。", image: "/images/levels/1/chapters/ch1_beats/ch1_19_aji_understands_inheritance.webp" },
       { speaker: "huatuo", line: "阿吉。路引只能骗过门，骗不过你自己的心。出去以后，每一步都算数。" },
+      {
+        choices: [
+          { label: "（沉默不语，转身离开）", set: { huatuo_trust: -1 } },
+          { label: "「师父，这句话我记下了。」（点头默记华佗的话）", set: { huatuo_trust: 1, asked_heart: 1 }, toast: "华佗的话，被你一字不漏地记下。" },
+        ],
+      },
       { narration: true, line: "阿吉穿着旧药童衣，拿着华佗补过印的药童路引，从送药小门离开大牢。曹府暂时还以为残卷留在牢中；等点验发现木盒空响，追索才会开始。" },
       { gotoChapter: "ch2" },
     ],
@@ -158,10 +193,19 @@ export const STORY: Record<string, StoryChapter> = {
     scene: "street_market",
     title: "许昌街市",
     fullTitle: "第二章 · 许昌街市 · 陈伯与民间验方",
+    images: {
+      0: "/images/levels/1/chapters/ch2_beats/beat00_dawn_shop.webp",
+      1: "/images/levels/1/chapters/ch2_beats/beat01_child_fever.webp",
+      4: "/images/levels/1/chapters/ch2_beats/beat04_chenbo_stall.webp",
+      6: "/images/levels/1/chapters/ch2_beats/beat06_chenbo_steady.webp",
+      9: "/images/levels/1/chapters/ch2_beats/beat09_sniff_herbs.webp",
+      14: "/images/levels/1/chapters/ch2_beats/beat14_slips_to_aji.webp",
+      20: "/images/levels/1/chapters/ch2_beats/beat20_half_song.webp",
+    },
     beats: [
-      { narration: true, line: "天色刚亮，许昌街市已经乱成一团。曹府征药的告示贴在墙上，药摊翻倒，药包滚进泥水里。" },
-      { speaker: "woman", line: "谁来看看我孩子？他刚才还会哭，现在连哭声都没了！" },
-      { speaker: "passerby", line: "曹府征药，药摊都被翻了，谁还有空管一个孩子？" },
+      { narration: true, line: "天色刚亮，许昌街市已经乱成一团。曹府征药的告示贴在墙上，药摊翻倒，药包滚进泥水里。", image: "/images/levels/1/chapters/ch2_beats/ch2_1_dawn_xuchang_escort_market.webp" },
+      { speaker: "woman", line: "谁来看看我孩子？他刚才还会哭，现在连哭声都没了！", image: "/images/levels/1/chapters/ch2_beats/ch2_2_half_song_aji_stops.webp" },
+      { speaker: "passerby", line: "曹府征药，药摊都被翻了，谁还有空管一个孩子？", image: "/images/levels/1/chapters/ch2_beats/ch2_3_.webp" },
       { speaker: "aj", line: "让一让，我看看。" },
       { speaker: "woman", line: "你是大夫？" },
       { speaker: "aj", line: "不是大夫。只是……跟着大夫学过一点。" },
@@ -240,6 +284,12 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "aj", line: "我敢试，但你要在旁边看着。" },
       { speaker: "chenbo", line: "我看着。错了，我骂你；对了，我把药签给你。" },
       {
+        choices: [
+          { label: "「你直接报方子最快，少废话。」", set: { chenbo_trust: -1 } },
+          { label: "「我先把孩子的症状看清，再动手，不抢着报方子。」", set: { chenbo_trust: 1, medical_skill: 1 }, toast: "陈伯点了点头。" },
+        ],
+      },
+      {
         game: {
           id: "herb_memory",
           name: "配药救急",
@@ -252,8 +302,8 @@ export const STORY: Record<string, StoryChapter> = {
       },
       {
         choices: [
-          { label: "把药签整理成旁人能看懂的样子", set: { ch2: "record_network", record_tendency: 2 }, toast: "记录倾向上升：经验开始变成可传之物。" },
           { label: "只请陈伯口述方子，先记在心里", set: { ch2: "oral_only", record_tendency: 1 }, toast: "陈伯信任尚可，但记录倾向不足。" },
+          { label: "把药签整理成旁人能看懂的样子", set: { ch2: "record_network", record_tendency: 2 }, toast: "记录倾向上升：经验开始变成可传之物。" },
           { label: "拿出青囊残页求快些指点", set: { ch2: "show_fragment", searchPressure: 1 }, toast: "短期获得提示，但曹府探子可能看见。" },
         ],
       },
@@ -261,6 +311,12 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "chenbo", line: "药不贵，贵的是看准。小先生，你救的不是一条命，是一张药签的去处。" },
       { speaker: "aj", line: "药签？" },
       { speaker: "chenbo", line: "我不识几个字，画得也丑。你若能把它整理成别人看得懂的样子，它就不是我的手艺，是街市的活路。" },
+      {
+        choices: [
+          { label: "「我会把它整理好，让它成为街市的活路，而不是谁的私藏。」", set: { chenbo_trust: 1, record_tendency: 1 }, toast: "陈伯笑了，露出豁牙。" },
+          { label: "「我只想拿到能用的方子，别的不管。」", set: { chenbo_trust: -1 } },
+        ],
+      },
       { speaker: "chenbo", line: "曹府今日查得紧，你这身药童衣撑不了多久。" },
       { speaker: "aj", line: "我该去哪？" },
       { speaker: "chenbo", line: "曹府档案区有华先生旧问诊录。若你能拿到那东西，再配一张像样的文书，城里人就不敢随便拦你。" },
@@ -275,6 +331,14 @@ export const STORY: Record<string, StoryChapter> = {
     scene: "cao_mansion",
     title: "曹府档案区",
     fullTitle: "第三章 · 曹府档案区 · 王济与制度边界",
+    images: {
+      0: "/images/levels/1/chapters/ch3_beats/beat00_residue_slip.webp",
+      2: "/images/levels/1/chapters/ch3_beats/beat02_cao_hall.webp",
+      3: "/images/levels/1/chapters/ch3_beats/beat03_wangji_desk.webp",
+      8: "/images/levels/1/chapters/ch3_beats/beat08_three_cases.webp",
+      18: "/images/levels/1/chapters/ch3_beats/beat18_wangji_record.webp",
+      22: "/images/levels/1/chapters/ch3_beats/beat22_fake_document.webp",
+    },
     beats: [
       { narration: true, line: "曹府外院朱门半开，药房小吏来回搬运药箱。阿吉压低帽檐，把药童路引藏在袖中。" },
       { speaker: "clerk", line: "哪位医者门下？" },
@@ -333,7 +397,7 @@ export const STORY: Record<string, StoryChapter> = {
               y: 66,
               beats: [
                 { narration: true, line: "值班记录写明：天亮后库房点验，所有文书重查。" },
-                { narration: true, line: "获得：点验时间。王济的假文书只能撑到天亮。" },
+                { narration: true, line: "线索：点验时间。王济的假文书只能撑到天亮。" },
               ],
             },
             {
@@ -343,7 +407,7 @@ export const STORY: Record<string, StoryChapter> = {
               y: 56,
               beats: [
                 { narration: true, line: "军士失血甚多，但止血药和人手都已备齐。" },
-                { narration: true, line: "获得：失血记录。" },
+                { narration: true, line: "线索：失血记录。" },
               ],
             },
             {
@@ -363,7 +427,7 @@ export const STORY: Record<string, StoryChapter> = {
               y: 44,
               beats: [
                 { narration: true, line: "老仆久咳体虚，需调养，却不在立刻断气的关口。" },
-                { narration: true, line: "获得：久咳体虚记录。" },
+                { narration: true, line: "线索：久咳体虚记录。" },
               ],
             },
             {
@@ -391,18 +455,30 @@ export const STORY: Record<string, StoryChapter> = {
       },
       {
         choices: [
-          { label: "坚持记录“先病后身”", set: { ch3: "patient_first", system_tendency: 2 }, toast: "王济信任上升：制度先受医德约束。" },
-          { label: "偷改病案，让曹府替阿吉背锅", set: { ch3: "tamper_case", system_tendency: 0 }, toast: "追索压力短降，但王济不再完全信任你。" },
+          { label: "偷改病案，让曹府替阿吉背锅", set: { ch3: "tamper_case", wangji_trust: -1 }, toast: "追索压力短降，但王济不再信任你。" },
           { label: "继续翻找府库，确认青囊是否已有抄本", set: { ch3: "over_search", searchPressure: 2 }, toast: "线索更多，巡查也更近。" },
+          { label: "坚持记录“先病后身”", set: { ch3: "patient_first", system_tendency: 2, wangji_trust: 1 }, toast: "王济信任上升：制度先受医德约束。" },
         ],
       },
       { speaker: "wangji", line: "孩童、军士、老仆。你没有按身份排。" },
       { speaker: "aj", line: "病不会因为谁穿甲、谁穿布衣就让路。" },
       { speaker: "wangji", line: "这句话若写进府库，很多人会不高兴。" },
       { speaker: "aj", line: "那就更该写。" },
+      {
+        choices: [
+          { label: "「按曹府旧例排吧，省得给自己惹麻烦。」", set: { asked_heart: -1 } },
+          { label: "「先救最急的人，并把这条写进府库的规矩里。」", set: { asked_heart: 1, medical_skill: 1, system_tendency: 1 }, toast: "王济沉默地记下了这一条。" },
+        ],
+      },
       { speaker: "wangji", line: "这是“残卷已焚”的归档文书，只能撑到天亮。" },
       { speaker: "aj", line: "你为什么帮我？" },
       { speaker: "wangji", line: "因为你还没有把青囊交给任何一扇门。人在门外时，反而可能看清门里有什么。" },
+      {
+        choices: [
+          { label: "「我不会把它交给任何一扇门，只想让它经得起被人查。」", set: { wangji_trust: 1, system_tendency: 1 }, toast: "王济神色微动，对你多了几分托付。" },
+          { label: "「门里门外都一样，谁给我方便我就靠谁。」", set: { wangji_trust: -1 } },
+        ],
+      },
       { speaker: "wangji", line: "府里正在追查街上的华佗歌。若那些歌唱错，害的人不会比错方子少。" },
       { speaker: "aj", line: "歌？" },
       { speaker: "wangji", line: "字会被烧，歌会乱跑。去听听吧，华先生的小弟子。" },
@@ -415,6 +491,14 @@ export const STORY: Record<string, StoryChapter> = {
     scene: "music_house",
     title: "民间乐坊",
     fullTitle: "第四章 · 民间乐坊 · 玄音与传播边界",
+    images: {
+      0: "/images/levels/1/chapters/ch4_beats/beat00_xuanyin_song.webp",
+      2: "/images/levels/1/chapters/ch4_beats/beat02_xuanyin_pipa.webp",
+      5: "/images/levels/1/chapters/ch4_beats/beat05_torn_paper.webp",
+      14: "/images/levels/1/chapters/ch4_beats/beat14_fingertips.webp",
+      20: "/images/levels/1/chapters/ch4_beats/beat20_song_spreads.webp",
+      24: "/images/levels/1/chapters/ch4_beats/beat24_leave_for_shrine.webp",
+    },
     beats: [
       { narration: true, line: "阿吉从曹府侧门离开，天色将明未明。巷子里有孩童拍手唱歌，曲调轻快，词却让他猛地停住。" },
       { speaker: "child", line: "头热惊，手足冷，猛灌汤，压喉声……" },
@@ -495,6 +579,12 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "aj", line: "可人嘴也会传错。" },
       { speaker: "xuanyin", line: "所以我等的不是会写字的人，是懂哪一句不能唱的人。" },
       {
+        choices: [
+          { label: "「歌靠不住，唱错就害人，不如不唱。」", set: { xuanyin_trust: -1 } },
+          { label: "「歌能让人记住救命的法子，我信你这条路。」", set: { xuanyin_trust: 1 }, toast: "玄音挑了挑眉，没料到你这样说。" },
+        ],
+      },
+      {
         game: {
           id: "song_formula",
           name: "歌诀纠错",
@@ -507,18 +597,31 @@ export const STORY: Record<string, StoryChapter> = {
       },
       {
         choices: [
-          { label: "主动销毁错误歌词碎片", set: { ch4: "destroy_wrong_song", burn_tendency: 1 }, toast: "焚毁倾向上升，但误传风险下降。" },
           { label: "让玄音先唱出去，再一路校正", set: { ch4: "spread_then_fix", spread_tendency: 2 }, toast: "传播倾向上升，低完成时误传风险也会上升。" },
           { label: "保留传播禁录，要求歌页与禁录同行", set: { ch4: "keep_forbidden_record", spread_tendency: 1 }, toast: "玄音线更稳：传播有了边界。" },
+          { label: "主动销毁错误歌词碎片", set: { ch4: "destroy_wrong_song", burn_tendency: 1 }, toast: "焚毁倾向上升，但误传风险下降。" },
         ],
       },
       { speaker: "xuanyin", line: "基础救急可入歌，毒药剂量不可入歌，针刺深浅不可入歌。" },
       { speaker: "aj", line: "能让人撑到见大夫的，可以唱；必须见了病人才知道的，不能唱。" },
       { speaker: "xuanyin", line: "这张歌页，我收下。但这张禁录，你也要收下。没有边界的传播，比沉默更危险。" },
+      {
+        choices: [
+          { label: "「唱错的那些太危险，必须先毁掉。」", set: { burn_tendency: 1 }, toast: "你更倾向把危险的部分付之一炬。" },
+          { label: "「我信你能把它唱对、唱远——歌页交给你。」", set: { xuanyin_trust: 1 }, toast: "玄音把歌页贴到了胸口。" },
+        ],
+      },
       { speaker: "patrol", line: "里面的人，出来！曹府查华佗妖歌！" },
       { speaker: "xuanyin", line: "官爷，唱错词的人在东巷。我带你们去。" },
       { speaker: "aj", line: "你会被抓。" },
       { speaker: "xuanyin", line: "错歌若传出去，抓不抓我都一样糟。走。" },
+      { speaker: "aj", line: "这歌，我该怎么带下去？" },
+      {
+        choices: [
+          { label: "「歌页与禁录一起带，让它走得稳、传得对。」", set: { spread_tendency: 1, xuanyin_trust: 1 }, toast: "传播有了边界，玄音对你更放心。" },
+          { label: "「先让它传开再说，能多记一句是一句。」", set: { spread_tendency: 2 }, toast: "传播倾向上升，但误传风险也随之上升。" },
+        ],
+      },
       { speaker: "xuanyin", line: "你要把青囊交给谁？" },
       { speaker: "aj", line: "我还不知道。" },
       { speaker: "xuanyin", line: "那就去一个安静的地方，把你手里的东西都摆出来。东西会比人诚实。" },
@@ -531,6 +634,14 @@ export const STORY: Record<string, StoryChapter> = {
     scene: "old_shrine",
     title: "旧祠裁断",
     fullTitle: "第五章 · 青囊归处 · 旧祠裁断",
+    images: {
+      0: "/images/levels/1/chapters/ch5_beats/beat00_old_shrine.webp",
+      1: "/images/levels/1/chapters/ch5_beats/beat01_three_relics.webp",
+      3: "/images/levels/1/chapters/ch5_beats/beat03_wind_candle.webp",
+      4: "/images/levels/1/chapters/ch5_beats/beat04_huatuo_wisdom.webp",
+      6: "/images/levels/1/chapters/ch5_beats/beat06_glowing_slip.webp",
+      8: "/images/levels/1/chapters/ch5_beats/beat08_farewell.webp",
+    },
     beats: [
       { narration: true, line: "城外旧祠荒草没阶，墙上还残留着华佗当年义诊时贴过方子的痕迹。阿吉推门进去，晨风吹得木盒轻轻作响。" },
       { speaker: "aj", line: "师父，我带出来了。" },
@@ -538,15 +649,17 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "aj", line: "可我还是不知道该交给谁。" },
       { speaker: "aj", line: "这是从牢里拼回来的。缺口还在。" },
       {
+        // medical_skill 现为「高+1/低-1/中0」刻度：高分=1
         ifKey: "medical_skill",
-        ifVal: "2",
+        ifVal: "1",
         beats: [
           { narration: true, line: "残页上的字虽然断裂，但病症、医理、药方尚能相互照应。" },
         ],
       },
       {
+        // 中评=0
         ifKey: "medical_skill",
-        ifVal: "1",
+        ifVal: "0",
         beats: [
           { narration: true, line: "有几处字仍然模糊，像没有来得及说完的话。" },
         ],
@@ -565,7 +678,19 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "aj", line: "所以我不是选一个人，是选一种以后还会被修正的方法。" },
       { speaker: "aj", line: "陈伯能让药进街市，王济能让字进府库，玄音能让歌进人群。" },
       { speaker: "aj", line: "可街市会散，府库会锁，歌也会错。" },
+      {
+        choices: [
+          { label: "「会错，也好过让它彻底消失。」", set: { burn_tendency: -1 } },
+          { label: "「与其传错、被滥用，不如一把火了断。」", set: { burn_tendency: 1 }, toast: "你心底升起了焚毁的念头。" },
+        ],
+      },
       { speaker: "huatuo", line: "那就看你一路留下了什么。空手托付，叫赌；带着证据托付，才叫传承。" },
+      {
+        choices: [
+          { label: "「我只想尽快了结。」", set: { huatuo_trust: -1 } },
+          { label: "「您的每一句话，我都没有空手忘掉。」", set: { huatuo_trust: 1 }, toast: "华佗的神色，第一次松了一分。" },
+        ],
+      },
       { narration: true, line: "阿吉伸手之前，案台上的物件已经替他说出了一半答案。剩下的一半，才是他的选择。" },
       { gotoTrust: true },
       { narration: true, line: "阿吉做出了最后动作。青囊残术的归处，不只由这一刻决定，也由他一路留下的证据决定。" },

@@ -36,6 +36,7 @@ export type EndingId =
   | "chenbo_fallback"
   | "xuanyin_true"
   | "xuanyin_fallback"
+  | "wangji_archive"
   | "wangji_trap"
   | "burn_ending"
   | "ash"
@@ -73,6 +74,7 @@ export interface GameReward {
     GameState,
     | "medical_skill"
     | "asked_heart"
+    | "huatuo_trust"
     | "chenbo_trust"
     | "wangji_trust"
     | "xuanyin_trust"
@@ -90,6 +92,7 @@ export interface GameNode {
   unlockItem: string;
   requiredItem?: string;
   nextBeatUnlocked: string;
+  nextBeatUnlockedImage?: string;
   context?: string;
   reward: GameReward;
 }
@@ -120,9 +123,9 @@ export interface ExploreScene {
 }
 
 export type Beat =
-  | { speaker: string; line: string; narration?: false }
-  | { narration: true; line: string }
-  | { game: GameNode }
+  | { speaker: string; line: string; narration?: false; image?: string }
+  | { narration: true; line: string; image?: string }
+  | { game: GameNode; image?: string }
   | { choices: Choice[] }
   | { explore: ExploreScene }
   | { gotoChapter: string }
@@ -152,6 +155,8 @@ export interface StoryChapter {
   scene: SceneKind;
   title: string;
   fullTitle: string;
+  images?: Record<number, string>;
+  gameImages?: Record<number, string>;
   beats: Beat[];
 }
 
@@ -176,6 +181,7 @@ export interface GameState {
 
   medical_skill: number;
   asked_heart: number;
+  huatuo_trust: number;     // 与华佗的羁绊；≥3 时结局达成可获华佗手书残句信物
   chenbo_trust: number;
   wangji_trust: number;
   xuanyin_trust: number;

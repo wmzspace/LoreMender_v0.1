@@ -14,6 +14,7 @@ const ENDING_IMAGES: Record<string, string> = {
   chenbo_fallback: "/images/levels/1/chapters/endings/ending_chenbo_caomu.webp",
   xuanyin_true: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
   xuanyin_fallback: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
+  wangji_archive: "/images/levels/1/chapters/endings/ending_wangji.webp", // TODO 占位：待生成 ending_wangji_archive.webp
   wangji_trap: "/images/levels/1/chapters/endings/ending_wangji.webp",
   burn_ending: "/images/levels/1/chapters/endings/ending_burn.webp",
 };

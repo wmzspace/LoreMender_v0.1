@@ -169,6 +169,19 @@ export function CoverPage({ onStart }: CoverPageProps) {
         zIndex: 3,
       }} />
 
+      {/* 中央传送门:点击封面漩涡进入游戏(替代原「开始修补」按钮) */}
+      <div className="cover-portal-wrap">
+        <button
+          className="cover-portal press"
+          data-sfx="nav"
+          onClick={() => setPlayingIntro(true)}
+          aria-label="点击传送门，开始修补"
+        >
+          <span className="cover-portal-ring" aria-hidden="true" />
+        </button>
+        <div className="cover-portal-hint" aria-hidden="true">轻 触 漩 涡 · 开 始 修 补</div>
+      </div>
+
       <div style={{
         position: "absolute", inset: 0,
         zIndex: 2,
@@ -186,7 +199,6 @@ export function CoverPage({ onStart }: CoverPageProps) {
           maxWidth: 440,
           animationDelay: "200ms",
         }}>
-          <button className="btn-primary press" onClick={() => setPlayingIntro(true)}>开始修补</button>
           <button className="btn-ghost press" onClick={() => setModal("world")}>查看设定</button>
           <button className="btn-ghost press" onClick={() => setModal("showcase")}>参赛档案</button>
         </div>

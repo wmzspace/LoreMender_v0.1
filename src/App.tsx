@@ -1,11 +1,11 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import {
   CoverPage, WorldPage, VolumeSelectPage, ChapterSelectPage,
   ShowcasePage,
   StoryPage, MiniGamePage, DungeonStatusPage, TrustRoutePage,
   ProgressPage, EndingPage, GalleryPage,
 } from "./pages";
-import { SideNav } from "./components";
+import { SideNav, ValueChangeStack, type ValueDelta } from "./components";
 import { resolveEnding } from "./data";
 import type { GameState } from "./data/types";
 import { loadState, saveState } from "./lib/storage";
@@ -18,6 +18,9 @@ const BGM_PAGES: PageKey[] = ["story", "minigame"];
 
 /** 沉浸页:无 SideNav 概念(封面/结局)。剧情页参与正常侧栏体系:默认收起=全屏 + 左上展开键,展开则显示侧栏。 */
 const IMMERSIVE_PAGES: PageKey[] = ["cover", "ending"];
+
+/** 由右上角快捷菜单进入的页面:右上角显示「退出」按钮,返回剧情。 */
+const QUICKMENU_PAGES: PageKey[] = ["map", "clue", "gallery"];
 
 /** Delegated click sound: plays the target's `data-sfx`, or "tap" for any other pressable element. */
 function handleScreenClick(e: MouseEvent<HTMLDivElement>) {
@@ -32,6 +35,20 @@ export default function App() {
   const [page, setPage] = useState<PageKey>("cover");
   const [transKey, setTransKey] = useState(0);
   const [navCollapsed, setNavCollapsed] = useState(false);
+  // 侧栏悬停展开 / 移开自动收缩：延时收缩，避免指针从展开按钮移入侧栏途中的间隙误触收起。
+  const navCollapseTimer = useRef<number>(0);
+  const cancelNavCollapse = () => {
+    if (navCollapseTimer.current) { window.clearTimeout(navCollapseTimer.current); navCollapseTimer.current = 0; }
+  };
+  const expandNav = () => { cancelNavCollapse(); setNavCollapsed(false); };
+  const scheduleNavCollapse = () => {
+    cancelNavCollapse();
+    navCollapseTimer.current = window.setTimeout(() => setNavCollapsed(true), 200);
+  };
+  useEffect(() => cancelNavCollapse, []);
+  // 数值变化提示在 App 层持有：放在 key={transKey} 的换页包裹层之外，
+  // 这样即便选择后立刻转场/换章导致 StoryPage 重挂载，提示仍能完整存活其生命周期。
+  const [valueDeltas, setValueDeltas] = useState<ValueDelta[]>([]);
 
   // 章节 BGM 由 App 统一管理，跨越剧情↔小游戏的页面切换持续播放（同源 src 时 playBgm 为 no-op）。
   useEffect(() => {
@@ -57,6 +74,10 @@ export default function App() {
     // would otherwise always fall back to the default ending.
     setState(prev => {
       const ns: GameState = { ...prev, lastEnding: resolveEnding(prev) };
+      // 典故信物：与华佗羁绊≥3，结局达成时由华佗亲手授予「华佗手书残句」，点亮《拾遗残卷》。
+      if ((prev.huatuo_trust || 0) >= 3 && !prev.items.includes("huatuo_manuscript")) {
+        ns.items = [...prev.items, "huatuo_manuscript"];
+      }
       saveState(ns);
       return ns;
     });
@@ -104,10 +125,12 @@ export default function App() {
       break;
     case "story":
       pageEl = <StoryPage state={state} setState={setState}
-        gotoPage={gotoPage} gotoEnding={gotoEnding}/>;
+        gotoPage={gotoPage} gotoEnding={gotoEnding}
+        onValueDeltas={setValueDeltas}/>;
       break;
     case "minigame":
-      pageEl = <MiniGamePage state={state} setState={setState} gotoPage={gotoPage}/>;
+      pageEl = <MiniGamePage state={state} setState={setState} gotoPage={gotoPage}
+        onValueDeltas={setValueDeltas}/>;
       break;
     case "clue":
       pageEl = <DungeonStatusPage state={state} gotoPage={gotoPage}/>;
@@ -142,11 +165,14 @@ export default function App() {
       <div className="phone">
         <div className="screen" onClick={handleScreenClick}>
           <div className={shellClass}>
-            {sideOpen && (
+            {showNav && (
               <SideNav
                 active={page}
+                open={sideOpen}
                 onNav={gotoPage}
                 onCollapse={() => setNavCollapsed(true)}
+                onMouseEnter={cancelNavCollapse}
+                onMouseLeave={scheduleNavCollapse}
               />
             )}
             <div className="app-main">
@@ -155,7 +181,8 @@ export default function App() {
                 <button
                   className="nav-expand-btn press"
                   data-sfx="nav"
-                  onClick={() => setNavCollapsed(false)}
+                  onMouseEnter={expandNav}
+                  onClick={expandNav}
                   aria-label="展开导航"
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -164,9 +191,24 @@ export default function App() {
                   </svg>
                 </button>
               )}
+              {/* 退出按钮:从右上角快捷菜单进入的页面(进程/线索板/图鉴),右上角返回剧情 */}
+              {QUICKMENU_PAGES.includes(page) && (
+                <button
+                  className="quick-exit-btn press"
+                  data-sfx="back"
+                  onClick={() => gotoPage("story")}
+                  aria-label="退出，返回剧情"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3 3 L11 11 M11 3 L3 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                </button>
+              )}
               <div key={transKey} style={{position:"absolute", inset: 0, animation: "fadeIn 380ms ease both"}}>
                 {pageEl}
               </div>
+              {/* 数值变化提示:位于换页包裹层之外,不随 StoryPage 重挂载而被销毁 */}
+              <ValueChangeStack deltas={valueDeltas} onClear={() => setValueDeltas([])} />
             </div>
           </div>
         </div>

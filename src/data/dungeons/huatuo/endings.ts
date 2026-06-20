@@ -37,6 +37,15 @@ export const ENDINGS: Record<string, Ending> = {
     body: "你把残卷托给玄音。\n歌诀比竹简走得更远，也比竹简更难追回。\n有些救急法门留在曲调里，有些错句也混入人群。\n玄音一路校正，仍无法保证每个渡口唱出的都是原意。\n青囊没有完全失声，却留下了长久的遗憾。",
     glyph: "wall",
   },
+  wangji_archive: {
+    id: "wangji_archive",
+    name: "医案存世",
+    rank: "典故修补",
+    rankColor: "#2c6657",
+    epitaph: "医案藏府库，济世写卷首",
+    body: "你把残卷托给王济。\n他把「医术当以济世为先，不以权势为序」写在医案首页，督促曹府医官照录、照用。\n它没有流入街巷，却在府库里被一代代医官翻阅、引证、补全。\n书被锁着，钥匙却交到了愿意开柜的人手里。",
+    glyph: "wall",
+  },
   wangji_trap: {
     id: "wangji_trap",
     name: "重锁深阁",
@@ -86,42 +95,44 @@ function searchPressure(state: GameState): number {
 
 export function resolveEnding(state: GameState): EndingId {
   const highCount = Object.values(state.gameResults ?? {}).filter(r => r.best === "high").length;
-  const caseTriageOk = isAtLeastMid(state, "case_triage") && state.ch3 !== "tamper_case";
+  // 病案排对（未按身份）= case_triage 至少中评；按身份排错则 case_triage 偏低
+  const correctTriage = isAtLeastMid(state, "case_triage");
+  const tampered = state.ch3 === "tamper_case";
   const completePrescription = isHigh(state, "herb_memory") || hasItem(state, "chenbo_prescription_full");
+  const completeCaseRecord = isHigh(state, "case_triage") || hasItem(state, "case_record_full");
   const completeSongPage = isHigh(state, "song_formula") || hasItem(state, "xuanyin_song_page_complete");
   const hasForbiddenRecord = hasItem(state, "forbidden_record") || state.ch4 === "keep_forbidden_record";
   const weakEvidenceCount = ["herb_memory", "case_triage", "song_formula"].filter(id => !isAtLeastMid(state, id)).length;
+  const sp = searchPressure(state);
+  const burnLean = (state.burn_tendency || 0) >= 1;
 
-  if (state.finalChoice === "burn" || searchPressure(state) >= 4 || weakEvidenceCount >= 3) {
-    return "burn_ending";
-  }
+  // 3. 软化强制焚尽：主动焚毁 / 三路证据全无 / 被围（压力极高，或倾向焚毁且压力偏高）
+  if (state.finalChoice === "burn") return "burn_ending";
+  if (weakEvidenceCount >= 3) return "burn_ending";
+  if (sp >= 5 || (burnLean && sp >= 3)) return "burn_ending";
 
+  // 1. 三线对称：真结局统一需要「信任≥2 + 该线质量物品完整 + 高完成≥2 + 对应倾向≥1 + 线路专属条件」
+  //    注：信任为累加值(小游戏高分+1，再加章内 1~2 个共情对白)，故达标需「小游戏高分 + 至少一次共情」。
   switch (state.finalChoice) {
     case "chenbo":
-      return state.chenbo_trust >= 2 &&
-        completePrescription &&
-        highCount >= 2 &&
-        caseTriageOk &&
-        (state.record_tendency || 0) >= 1
+      return state.chenbo_trust >= 2 && completePrescription && highCount >= 2 && correctTriage && (state.record_tendency || 0) >= 1
         ? "chenbo_true"
         : "chenbo_fallback";
     case "xuanyin":
-      return completeSongPage && hasForbiddenRecord && state.ch4 !== "spread_then_fix"
+      // 2. 启用 spread_tendency；边传边改(spread_then_fix)无法进真结局
+      return completeSongPage && hasForbiddenRecord && highCount >= 2 && (state.spread_tendency || 0) >= 1 && state.ch4 !== "spread_then_fix"
         ? "xuanyin_true"
         : "xuanyin_fallback";
     case "wangji":
-      return "wangji_trap";
+      // 4. 偷改病案 / 按身份排序（病案排错）→ 强制重锁深阁
+      if (tampered || !correctTriage) return "wangji_trap";
+      // 1. 王济对称化：达标 → 医案存世（积极），否则 → 重锁深阁
+      return state.wangji_trust >= 2 && completeCaseRecord && highCount >= 2 && (state.system_tendency || 0) >= 1
+        ? "wangji_archive"
+        : "wangji_trap";
     default:
       return "xuanyin_fallback";
   }
-}
-
-const WANGJI_BODY_LOW = "你把残卷托给王济。\n他接住了它，也立刻把它交进更深的门里。\n曹府医官抄录了几条可用浅方，正本却再未离开府库。\n阿吉后来听人说，残页确实活了下来，只是寻常百姓再也摸不到它。";
-
-const WANGJI_BODY_STABLE = "你把残卷托给王济。\n完整病案和假文书让他保下一部分内容，也让曹府不得不承认华佗之名。\n可制度会重新筛选文字，民间经验被轻看，危险提醒被删改。\n书活了下来，却又被锁住。";
-
-function isStableWangjiEnding(state: GameState): boolean {
-  return (state.wangji_trust ?? 0) >= 2 && isHigh(state, "case_triage") && (state.system_tendency || 0) >= 1;
 }
 
 export const ENDING_NARRATION_BODIES: Record<string, string> = {
@@ -129,24 +140,15 @@ export const ENDING_NARRATION_BODIES: Record<string, string> = {
   chenbo_fallback: ENDINGS.chenbo_fallback.body,
   xuanyin_true: ENDINGS.xuanyin_true.body,
   xuanyin_fallback: ENDINGS.xuanyin_fallback.body,
-  wangji_trap_low: WANGJI_BODY_LOW,
-  wangji_trap_stable: WANGJI_BODY_STABLE,
+  wangji_archive: ENDINGS.wangji_archive.body,
+  wangji_trap: ENDINGS.wangji_trap.body,
   burn_ending: ENDINGS.burn_ending.body,
 };
 
-export function getEndingAudioId(state: GameState, endId: EndingId): string {
-  if (endId === "wangji_trap") {
-    return isStableWangjiEnding(state) ? "wangji_trap_stable" : "wangji_trap_low";
-  }
+export function getEndingAudioId(_state: GameState, endId: EndingId): string {
   return endId;
 }
 
-export function getEndingBody(state: GameState, endId: EndingId): string {
-  if (endId === "wangji_trap") {
-    if (isStableWangjiEnding(state)) {
-      return WANGJI_BODY_STABLE;
-    }
-    return WANGJI_BODY_LOW;
-  }
+export function getEndingBody(_state: GameState, endId: EndingId): string {
   return ENDINGS[endId]?.body ?? "";
 }
