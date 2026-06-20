@@ -435,6 +435,17 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLine]);
 
+  // itemReveal：对白自带的「该句播出时弹出获得物品图」标记（物品已在小游戏结算时入库，这里只补展示时机）。
+  useEffect(() => {
+    if (!beat || !("itemReveal" in beat) || !beat.itemReveal?.length) return;
+    const defs = beat.itemReveal.map(id => ITEMS[id]).filter((d): d is ItemDef => !!d);
+    if (defs.length) {
+      playSfx("unlock");
+      setItemModal(defs);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [beat]);
+
   // 「打字机完成 + 配音读完」后延时推进;开关打开时若当前句已读完立即生效。
   useEffect(() => {
     clearAuto();

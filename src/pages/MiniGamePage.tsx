@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { STORY } from "../data";
+import { STORY, ITEMS, type ItemDef } from "../data";
 import type { GameNode, GameResultRank, GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
 import { saveState } from "../lib/storage";
@@ -212,6 +212,33 @@ function GameFeedbackOverlay({ rank, game, onDismiss }: {
         fontSize: 14, color: "rgba(228,224,208,0.4)",
         letterSpacing: "0.35em", animationDelay: "550ms",
       }}>轻 触 继 续</div>
+    </div>
+  );
+}
+
+/** 小游戏结算后，若获得带图物品，复用「获得物品弹窗」展示插图（与剧情台词触发的同款）。 */
+function GameItemModal({ items, onDismiss }: { items: ItemDef[]; onDismiss: () => void }) {
+  return (
+    <div className="item-modal-backdrop" onClick={onDismiss} style={{ zIndex: 210 }}>
+      <div className="item-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="item-modal-eyebrow">获 得 物 品</div>
+        <div className="item-modal-list">
+          {items.map(it => (
+            <div key={it.id} className="item-modal-entry">
+              <div className="item-modal-icon">
+                {it.image
+                  ? <img src={it.image} alt={it.name} />
+                  : <span className="cb-item-seal">物</span>}
+              </div>
+              <div className="item-modal-info">
+                <div className="item-modal-name">{it.name}</div>
+                {it.desc && <div className="item-modal-desc">{it.desc}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+        <button className="btn-primary press item-modal-btn" onClick={onDismiss}>收 下</button>
+      </div>
     </div>
   );
 }
@@ -1322,6 +1349,7 @@ export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniG
   const [toast, setToast] = useState("");
   const [localClassifyRetry, setLocalClassifyRetry] = useState<boolean | null>(state.classifyRetry);
   const [feedback, setFeedback] = useState<GameResultRank | null>(null);
+  const [grantedItems, setGrantedItems] = useState<ItemDef[]>([]);
   const [retryKey] = useState(0);
 
   // 华容道难度：classifyRetry=true(继续修正) → 简单, classifyRetry=false(退出) → 中等
@@ -1344,7 +1372,20 @@ export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniG
       Date.now(),
     );
     if (deltas.length) onValueDeltas?.(deltas);
+    // wangji_fake_doc 留给后续剧情台词（归档文书交接那一句）现身，此处不弹出。
+    const newItemIds = ns.items.filter(id => !state.items.includes(id) && id !== "wangji_fake_doc");
+    setGrantedItems(newItemIds.map(id => ITEMS[id]).filter((d): d is ItemDef => !!d?.image));
     setFeedback(rank);
+  };
+
+  // 结算印章弹窗关闭后：若本局获得了带图物品，先展示获得物品弹窗，再返回剧情。
+  const dismissFeedback = () => {
+    setFeedback(null);
+    if (!grantedItems.length) gotoPage("story");
+  };
+  const dismissItemModal = () => {
+    setGrantedItems([]);
+    gotoPage("story");
   };
 
   const handleClassifyRetry = (retry: boolean) => {
@@ -1370,7 +1411,10 @@ export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniG
         />
         <Toast text={toast} onDone={() => setToast("")} />
         {feedback !== null && (
-          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={() => gotoPage("story")} />
+          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={dismissFeedback} />
+        )}
+        {feedback === null && grantedItems.length > 0 && (
+          <GameItemModal items={grantedItems} onDismiss={dismissItemModal} />
         )}
       </>
     );
@@ -1389,7 +1433,10 @@ export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniG
         />
         <Toast text={toast} onDone={() => setToast("")} />
         {feedback !== null && (
-          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={() => gotoPage("story")} />
+          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={dismissFeedback} />
+        )}
+        {feedback === null && grantedItems.length > 0 && (
+          <GameItemModal items={grantedItems} onDismiss={dismissItemModal} />
         )}
       </>
     );
@@ -1408,7 +1455,10 @@ export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniG
         />
         <Toast text={toast} onDone={() => setToast("")} />
         {feedback !== null && (
-          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={() => gotoPage("story")} />
+          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={dismissFeedback} />
+        )}
+        {feedback === null && grantedItems.length > 0 && (
+          <GameItemModal items={grantedItems} onDismiss={dismissItemModal} />
         )}
       </>
     );
@@ -1427,7 +1477,10 @@ export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniG
         />
         <Toast text={toast} onDone={() => setToast("")} />
         {feedback !== null && (
-          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={() => gotoPage("story")} />
+          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={dismissFeedback} />
+        )}
+        {feedback === null && grantedItems.length > 0 && (
+          <GameItemModal items={grantedItems} onDismiss={dismissItemModal} />
         )}
       </>
     );
@@ -1444,13 +1497,14 @@ export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniG
     <Shell
       game={game} state={state} gotoPage={gotoPage}
       toast={toast} setToast={setToast}
-      overlay={feedback !== null && (
-        <GameFeedbackOverlay
-          rank={feedback}
-          game={game}
-          onDismiss={() => gotoPage("story")}
-        />
-      )}
+      overlay={<>
+        {feedback !== null && (
+          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={dismissFeedback} />
+        )}
+        {feedback === null && grantedItems.length > 0 && (
+          <GameItemModal items={grantedItems} onDismiss={dismissItemModal} />
+        )}
+      </>}
     >
       {body}
       {!locked && (

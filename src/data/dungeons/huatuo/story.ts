@@ -448,7 +448,7 @@ export const STORY: Record<string, StoryChapter> = {
           context: "根据病案柜、药房、值班记录和病房线索排序：不是看身份贵贱，而是看谁更急。",
           reward: { item: "wangji_document", skill: "wangji_trust" },
         },
-        image: "  /images/levels/1/chapters/ch3_beats/ch3_07_three_cases.webp"
+        image: "/images/levels/1/chapters/ch3_beats/ch3_07_three_cases.webp"
       },
       {
         choices: [
@@ -467,7 +467,7 @@ export const STORY: Record<string, StoryChapter> = {
           { label: "「先救最急的人，并把这条写进府库的规矩里。」", set: { asked_heart: 1, medical_skill: 1, system_tendency: 1 }, toast: "王济沉默地记下了这一条。" },
         ],
       },
-      { speaker: "wangji", line: "这是“残卷已焚”的归档文书，只能撑到天亮。", image: "/images/levels/1/chapters/ch3_beats/ch3_09_documents_handoff.webp" },
+      { speaker: "wangji", line: "这是“残卷已焚”的归档文书，只能撑到天亮。", image: "/images/levels/1/chapters/ch3_beats/ch3_09_documents_handoff.webp", itemReveal: ["wangji_fake_doc"] },
       { speaker: "aj", line: "你为什么帮我？" },
       { speaker: "wangji", line: "因为你还没有把青囊交给任何一扇门。人在门外时，反而可能看清门里有什么。" },
       {

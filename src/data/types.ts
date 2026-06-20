@@ -123,8 +123,9 @@ export interface ExploreScene {
 }
 
 export type Beat =
-  | { speaker: string; line: string; narration?: false; image?: string }
-  | { narration: true; line: string; image?: string }
+  // itemReveal：该句对白播出时，弹出「获得物品」插图弹窗（物品早已在 state.items 里，仅补一次展示时机）。
+  | { speaker: string; line: string; narration?: false; image?: string; itemReveal?: string[] }
+  | { narration: true; line: string; image?: string; itemReveal?: string[] }
   | { game: GameNode; image?: string }
   | { choices: Choice[] }
   | { explore: ExploreScene }
