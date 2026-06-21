@@ -2484,7 +2484,9 @@ button:disabled,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #04060a;
+  /* 用 var(--ink-deep) 与下层 .screen 背景一致:退场淡出 420ms 期间不会露出另一色块,
+     退场完毕 CoverPage 挂载时基底也是同色,整段过渡无色跳。 */
+  background: var(--ink-deep);
   opacity: 1;
   transition: opacity 420ms ease;
 }
