@@ -2,11 +2,46 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ShowcasePage } from "./ShowcasePage";
 import { stopBgm } from "../lib/audio";
 import { isPrologueSeen, markPrologueSeen } from "../lib/storage";
-import { TitleSequence, titleCardContent, studioCardContent, DialogueBox, ProgressDots } from "../components";
+import { TitleSequence, titleCardContent, studioCardContent, DialogueBox, ProgressDots, SoundSettings } from "../components";
+import type { DialogueBoxHandle } from "../components/DialogueBox";
 
 interface CoverPageProps {
   /** 进入游戏(播完开场动画后由 App 跳转到卷宗)。 */
   onStart: () => void;
+}
+
+/** 封面图(cover.jpg)原始像素尺寸,与下方 PORTAL_BBOX 一起标定漩涡在美术里的真实范围。 */
+const COVER_IMG_W = 2752;
+const COVER_IMG_H = 1536;
+/** 漩涡可点击范围,按 cover.jpg 自身坐标系(0–1)标定,量自实际美术效果。
+ *  不用画一个圈去近似它——直接按背景 background-size:cover / position:center top 的换算公式
+ *  把这个范围投影到当前视口,缩放/换屏幕比例时始终贴合画面里的漩涡,不需要再调參数。 */
+const PORTAL_BBOX = { left: 0.3, top: 0.2, right: 0.7, bottom: 0.8 };
+
+/** 计算 PORTAL_BBOX 在当前视口下的像素位置(随 resize 重算)。 */
+function usePortalRect() {
+  const [rect, setRect] = useState({ left: 0, top: 0, width: 0, height: 0 });
+  useEffect(() => {
+    const compute = () => {
+      const cw = window.innerWidth;
+      const ch = window.innerHeight;
+      const scale = Math.max(cw / COVER_IMG_W, ch / COVER_IMG_H);
+      const renderedW = COVER_IMG_W * scale;
+      const renderedH = COVER_IMG_H * scale;
+      // backgroundPosition: "center top" → 水平居中裁切,垂直贴顶(顶边永远对齐,偏移为 0)
+      const offsetX = (cw - renderedW) / 2;
+      setRect({
+        left: offsetX + PORTAL_BBOX.left * renderedW,
+        top: PORTAL_BBOX.top * renderedH,
+        width: (PORTAL_BBOX.right - PORTAL_BBOX.left) * renderedW,
+        height: (PORTAL_BBOX.bottom - PORTAL_BBOX.top) * renderedH,
+      });
+    };
+    compute();
+    window.addEventListener("resize", compute);
+    return () => window.removeEventListener("resize", compute);
+  }, []);
+  return rect;
 }
 
 /** 序幕主线设定对白（漩涡点击后立即出现，逐句累积、轻触推进；最多 3 轮）。 */
@@ -28,6 +63,7 @@ function PrologueScene({ onDone }: { onDone: () => void; replay?: boolean }) {
   const [stage, setStage] = useState<"intro" | "dialogue">("intro");
   const [autoOn, setAutoOn] = useState(false);
   const autoTimer = useRef<number>(0);
+  const dialogueRef = useRef<DialogueBoxHandle>(null);
   const last = idx >= PROLOGUE_LINES.length - 1;
   // 序幕 BGM 用剧情外统一主题曲，由 App（cover 页）统一播放，这里无需单独管理。
 
@@ -43,7 +79,11 @@ function PrologueScene({ onDone }: { onDone: () => void; replay?: boolean }) {
   return (
     <div className="prologue-scene" role="button" aria-label="序幕">
       <img src="/images/cover.jpg" className="prologue-bg" alt="" />
-      <div className="prologue-scrim" />
+      <div
+        className="prologue-scrim"
+        onClick={() => dialogueRef.current?.advance()}
+        style={stage === "dialogue" ? { pointerEvents: "auto", cursor: "pointer" } : undefined}
+      />
       <div className="grain" />
 
       {stage === "intro" ? (
@@ -52,26 +92,32 @@ function PrologueScene({ onDone }: { onDone: () => void; replay?: boolean }) {
           onDone={() => setStage("dialogue")}
         />
       ) : (
-        <div style={{
-          position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 3,
-          display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
-          padding: "0 24px calc(18px + env(safe-area-inset-bottom, 0px))",
-        }}>
-          <ProgressDots total={PROLOGUE_LINES.length} current={idx + 1} />
-          <DialogueBox
-            key={idx}
-            text={PROLOGUE_LINES[idx]}
-            isNarration
-            onNext={next}
-            onPrev={prev}
-            canPrev={idx > 0}
-            autoOn={autoOn}
-            onToggleAuto={() => setAutoOn(v => !v)}
-            onTypingDone={() => {
-              if (autoOn) { clearAuto(); autoTimer.current = window.setTimeout(next, 1600); }
-            }}
-          />
-        </div>
+        <>
+          <div className="cover-sound-settings" onClick={(e) => e.stopPropagation()}>
+            <SoundSettings />
+          </div>
+          <div style={{
+            position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 3,
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
+            padding: "0 24px calc(18px + env(safe-area-inset-bottom, 0px))",
+          }}>
+            <ProgressDots total={PROLOGUE_LINES.length} current={idx + 1} />
+            <DialogueBox
+              ref={dialogueRef}
+              key={idx}
+              text={PROLOGUE_LINES[idx]}
+              isNarration
+              onNext={next}
+              onPrev={prev}
+              canPrev={idx > 0}
+              autoOn={autoOn}
+              onToggleAuto={() => setAutoOn(v => !v)}
+              onTypingDone={() => {
+                if (autoOn) { clearAuto(); autoTimer.current = window.setTimeout(next, 1600); }
+              }}
+            />
+          </div>
+        </>
       )}
     </div>
   );
@@ -183,6 +229,7 @@ export function CoverPage({ onStart }: CoverPageProps) {
   //       序幕只首次自动播一次；「查看设定」可重看序幕（看完返回封面）。
   const [phase, setPhase] = useState<"cover" | "prologue" | "prologue-replay" | "intro">("cover");
   const [modal, setModal] = useState<null | "showcase">(null);
+  const portalRect = usePortalRect();
 
   // 开始游戏（点击漩涡 / 弹层「进入」）：未看过序幕 → 先播序幕；已看过 → 直接开场动画
   const beginGame = () => {
@@ -243,6 +290,10 @@ export function CoverPage({ onStart }: CoverPageProps) {
         textShadow: "0 1px 6px rgba(0,0,0,0.8)",
       }}>The LOREMENDER</div>
 
+      <div className="cover-sound-settings">
+        <SoundSettings />
+      </div>
+
       <div style={{
         position: "absolute",
         inset: "calc(14px + env(safe-area-inset-top,0px)) 14px calc(14px + var(--safe-bottom))",
@@ -260,18 +311,21 @@ export function CoverPage({ onStart }: CoverPageProps) {
         zIndex: 3,
       }} />
 
-      {/* 中央传送门:点击封面漩涡进入游戏(替代原「开始修补」按钮) */}
-      <div className="cover-portal-wrap">
+      {/* 点击封面漩涡进入游戏:范围贴合美术里漩涡的真实位置(见 usePortalRect),不再额外画圈示意。
+          z-index 低于下方「查看设定/参赛档案」按钮,小屏下若区域重叠,以那些按钮优先响应点击。 */}
+      <div
+        className="cover-portal-wrap"
+        style={{ left: portalRect.left, top: portalRect.top, width: portalRect.width, height: portalRect.height }}
+      >
         <button
           className="cover-portal press"
           data-sfx="nav"
           onClick={beginGame}
           aria-label="点击传送门，开始修补"
-        >
-          <span className="cover-portal-ring" aria-hidden="true" />
-        </button>
-        <div className="cover-portal-hint" aria-hidden="true">轻 触 漩 涡 · 开 始 修 补</div>
+        />
       </div>
+      {/* 提示文字锚在底部按钮区上方(纯 CSS bottom 定位),不随 PORTAL_BBOX 调整而移动。 */}
+      <div className="cover-portal-hint" aria-hidden="true">轻 触 漩 涡 · 开 始 修 补</div>
 
       <div style={{
         position: "absolute", inset: 0,

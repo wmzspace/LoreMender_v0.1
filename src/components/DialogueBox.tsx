@@ -110,7 +110,10 @@ export const DialogueBox = forwardRef<DialogueBoxHandle, DialogueBoxProps>(funct
   const rest = text.slice(count);
 
   return (
-    <div className="galgame-dialogue fade-in">
+    // 整个对白框(含头像名条、控制条按钮之间的空隙)都能点击推进——
+    // 之前只有 .gd-body 绑了 onClick,点名条/头像或控制条按钮间的空白会没反应。
+    // 控制条上各按钮自带 stop() 做 stopPropagation,不会被这里重复触发。
+    <div className="galgame-dialogue fade-in" data-sfx="tap" onClick={advance} style={{ cursor: "pointer" }}>
       {speaker && !isNarration && (
         <div className="gd-namebar">
           {portrait && <img className="gd-avatar" src={portrait} alt="" />}
@@ -118,7 +121,7 @@ export const DialogueBox = forwardRef<DialogueBoxHandle, DialogueBoxProps>(funct
         </div>
       )}
 
-      <div className="gd-body" data-sfx="tap" onClick={advance} style={{ cursor: "pointer" }}>
+      <div className="gd-body">
         <div className="gd-text" style={textStyle}>
           <span>{shown}</span>
           <span aria-hidden="true" style={{ opacity: 0 }}>{rest}</span>

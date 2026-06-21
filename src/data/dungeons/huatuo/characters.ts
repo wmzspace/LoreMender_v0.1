@@ -15,7 +15,7 @@ export const CHARACTERS: Record<string, Character> = {
     role: "玩家附身 · 华佗幼弟子",
     desc: "二十六七岁的青年医者，华佗门下年纪最小的弟子。没有名望，却是最后一个能把青囊残术带出牢狱的人。",
     accent: "#a8a07a",
-    portrait: "/images/levels/1/characters/aj_square.png",
+    portrait: "/images/levels/1/characters/aj_square.webp",
   },
   chenbo: {
     id: "chenbo",

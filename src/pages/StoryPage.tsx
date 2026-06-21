@@ -26,11 +26,21 @@ const preloaded = new Set<string>();
 
 function preloadImages(paths: string[]) {
   for (const p of paths) {
-    if (preloaded.has(p)) continue;
+    if (!p || preloaded.has(p)) continue;
     preloaded.add(p);
     const img = new Image();
     img.src = p;
   }
+}
+
+// 角色头像、物品图标都是小体量固定集合，整局只需预取一次，
+// 不必按章节裁剪——省去逐章追踪 itemReveal/speaker 引用的脆弱逻辑。
+let globalAssetsPreloaded = false;
+function preloadGlobalAssets() {
+  if (globalAssetsPreloaded) return;
+  globalAssetsPreloaded = true;
+  preloadImages(Object.values(CHARACTERS).map(c => c.portrait).filter((p): p is string => !!p));
+  preloadImages(Object.values(ITEMS).map(it => it.image).filter((p): p is string => !!p));
 }
 
 function collectImagePaths(beats: Beat[]): string[] {
@@ -40,6 +50,12 @@ function collectImagePaths(beats: Beat[]): string[] {
       if ("image" in beat && beat.image) out.push(beat.image);
       if ("game" in beat && beat.game.nextBeatUnlockedImage) out.push(beat.game.nextBeatUnlockedImage);
       if ("ifKey" in beat) walk(beat.beats);
+      if ("explore" in beat) {
+        if (beat.explore.image) out.push(beat.explore.image);
+        for (const hotspot of beat.explore.hotspots) {
+          if (hotspot.image) out.push(hotspot.image);
+        }
+      }
     }
   };
   walk(beats);
@@ -67,6 +83,7 @@ function AiSceneImage({ chapterNum, beats, beatIdx, overrideImage }: {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    preloadGlobalAssets();
     preloadImages(collectImagePaths(beats));
   }, [beats]);
 

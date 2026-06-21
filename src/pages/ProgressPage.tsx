@@ -30,7 +30,7 @@ const ALL_CHAPTERS = [
     preview: "建安十三年，许昌大牢。烛火摇曳中，阿吉从昏迷中醒来。面前是一位苍老的身影，正在拼合散落的竹简。师父的第一句话，将改变这一夜的走向……",
     characters: [
       { name: "华佗", portrait: "/images/levels/1/characters/huatuo_square.webp" },
-      { name: "阿吉", portrait: "/images/levels/1/characters/aj_square.png" },
+      { name: "阿吉", portrait: "/images/levels/1/characters/aj_square.webp" },
     ],
   },
   {
@@ -68,7 +68,7 @@ const ALL_CHAPTERS = [
     desc: "终章回响，理解修补的真正意义。",
     preview: "书烧了，他死了，可是——无论你做了哪个选择，历史的长河中总有一道涟漪。此后千年，那道涟漪会以何种方式被人记住？",
     characters: [
-      { name: "阿吉", portrait: "/images/levels/1/characters/aj_square.png" },
+      { name: "阿吉", portrait: "/images/levels/1/characters/aj_square.webp" },
       { name: "华佗", portrait: "/images/levels/1/characters/huatuo_square.webp" },
     ],
   },
