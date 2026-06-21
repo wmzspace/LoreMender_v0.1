@@ -2400,6 +2400,18 @@ button:disabled,
   -webkit-tap-highlight-color: transparent;
 }
 
+/* 静态装饰 UI(边框/左上标题/右上音量):点漩涡后直接淡出,不参与"吸入"位移。
+   z-index 高于 .cover-portal-wrap,保证音量按钮在重叠时依旧优先响应点击。 */
+.cover-chrome-static {
+  z-index: 2;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 280ms ease;
+}
+.cover-chrome-static.is-sucked {
+  opacity: 0;
+}
+
 .cover-portal-hint {
   position: absolute;
   /* 正中间,不再挂边框/底框,纯文字闪烁,与点击范围(.cover-portal-wrap)的位置/大小无关。 */
@@ -2415,14 +2427,136 @@ button:disabled,
   text-indent: 0.18em;
   color: var(--gold-pale);
   text-shadow: 0 0 16px rgba(236, 220, 166, 0.75), 0 1px 10px rgba(0, 0, 0, 0.95);
-  animation: portalHintPulse 2.2s ease-in-out infinite;
+  /* 先从中间展开亮出(hintExpand),展开完毕后接上常驻的呼吸闪烁(portalHintPulse,延时对齐展开时长)。
+     transition 常驻待命,真正退场分两步(见 CoverPage.tsx 的 suckingIn/suckTarget):
+     第一帧只加 .is-stopping 关掉上面两个 animation(animation 优先级高于 transition,不关掉会完全压制过渡);
+     等这一帧画出来、动画真正停下来后,下一帧再加 .is-sucked 改 transform/opacity——
+     这两步若揉进同一帧,浏览器拿不到"过渡前的旧值",会直接跳到终值,不会播。 */
+  animation: hintExpand 650ms ease both, portalHintPulse 2.2s ease-in-out 650ms infinite;
+  transition: transform 360ms cubic-bezier(0.4, 0, 1, 1), opacity 300ms ease-in;
   pointer-events: none;
+}
+
+.cover-portal-hint.is-stopping {
+  animation: none;
+}
+.cover-portal-hint.is-sucked {
+  transform: translate(-50%, -50%) scaleX(0);
+  opacity: 0;
+}
+
+/* 从中间向两侧展开:配合 translate(-50%,-50%) 居中,scaleX 从 0→1。 */
+@keyframes hintExpand {
+  0% { transform: translate(-50%, -50%) scaleX(0); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scaleX(1); opacity: 1; }
 }
 
 /* 纯闪烁:只在透明度上明暗交替。 */
 @keyframes portalHintPulse {
   0%, 100% { opacity: 0.8; }
   50% { opacity: 1; }
+}
+
+/* 底部「查看设定/参赛档案」按钮组:点漩涡后向下渐隐。
+   .fade-up 自带的入场动画(animation: fadeInUp ... both)即使播完,fill-mode 仍"占着"
+   transform/opacity——同 .cover-portal-hint,退场也要分两帧:.is-stopping 先关动画,
+   下一帧 .is-sucked 才改目标值,否则过渡不会播(原因见上面 .cover-portal-hint 的注释)。 */
+.cover-actions {
+  transition: transform 360ms ease, opacity 320ms ease;
+}
+.cover-actions.is-stopping {
+  animation: none;
+}
+.cover-actions.is-sucked {
+  transform: translateY(28px);
+  opacity: 0;
+}
+
+/* ============================================================
+   启动画面 — 工作室 LOGO,趁这段时间后台加载首页/卷宗页素材
+   ============================================================ */
+.boot-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #04060a;
+  opacity: 1;
+  transition: opacity 420ms ease;
+}
+.boot-screen.is-exiting {
+  opacity: 0;
+  pointer-events: none;
+}
+.boot-screen-logo {
+  width: clamp(220px, 56vmin, 340px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 26px rgba(236, 220, 166, 0.26));
+  animation: fadeIn 700ms ease both;
+}
+.boot-screen-sub {
+  margin-top: 20px;
+  font-family: var(--font-han);
+  font-size: 22px;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  color: var(--gold-pale);
+  opacity: 0.68;
+}
+.boot-screen-loading {
+  margin-top: 44px;
+  font-family: var(--font-han);
+  font-size: 18px;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  color: var(--gold-pale);
+  display: flex;
+  align-items: baseline;
+  animation: portalHintPulse 1.8s ease-in-out infinite;
+}
+
+/* 加载省略号:固定宽度槽位,1→2→3 个点循环时不挤动前面的文字。 */
+.loading-dots {
+  display: inline-block;
+  width: 1.6em;
+  text-align: left;
+  letter-spacing: 0;
+  text-indent: 0;
+}
+
+/* ============================================================
+   章节加载页 — 进入每一章前按顺序加载完该章插图
+   ============================================================ */
+.chapter-loading-screen {
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #05080b;
+}
+.chapter-loading-text {
+  font-family: var(--font-han);
+  font-size: 19px;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: var(--gold-pale);
+  opacity: 0.9;
+  display: flex;
+  align-items: baseline;
+  animation: portalHintPulse 1.8s ease-in-out infinite;
+}
+.chapter-loading-count {
+  margin-top: 14px;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--gold-pale);
+  opacity: 0.5;
 }
 
 /* ============================================================

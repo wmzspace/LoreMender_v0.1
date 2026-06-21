@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ChoiceList, DialogueBox, ProgressDots, QuickMenu, SoundSettings, TitleSequence, titleCardContent, Toast,
+  ChoiceList, DialogueBox, LoadingDots, ProgressDots, QuickMenu, SoundSettings, TitleSequence, titleCardContent, Toast,
   diffValues, type ValueDelta,
 } from "../components";
 import type { DialogueBoxHandle } from "../components/DialogueBox";
@@ -13,8 +13,7 @@ import { dialogueAudioPath, exploreAudioPath, playDialogueAudio, playSfx, stopDi
 import { loadBeat, saveBeat, saveState } from "../lib/storage";
 import { matchIf } from "../lib/beats";
 import type { PageKey } from "../lib/routes";
-import { preloadImages } from "../lib/preload";
-import { collectChapterImagePaths, preloadChapterAssets, preloadEndingVideos, preloadGlobalTier } from "../lib/assetPreload";
+import { loadChapterAssetsSequential, preloadChapterAssets, preloadEndingVideos } from "../lib/assetPreload";
 
 interface StoryPageProps {
   state: GameState;
@@ -44,11 +43,8 @@ function AiSceneImage({ chapterNum, beats, beatIdx, overrideImage }: {
   const [currentSrc, setCurrentSrc] = useState<string | undefined>(imagePath);
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    preloadGlobalTier();
-    // 当前章节正在播放,直接预取(不丢进 idle 队列),比预测性的下一章更急迫。
-    preloadImages(collectChapterImagePaths(beats));
-  }, [beats]);
+  // 本章插图已经在 StoryPage 进章时的硬阻塞加载页里按顺序拿完了(见 loadChapterAssetsSequential),
+  // 这里不需要再额外预取——只负责图片切换时的淡入。
 
   useEffect(() => {
     if (!imagePath || imagePath === currentSrc) return;
@@ -133,6 +129,26 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
     preloadChapterAssets(ch + 1);
     if (ch >= 4) preloadEndingVideos();
   }, [ch]);
+
+  // 进入本章硬阻塞:按 beats 顺序依次加载完该章会用到的所有插图,完成前展示"加载中"。
+  // readyChapterRef 守卫同一章不重复阻塞(比如从小游戏返回时本组件会重挂载)。
+  const [chapterReady, setChapterReady] = useState(false);
+  const [loadProgress, setLoadProgress] = useState({ loaded: 0, total: 0 });
+  const readyChapterRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (readyChapterRef.current === ch) return;
+    setChapterReady(false);
+    let cancelled = false;
+    loadChapterAssetsSequential(ch, (loaded, total) => {
+      if (!cancelled) setLoadProgress({ loaded, total });
+    }).then(() => {
+      if (cancelled) return;
+      readyChapterRef.current = ch;
+      setChapterReady(true);
+    });
+    return () => { cancelled = true; };
+  }, [ch]);
+
   const [beatIdx, setBeatIdx] = useState(() => {
     const saved = loadBeat(ch);
     return saved;
@@ -442,6 +458,17 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoplay, logOpen, typingDone, audioDone, beat, isTransition, gameNode, showTitleCard]);
+
+  if (!chapterReady) {
+    return (
+      <div className="page chapter-loading-screen" style={{ position: "absolute", inset: 0 }}>
+        <div className="chapter-loading-text">典 故 记 载 中<LoadingDots /></div>
+        {loadProgress.total > 0 && (
+          <div className="chapter-loading-count">{loadProgress.loaded}/{loadProgress.total}</div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="page" style={{ position: "absolute", inset: 0, overflow: "hidden" }}>

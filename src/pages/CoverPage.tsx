@@ -146,6 +146,9 @@ const IMAGE_HOLD_MS = 1500;
 function CoverVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showVideo, setShowVideo] = useState(false);
+  // 首次进首页时 cover.mp4 已经在启动画面阶段预加载完毕,不需要再等静态封面图停留——
+  // 直接切到视频;之后图/视频交替的呼吸节奏(IMAGE_HOLD_MS)保留,仅首轮跳过。
+  const firstRef = useRef(true);
 
   useEffect(() => {
     if (showVideo) {
@@ -154,6 +157,9 @@ function CoverVideo() {
       v.currentTime = 0;
       // muted 播放无需用户手势;失败则回到图片阶段继续循环
       v.play().catch(() => setShowVideo(false));
+    } else if (firstRef.current) {
+      firstRef.current = false;
+      setShowVideo(true);
     } else {
       const t = window.setTimeout(() => setShowVideo(true), IMAGE_HOLD_MS);
       return () => window.clearTimeout(t);
@@ -224,11 +230,20 @@ function IntroVideo({ onDone }: { onDone: () => void }) {
   );
 }
 
+/** 点击漩涡后:中间文字向内缩成一条线消失(入场展开动画的倒放),底部按钮向下渐隐;
+ *  边框/标题/音量直接淡出;动画播完才切场景。 */
+const SUCK_IN_MS = 460;
+
 export function CoverPage({ onStart }: CoverPageProps) {
   // 流程：cover(封面) → [首次] prologue(序幕对白) → intro(开场动画) → onStart(卷宗页)
   //       序幕只首次自动播一次；「查看设定」可重看序幕（看完返回封面）。
   const [phase, setPhase] = useState<"cover" | "prologue" | "prologue-replay" | "intro">("cover");
   const [modal, setModal] = useState<null | "showcase">(null);
+  // 退场分两步:先关掉常驻的 keyframe 动画(is-stopping),等这一帧真正画出来后,
+  // 再加上目标 transform/opacity(is-sucked)触发 transition——
+  // 同一帧内"关动画 + 改目标值"浏览器会直接跳过渡,不会播,所以必须隔一帧。
+  const [suckingIn, setSuckingIn] = useState(false);
+  const [suckTarget, setSuckTarget] = useState(false);
   const portalRect = usePortalRect();
 
   // 开始游戏（点击漩涡 / 弹层「进入」）：未看过序幕 → 先播序幕；已看过 → 直接开场动画
@@ -236,6 +251,14 @@ export function CoverPage({ onStart }: CoverPageProps) {
     setModal(null);
     if (isPrologueSeen()) setPhase("intro");
     else setPhase("prologue");
+  };
+
+  // 点漩涡:先让首页 UI 收缩吸入漩涡中心,动画播完才真正切场景,避免画面突然跳变。
+  const handlePortalClick = () => {
+    if (suckingIn) return;
+    setSuckingIn(true);
+    requestAnimationFrame(() => requestAnimationFrame(() => setSuckTarget(true)));
+    window.setTimeout(beginGame, SUCK_IN_MS);
   };
 
   // 查看设定：重看序幕，看完返回封面（不进入游戏）
@@ -278,41 +301,8 @@ export function CoverPage({ onStart }: CoverPageProps) {
       <div className="grain" />
       <div className="vignette" />
 
-      <div className="en-small fade-in" style={{
-        position: "absolute",
-        top: "calc(20px + env(safe-area-inset-top,0px))",
-        left: 26,
-        zIndex: 3,
-        fontSize: 10,
-        letterSpacing: "0.34em",
-        color: "var(--gold-pale)",
-        opacity: 0.55,
-        textShadow: "0 1px 6px rgba(0,0,0,0.8)",
-      }}>The LOREMENDER</div>
-
-      <div className="cover-sound-settings">
-        <SoundSettings />
-      </div>
-
-      <div style={{
-        position: "absolute",
-        inset: "calc(14px + env(safe-area-inset-top,0px)) 14px calc(14px + var(--safe-bottom))",
-        border: "1px solid rgba(205,178,119,0.32)",
-        borderRadius: 2,
-        pointerEvents: "none",
-        zIndex: 3,
-      }} />
-      <div style={{
-        position: "absolute",
-        inset: "calc(18px + env(safe-area-inset-top,0px)) 18px calc(18px + var(--safe-bottom))",
-        border: "1px solid rgba(205,178,119,0.13)",
-        borderRadius: 2,
-        pointerEvents: "none",
-        zIndex: 3,
-      }} />
-
       {/* 点击封面漩涡进入游戏:范围贴合美术里漩涡的真实位置(见 usePortalRect),不再额外画圈示意。
-          z-index 低于下方「查看设定/参赛档案」按钮,小屏下若区域重叠,以那些按钮优先响应点击。 */}
+          独立于下面的 cover-chrome,点击后自身不参与收缩(只是个透明热区)。 */}
       <div
         className="cover-portal-wrap"
         style={{ left: portalRect.left, top: portalRect.top, width: portalRect.width, height: portalRect.height }}
@@ -320,12 +310,53 @@ export function CoverPage({ onStart }: CoverPageProps) {
         <button
           className="cover-portal press"
           data-sfx="nav"
-          onClick={beginGame}
+          onClick={handlePortalClick}
           aria-label="点击传送门，开始修补"
         />
       </div>
-      {/* 提示文字锚在底部按钮区上方(纯 CSS bottom 定位),不随 PORTAL_BBOX 调整而移动。 */}
-      <div className="cover-portal-hint" aria-hidden="true">轻 触 漩 涡 · 开 始 修 补</div>
+
+      {/* 静态装饰类 UI:边框、左上角标题、右上角音量——点漩涡后直接淡出消失,不参与"吸入"动画。 */}
+      <div className={"cover-chrome-static" + (suckingIn ? " is-sucked" : "")} style={{ position: "absolute", inset: 0 }}>
+        <div className="en-small fade-in" style={{
+          position: "absolute",
+          top: "calc(20px + env(safe-area-inset-top,0px))",
+          left: 26,
+          zIndex: 3,
+          fontSize: 10,
+          letterSpacing: "0.34em",
+          color: "var(--gold-pale)",
+          opacity: 0.55,
+          textShadow: "0 1px 6px rgba(0,0,0,0.8)",
+        }}>The LOREMENDER</div>
+
+        <div className="cover-sound-settings">
+          <SoundSettings />
+        </div>
+
+        <div style={{
+          position: "absolute",
+          inset: "calc(14px + env(safe-area-inset-top,0px)) 14px calc(14px + var(--safe-bottom))",
+          border: "1px solid rgba(205,178,119,0.32)",
+          borderRadius: 2,
+          pointerEvents: "none",
+          zIndex: 3,
+        }} />
+        <div style={{
+          position: "absolute",
+          inset: "calc(18px + env(safe-area-inset-top,0px)) 18px calc(18px + var(--safe-bottom))",
+          border: "1px solid rgba(205,178,119,0.13)",
+          borderRadius: 2,
+          pointerEvents: "none",
+          zIndex: 3,
+        }} />
+      </div>
+
+      {/* 提示文字锚在底部按钮区上方(纯 CSS bottom 定位),不随 PORTAL_BBOX 调整而移动。
+          点漩涡后向内缩成一条线消失——是入场展开动画(hintExpand)的倒放。 */}
+      <div
+        className={"cover-portal-hint" + (suckingIn ? " is-stopping" : "") + (suckTarget ? " is-sucked" : "")}
+        aria-hidden="true"
+      >轻 触 漩 涡 · 开 始 修 补</div>
 
       <div style={{
         position: "absolute", inset: 0,
@@ -338,7 +369,9 @@ export function CoverPage({ onStart }: CoverPageProps) {
         // 整块容器铺满全屏,但空白区不可拦截点击——否则会盖住中央传送门。
         pointerEvents: "none",
       }}>
-        <div className="fade-up cover-actions" style={{
+        <div
+          className={"fade-up cover-actions" + (suckingIn ? " is-stopping" : "") + (suckTarget ? " is-sucked" : "")}
+          style={{
           display: "flex",
           flexDirection: "column",
           gap: 12,

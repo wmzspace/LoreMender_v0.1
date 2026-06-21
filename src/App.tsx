@@ -5,15 +5,20 @@ import {
   StoryPage, MiniGamePage, DungeonStatusPage, TrustRoutePage,
   ProgressPage, EndingPage, GalleryPage,
 } from "./pages";
-import { SideNav, ValueChangeStack, type ValueDelta } from "./components";
+import { BootScreen, SideNav, ValueChangeStack, type ValueDelta } from "./components";
 import { resolveEnding } from "./data";
 import type { GameState } from "./data/types";
 import { loadState, saveState } from "./lib/storage";
 import { bgmPath, playBgm, playSfx, primeAudio, stopBgm, type SfxName } from "./lib/audio";
 import type { PageKey } from "./lib/routes";
 import {
-  preloadChapterAssets, preloadGlobalTier, preloadIntroVideo, preloadVolumeSelectAssets,
+  loadBootAssets, preloadChapterAssets, preloadGlobalTier, preloadIntroVideo, preloadVolumeSelectAssets,
 } from "./lib/assetPreload";
+
+/** 启动画面(工作室 LOGO)最短停留时长——避免素材命中缓存时一闪而过。 */
+const MIN_BOOT_MS = 800;
+/** 启动画面退场的淡出动画时长,需与 CSS .boot-screen 的 transition 一致。 */
+const BOOT_EXIT_MS = 420;
 const SFX_SELECTOR = "[data-sfx], .press, .choice, .navitem, .btn-primary, .btn-ghost, .icon-btn";
 
 /** Pages that share the same chapter BGM — switching among them keeps the music playing. */
@@ -42,6 +47,23 @@ export default function App() {
   const [state, setState] = useState<GameState>(() => loadState());
   const [page, setPage] = useState<PageKey>("cover");
   const [transKey, setTransKey] = useState(0);
+  // 启动画面:先亮工作室 LOGO,期间把首页封面/视频 + 典故卷宗每卷封面/视频加载完再进封面页。
+  const [booted, setBooted] = useState(false);
+  const [bootExiting, setBootExiting] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    const start = Date.now();
+    loadBootAssets().then(() => {
+      if (cancelled) return;
+      const wait = Math.max(0, MIN_BOOT_MS - (Date.now() - start));
+      window.setTimeout(() => {
+        if (cancelled) return;
+        setBootExiting(true);
+        window.setTimeout(() => { if (!cancelled) setBooted(true); }, BOOT_EXIT_MS);
+      }, wait);
+    });
+    return () => { cancelled = true; };
+  }, []);
   const [navCollapsed, setNavCollapsed] = useState(false);
   // 侧栏悬停展开 / 移开自动收缩：延时收缩，避免指针从展开按钮移入侧栏途中的间隙误触收起。
   const navCollapseTimer = useRef<number>(0);
@@ -110,6 +132,18 @@ export default function App() {
     });
     gotoPage("ending");
   };
+
+  if (!booted) {
+    return (
+      <div className="stage">
+        <div className="phone">
+          <div className="screen">
+            <BootScreen exiting={bootExiting} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   let pageEl: React.ReactNode = null;
   switch (page) {
