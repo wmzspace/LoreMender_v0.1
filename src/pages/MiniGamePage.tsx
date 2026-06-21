@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { STORY, ITEMS, type ItemDef } from "../data";
 import type { GameNode, GameResultRank, GameState } from "../data/types";
 import type { PageKey } from "../lib/routes";
 import { saveState } from "../lib/storage";
 import { playSfx } from "../lib/audio";
-import { Toast, PageShell, diffValues, type ValueDelta } from "../components";
+import { useDevMode } from "../lib/devMode";
+import { ConfirmModal, Toast, PageShell, diffValues, type ValueDelta } from "../components";
 
 interface MiniGamePageProps {
   state: GameState;
@@ -332,6 +334,58 @@ function shuffled<T>(arr: T[]): T[] {
   return a;
 }
 
+/**
+ * 跳过本关的控制区——开发者模式开 / 关两种互斥形态：
+ *  · 开发者模式开：显示「开发者跳过」，可任选高/中/低评级直接结算，不显示玩家级别的跳过按钮。
+ *  · 开发者模式关（默认）：只显示玩家级别的「跳 过 本 关」，强制以「低」评级结算；
+ *    每次点击都会弹二次确认（跳过会影响结局判定与一卷总评分数）。
+ * 确认弹窗用 createPortal 挂到 document.body：本组件嵌在 .bamboo-bottom 这种自适应高度+不一定铺满全屏的
+ * 容器里，弹窗若就地渲染会被父容器的实际尺寸限制，挤掉按钮（实测会被裁切），传送到 body 才能正常铺满屏幕居中。
+ */
+function GameSkipControls({ finish }: { finish: (rank: GameResultRank) => void }) {
+  const devMode = useDevMode();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  if (devMode) {
+    return (
+      <div className="bamboo-dev">
+        <span className="bamboo-dev-label">开 发 者 跳 过</span>
+        {(["high", "mid", "low"] as GameResultRank[]).map(r => (
+          <button key={r} className="btn-ghost press bamboo-dev-btn"
+            onClick={() => finish(r)}
+            style={{ borderColor: `${RANK_COLOR[r]}40`, color: RANK_COLOR[r] }}>
+            {RANK_LABEL[r]}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  const doSkip = () => finish("low");
+  return (
+    <>
+      <div className="bamboo-skip">
+        <button
+          className="btn-ghost press"
+          style={{ minHeight: 32, fontSize: 12.5, letterSpacing: "0.12em", opacity: 0.6 }}
+          onClick={() => setConfirmOpen(true)}
+        >跳 过 本 关</button>
+      </div>
+      {confirmOpen && createPortal(
+        <ConfirmModal
+          eyebrow="跳 过 提 示"
+          title="跳过这一关？"
+          text={<>跳过会直接以「低」评级结算本关，<span className="confirm-modal-emphasis">可能影响最终结局判定</span>与一卷总评分数。</>}
+          confirmLabel="继 续 跳 过"
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={() => { setConfirmOpen(false); doSkip(); }}
+        />,
+        document.body,
+      )}
+    </>
+  );
+}
+
 /** 曹府查案：全屏沉浸场景，依次点选病案文件排出救治顺序（复用 .clinic-fs / .bamboo-top/.bamboo-bottom 浮层）。 */
 function CaseTriage({ finish, game, best, onBack }: {
   finish: (rank: GameResultRank) => void;
@@ -411,16 +465,7 @@ function CaseTriage({ finish, game, best, onBack }: {
             提 交 病 案
           </button>
         </div>
-        <div className="bamboo-dev">
-          <span className="bamboo-dev-label">开 发 者 跳 过</span>
-          {(["high", "mid", "low"] as GameResultRank[]).map(r => (
-            <button key={r} className="btn-ghost press bamboo-dev-btn"
-              onClick={() => finish(r)}
-              style={{ borderColor: `${RANK_COLOR[r]}40`, color: RANK_COLOR[r] }}>
-              {RANK_LABEL[r]}
-            </button>
-          ))}
-        </div>
+        <GameSkipControls finish={finish} />
       </div>
     </div>
   );
@@ -682,16 +727,7 @@ function BambooPuzzle({ finish, onClassifyRetry, game, best, onBack }: {
                 {allPlaced ? "完 成 分 类" : `完成分类（${placedCount}/${allWords.length}）`}
               </button>
             </div>
-            <div className="bamboo-dev">
-              <span className="bamboo-dev-label">开 发 者 跳 过</span>
-              {(["high", "mid", "low"] as GameResultRank[]).map(r => (
-                <button key={r} className="btn-ghost press bamboo-dev-btn"
-                  onClick={() => finish(r)}
-                  style={{ borderColor: `${RANK_COLOR[r]}40`, color: RANK_COLOR[r] }}>
-                  {RANK_LABEL[r]}
-                </button>
-              ))}
-            </div>
+            <GameSkipControls finish={finish} />
           </>
         )}
       </div>
@@ -871,7 +907,6 @@ function WoodenBox({ finish, hardMode, game, best, onBack }: {
 
   const totalW = COLS * CELL_SIZE;
   const totalH = ROWS * CELL_SIZE;
-  const diffLabel = hardMode ? "中等版" : "简单版";
 
   return (
     <div className="wb-fs">
@@ -898,7 +933,7 @@ function WoodenBox({ finish, hardMode, game, best, onBack }: {
 
       {/* 居中木盘 */}
       <div className="wb-stage">
-        <div className="wb-steps">已走 <b>{steps}</b> 步 · {diffLabel}{solved ? " · 已就位" : ""}</div>
+        <div className="wb-steps">已走 <b>{steps}</b> 步{solved ? " · 已就位" : ""}</div>
         <div
           ref={containerRef}
           className="wb-board"
@@ -961,16 +996,7 @@ function WoodenBox({ finish, hardMode, game, best, onBack }: {
             {solved ? "解 开 木 盒" : "把 钥 匙 移 到 出 口"}
           </button>
         </div>
-        <div className="bamboo-dev">
-          <span className="bamboo-dev-label">开 发 者 跳 过</span>
-          {(["high", "mid", "low"] as GameResultRank[]).map(r => (
-            <button key={r} className="btn-ghost press bamboo-dev-btn"
-              onClick={() => finish(r)}
-              style={{ borderColor: `${RANK_COLOR[r]}40`, color: RANK_COLOR[r] }}>
-              {RANK_LABEL[r]}
-            </button>
-          ))}
-        </div>
+        <GameSkipControls finish={finish} />
       </div>
     </div>
   );
@@ -1155,16 +1181,7 @@ function HerbMemory({ finish, game, best, onBack }: {
                 提 交 验 方（{placedCount}/{totalHerbCount}）
               </button>
             </div>
-            <div className="bamboo-dev">
-              <span className="bamboo-dev-label">开 发 者 跳 过</span>
-              {(["high", "mid", "low"] as GameResultRank[]).map(r => (
-                <button key={r} className="btn-ghost press bamboo-dev-btn"
-                  onClick={() => finish(r)}
-                  style={{ borderColor: `${RANK_COLOR[r]}40`, color: RANK_COLOR[r] }}>
-                  {RANK_LABEL[r]}
-                </button>
-              ))}
-            </div>
+            <GameSkipControls finish={finish} />
           </>
         )}
       </div>
@@ -1391,16 +1408,7 @@ function SongBoundary({ finish, game, best, onBack }: {
           <button className="btn-ghost press" onClick={() => setBins({})}>重新分拣</button>
           <button className="btn-primary press bamboo-submit" disabled={!binsBalanced} onClick={submitClassify}>完 成 定 界</button>
         </div>
-        <div className="bamboo-dev">
-          <span className="bamboo-dev-label">开 发 者 跳 过</span>
-          {(["high", "mid", "low"] as GameResultRank[]).map(r => (
-            <button key={r} className="btn-ghost press bamboo-dev-btn"
-              onClick={() => finish(r)}
-              style={{ borderColor: `${RANK_COLOR[r]}40`, color: RANK_COLOR[r] }}>
-              {RANK_LABEL[r]}
-            </button>
-          ))}
-        </div>
+        <GameSkipControls finish={finish} />
       </div>
 
       {drag?.moved && (

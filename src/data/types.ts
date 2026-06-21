@@ -206,4 +206,8 @@ export interface GameState {
   ch3?: string | null;
   ch4?: string | null;
   finalDecision?: string | null;
+
+  // 各章探索场景的完结方式：看完全部热点="full"，点「跳过」="skipped"。
+  // 仅用于结局页「一卷总评」里的展示性统计，不参与 resolveEnding 判定。
+  exploreLog?: Record<number, "full" | "skipped">;
 }

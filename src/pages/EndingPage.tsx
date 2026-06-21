@@ -10,6 +10,7 @@ import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState, saveBeat } from "../lib/storage";
 import { playSfx, playDialogueAudio, stopDialogueAudio, useAudioMuted } from "../lib/audio";
 import { calcScore } from "../lib/score";
+import { requestScrollToNextVolume } from "../lib/navHints";
 import type { PageKey } from "../lib/routes";
 
 /** Map ending ID to narrator voiceover for the ending body text */
@@ -175,7 +176,7 @@ function ScorePanel({ state }: { state: GameState }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
           {breakdown.map((item, i) => {
             const color = BREAKDOWN_COLORS[i] ?? gradeColor;
-            const w = item.max > 0 ? (item.score / item.max) * 100 : 0;
+            const w = item.max > 0 ? Math.max(0, (item.score / item.max) * 100) : 0;
             return (
               <div key={item.label}>
                 <div style={{
@@ -581,14 +582,14 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             </div>
           </div>
 
-          {/* ── 典故信物（与华佗羁绊≥3 时点亮《拾遗残卷》） ── */}
-          <div className="content-wrap content-wrap--narrow">
-            <TokenPanel state={state} />
-          </div>
-
           {/* ── 一卷总评 ── */}
           <div className="content-wrap content-wrap--narrow">
             <ScorePanel state={state} />
+          </div>
+
+          {/* ── 典故信物（与华佗羁绊≥3 时点亮《拾遗残卷》） ── */}
+          <div className="content-wrap content-wrap--narrow">
+            <TokenPanel state={state} />
           </div>
 
           {/* ── 操作按钮区 ── */}
@@ -602,6 +603,9 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
               <button className="btn-primary press" onClick={() => gotoPage("gallery")}
                 style={{ width:"100%" }}>
                 查 看 结 局 图 鉴
+              </button>
+              <button className="btn-ghost press" onClick={() => { requestScrollToNextVolume(); gotoPage("chapters"); }}>
+                下 一 章
               </button>
               <button className="btn-ghost press" onClick={replay}>重 新 选 择</button>
               <button className="btn-ghost press" onClick={reset}>青 史 空 间</button>

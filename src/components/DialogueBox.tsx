@@ -12,10 +12,7 @@ interface DialogueBoxProps {
   text: string;
   isNarration?: boolean;
   onTap?: () => void;
-  onPrev?: () => void;
   onNext?: () => void;
-  /** 是否可回退上一句。 */
-  canPrev?: boolean;
   /** 自动播放开关态。 */
   autoOn?: boolean;
   onToggleAuto?: () => void;
@@ -28,9 +25,6 @@ interface DialogueBoxProps {
 }
 
 /* —— galgame 控制条图标 —— */
-function IconPrev() {
-  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3 L5 8 L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-}
 function IconAuto() {
   return <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M6.5 5.5 L11 8 L6.5 10.5 Z" fill="currentColor"/></svg>;
 }
@@ -45,8 +39,8 @@ function IconMenu() {
 }
 
 export const DialogueBox = forwardRef<DialogueBoxHandle, DialogueBoxProps>(function DialogueBox({
-  speaker, portrait, text, isNarration, onTap, onPrev, onNext,
-  canPrev, autoOn, onToggleAuto, onOpenLog, onMenu, onTypingDone,
+  speaker, portrait, text, isNarration, onTap, onNext,
+  autoOn, onToggleAuto, onOpenLog, onMenu, onTypingDone,
 }, ref) {
   const [count, setCount] = useState(0);
   const [done, setDone] = useState(false);
@@ -130,7 +124,6 @@ export const DialogueBox = forwardRef<DialogueBoxHandle, DialogueBoxProps>(funct
       </div>
 
       <div className="gd-ctrl">
-        <button className="gd-btn" onClick={stop(onPrev)} disabled={!canPrev} aria-label="上一句" title="上一句"><IconPrev /></button>
         <button className={"gd-btn" + (autoOn ? " active" : "")} onClick={stop(onToggleAuto)} aria-pressed={autoOn} aria-label="自动播放" title="自动播放"><IconAuto /></button>
         <button className="gd-btn" onClick={stop(onOpenLog)} aria-label="历史记录" title="历史记录"><IconLog /></button>
         <button className="gd-btn" onClick={stop(advance)} aria-label="快进" title="快进"><IconSkip /></button>

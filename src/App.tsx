@@ -26,8 +26,8 @@ const BGM_PAGES: PageKey[] = ["story", "minigame"];
 
 /** 剧情外界面统一主题曲（封面/序幕/卷宗/设定/档案/图鉴/线索板/进程）。 */
 const MENU_THEME = "/audio/menu_theme.mp3";
-/** 自带音频/留白、不放主题曲的页面：结局(旁白配音)、信任抉择(留白)。 */
-const NO_THEME_PAGES: PageKey[] = ["ending", "trust"];
+/** 自带音频/留白、不放主题曲的页面：结局(旁白配音)、信任抉择(留白)、典故卷宗(自行接管为第一章 BGM，避免与主题曲抢播)。 */
+const NO_THEME_PAGES: PageKey[] = ["ending", "trust", "chapters"];
 
 /** 沉浸页:无 SideNav 概念(封面/结局)。剧情页参与正常侧栏体系:默认收起=全屏 + 左上展开键,展开则显示侧栏。 */
 const IMMERSIVE_PAGES: PageKey[] = ["cover", "ending"];
@@ -140,7 +140,7 @@ export default function App() {
     return (
       <div className="stage">
         <div className="phone">
-          <div className="screen">
+          <div className="screen" onClick={handleScreenClick}>
             <BootScreen exiting={bootExiting} ready={bootReady} onContinue={continueBoot} />
           </div>
         </div>

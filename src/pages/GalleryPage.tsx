@@ -6,6 +6,7 @@ import {
 import { ENDINGS, ENDING_IMAGES } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { saveState } from "../lib/storage";
+import { useDevMode } from "../lib/devMode";
 import type { PageKey } from "../lib/routes";
 
 function sceneForEnding(id: string) {
@@ -49,6 +50,7 @@ interface GalleryPageProps {
 
 export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
   const unlocked = state.unlockedEndings || [];
+  const devMode = useDevMode();
 
   const enterEnding = (endId: EndingId) => {
     const ns: GameState = { ...state, lastEnding: endId };
@@ -167,26 +169,28 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
           letterSpacing:"0.4em",
         }}>· 收 卷 ·</div>
 
-        {/* 【开发者外挂】一键解锁全部结局 */}
-        <div style={{ textAlign:"center", padding:"0 0 24px" }}>
-          <button
-            className="press"
-            data-sfx="unlock"
-            disabled={allUnlocked}
-            onClick={unlockAll}
-            style={{
-              fontFamily:"var(--font-han)",
-              fontSize: 12, letterSpacing:"0.2em", textIndent:"0.2em",
-              padding:"8px 18px", borderRadius: 2, cursor: allUnlocked ? "default" : "pointer",
-              color: allUnlocked ? "rgba(140,107,41,0.5)" : "rgba(205,178,119,0.9)",
-              background:"rgba(9,14,17,0.6)",
-              border:"1px dashed " + (allUnlocked ? "rgba(70,62,38,0.5)" : "rgba(205,178,119,0.5)"),
-              opacity: allUnlocked ? 0.5 : 1,
-            }}>
-            {allUnlocked ? "已 解 锁 全 部" : "解 锁 全 部"}
-            <span style={{ marginLeft: 8, fontSize: 10, opacity: 0.7 }}>【开发者外挂】</span>
-          </button>
-        </div>
+        {/* 【开发者外挂】一键解锁全部结局——只在开发者模式开启时显示 */}
+        {devMode && (
+          <div style={{ textAlign:"center", padding:"0 0 24px" }}>
+            <button
+              className="press"
+              data-sfx="unlock"
+              disabled={allUnlocked}
+              onClick={unlockAll}
+              style={{
+                fontFamily:"var(--font-han)",
+                fontSize: 12, letterSpacing:"0.2em", textIndent:"0.2em",
+                padding:"8px 18px", borderRadius: 2, cursor: allUnlocked ? "default" : "pointer",
+                color: allUnlocked ? "rgba(140,107,41,0.5)" : "rgba(205,178,119,0.9)",
+                background:"rgba(9,14,17,0.6)",
+                border:"1px dashed " + (allUnlocked ? "rgba(70,62,38,0.5)" : "rgba(205,178,119,0.5)"),
+                opacity: allUnlocked ? 0.5 : 1,
+              }}>
+              {allUnlocked ? "已 解 锁 全 部" : "解 锁 全 部"}
+              <span style={{ marginLeft: 8, fontSize: 10, opacity: 0.7 }}>【开发者外挂】</span>
+            </button>
+          </div>
+        )}
     </PageShell>
   );
 }

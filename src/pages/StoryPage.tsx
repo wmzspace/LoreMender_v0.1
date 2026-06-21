@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ChoiceList, DialogueBox, LoadingDots, ProgressDots, QuickMenu, SoundSettings, TitleSequence, titleCardContent, Toast,
+  ChoiceList, ConfirmModal, DialogueBox, LoadingDots, ProgressDots, QuickMenu, SoundSettings, TitleSequence, titleCardContent, Toast,
   diffValues, type ValueDelta,
 } from "../components";
 import type { DialogueBoxHandle } from "../components/DialogueBox";
@@ -11,6 +11,7 @@ import { buildAudioIndex } from "../data/dungeons/huatuo/audioIndex";
 import type { Beat, Choice, GameState } from "../data/types";
 import { dialogueAudioPath, exploreAudioPath, playDialogueAudio, playSfx, stopDialogueAudio } from "../lib/audio";
 import { loadBeat, saveBeat, saveState } from "../lib/storage";
+import { useDevMode } from "../lib/devMode";
 import { matchIf } from "../lib/beats";
 import type { PageKey } from "../lib/routes";
 import { loadChapterAssetsSequential, preloadChapterAssets, preloadEndingVideos } from "../lib/assetPreload";
@@ -123,6 +124,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
   const ch = state.currentChapter || 1;
   const chKey = "ch" + ch;
   const chapter = STORY[chKey];
+  const devMode = useDevMode();
 
   // 预测性预加载:提前拿下一章插图;临近终章(第4/5章)时不知道具体会触发哪个结局,4 个结局视频一起预取。
   useEffect(() => {
@@ -266,17 +268,58 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
     setBeatIdx(clamped);
   };
 
-  const prev = () => {
-    if (gameNode && !gameDone) return;
-    goToIndex(beatIdx - 1);
-  };
-
   const next = () => {
     if (!beat) return;
     if (gameNode && !gameDone) return;
     if (runTransition(beat, beatIdx)) return;
     goToIndex(beatIdx + 1);
   };
+
+  // 离开探索场景前记一笔本章探索结果（看完全部热点="full"，点过「跳过」="skipped"），
+  // 计入结局页「一卷总评」（全探索 +3，跳过 +0，不扣分），但不影响 resolveEnding；同时弹一张右上角数值卡片提示。
+  // base 可传入已经算好物品/线索变化的最新 state（跳过流程一步到位），不传则用当前 state。
+  const finishExplore = (skipped: boolean, base?: GameState) => {
+    const ns: GameState = {
+      ...(base ?? state),
+      exploreLog: { ...(base ?? state).exploreLog, [ch]: skipped ? "skipped" : "full" },
+    };
+    setState(ns);
+    saveState(ns);
+    onValueDeltas?.([{
+      id: `exploreLog-${ch}-${Date.now()}`,
+      subject: "场景探索",
+      facet: "得分",
+      dir: skipped ? -1 : 1,
+      tone: skipped ? "bad" : "good",
+      level: skipped ? "跳过" : "全探索",
+    }]);
+    next();
+  };
+
+  // 跳过探索：自动收集本场景所有热点的可登记物品与线索，直接结算并推进剧情（不再需要额外点「继续剧情」）。
+  // skipped=true 记为「跳过」(+0)；开发者模式下也可直接选 skipped=false 记为「全探索」(+3)。
+  const performSkipExplore = (skipped: boolean) => {
+    if (!exploreScene) return;
+    const ids: string[] = [];
+    const clueIds: string[] = [];
+    exploreScene.hotspots.forEach(h => h.beats.forEach(b => {
+      if ("line" in b) {
+        parseGainedItemIds(b.line).forEach(id => { if (!ids.includes(id)) ids.push(id); });
+        parseGainedClueIds(b.line).forEach(id => { if (!clueIds.includes(id)) clueIds.push(id); });
+      }
+    }));
+    const newIds = ids.filter(id => !state.items.includes(id));
+    const hadClues = state.searchedClues ?? [];
+    const newClues = clueIds.filter(id => !hadClues.includes(id));
+    const base: GameState = (newIds.length || newClues.length)
+      ? { ...state, items: [...state.items, ...newIds], searchedClues: [...hadClues, ...newClues] }
+      : state;
+    setExploreVisited(exploreScene.hotspots.map(h => h.id));
+    finishExplore(skipped, base);
+  };
+
+  // 每次点跳过都弹一次确认（不只第一次）。
+  const onSkipExploreClick = () => setExploreSkipConfirm(true);
 
   const enterGame = () => {
     if (!gameNode || gameLocked) return;
@@ -328,13 +371,14 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
   const [exploreOpen, setExploreOpen] = useState<string | null>(null); // 当前展开的热点 id
   const [exploreSub, setExploreSub] = useState(0);                     // 该热点对白的下标
   const [exploreVisited, setExploreVisited] = useState<string[]>([]);  // 已看过的热点
+  const [exploreSkipConfirm, setExploreSkipConfirm] = useState(false); // 跳过探索的二次确认弹窗
   const [itemNotice, setItemNotice] = useState<string | null>(null);   // 杂项「获得」轻提示
   const [itemModal, setItemModal] = useState<ItemDef[] | null>(null);  // 获得物品详情弹窗
   const [clueModal, setClueModal] = useState<Clue[] | null>(null);     // 发现线索详情弹窗
   const dialogueRef = useRef<DialogueBoxHandle>(null);                 // 点击场景插图时转发到当前对白框
 
   // 切换主 beat 时重置探索状态
-  useEffect(() => { setExploreOpen(null); setExploreSub(0); setExploreVisited([]); }, [beatIdx]);
+  useEffect(() => { setExploreOpen(null); setExploreSub(0); setExploreVisited([]); setExploreSkipConfirm(false); }, [beatIdx]);
 
   const exHotspot = exploreScene?.hotspots.find(h => h.id === exploreOpen) ?? null;
   const exBeat = exHotspot?.beats[exploreSub];
@@ -376,7 +420,6 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
       saveState(ns);
     }
   };
-  const explorePrev = () => { if (exploreSub > 0) setExploreSub(exploreSub - 1); };
 
   useEffect(() => clearAuto, []);
 
@@ -565,11 +608,16 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
         </div>
       </div>
 
-      {/* ── 底部浮层:对白 / 选项 / 小游戏入口 ── */}
+      {/* ── 底部浮层:对白 / 选项 / 小游戏入口 ──
+          这一层和下面的 .story-stage 都是铺满全宽的容器,本身没有点击逻辑,
+          只是用来居中排版里面窄一些的对白框/选项框(max-width:720px)。
+          必须设 pointerEvents:"none" 让两侧的空白区域把点击"透"给下面的全屏场景图(点哪都能推进对白)，
+          否则这片透明空白会挡在场景图前面,点对白框左右两侧的空白会完全没反应。 */}
       <div className="story-bottom" style={{
         position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 3,
         display: "flex", flexDirection: "column", alignItems: "stretch",
         paddingBottom: "calc(18px + env(safe-area-inset-bottom, 0px))",
+        pointerEvents: "none",
       }}>
         <div className="story-stage" style={{
           width: "100%",
@@ -584,8 +632,6 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
                 portrait={exSpeaker?.portrait ?? null}
                 text={exText}
                 isNarration={exIsNarration}
-                canPrev={exploreSub > 0}
-                onPrev={explorePrev}
                 onNext={exploreNext}
                 autoOn={false}
                 onToggleAuto={() => { }}
@@ -603,37 +649,19 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
                 </div>
                 {allExplored ? (
                   <div className="story-action-btns">
-                    <button className="btn-primary press" onClick={next}>继 续 剧 情</button>
+                    <button className="btn-primary press" onClick={() => finishExplore(false)}>继 续 剧 情</button>
+                  </div>
+                ) : devMode ? (
+                  <div className="story-action-btns">
+                    <span className="bamboo-dev-label" style={{ marginRight: 4 }}>开 发 者 跳 过</span>
+                    <button className="btn-ghost press bamboo-dev-btn" onClick={() => performSkipExplore(false)}>一 键 探 索</button>
                   </div>
                 ) : (
                   <div className="story-action-btns">
                     <button
                       className="btn-ghost press"
                       style={{ minHeight: 34, fontSize: 14, letterSpacing: "0.16em", opacity: 0.65 }}
-                      onClick={() => {
-                        // 跳过：自动收集本场景所有热点的可登记物品与线索
-                        const ids: string[] = [];
-                        const clueIds: string[] = [];
-                        exploreScene.hotspots.forEach(h => h.beats.forEach(b => {
-                          if ("line" in b) {
-                            parseGainedItemIds(b.line).forEach(id => { if (!ids.includes(id)) ids.push(id); });
-                            parseGainedClueIds(b.line).forEach(id => { if (!clueIds.includes(id)) clueIds.push(id); });
-                          }
-                        }));
-                        const newIds = ids.filter(id => !state.items.includes(id));
-                        const hadClues = state.searchedClues ?? [];
-                        const newClues = clueIds.filter(id => !hadClues.includes(id));
-                        if (newIds.length || newClues.length) {
-                          const ns: GameState = {
-                            ...state,
-                            items: [...state.items, ...newIds],
-                            searchedClues: [...hadClues, ...newClues],
-                          };
-                          setState(ns);
-                          saveState(ns);
-                        }
-                        setExploreVisited(exploreScene.hotspots.map(h => h.id));
-                      }}
+                      onClick={onSkipExploreClick}
                     >跳 过</button>
                   </div>
                 )}
@@ -676,8 +704,6 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
               portrait={speakerPortrait}
               text={lineText}
               isNarration={isNarration}
-              canPrev={beatIdx > 0}
-              onPrev={prev}
               onNext={next}
               autoOn={autoplay}
               onToggleAuto={() => setAutoplay(a => !a)}
@@ -764,6 +790,21 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
             <button className="btn-primary press item-modal-btn" onClick={() => setClueModal(null)}>记 下</button>
           </div>
         </div>
+      )}
+
+      {/* 跳过探索的二次确认（每次点跳过都会弹） */}
+      {exploreSkipConfirm && (
+        <ConfirmModal
+          eyebrow="跳 过 探 索"
+          title="不再细看这一处了吗？"
+          text="跳过会自动收下能拿到的物品/线索，但拿不到「场景探索」这 3 分加成，会影响一卷总评（不影响结局本身）。"
+          confirmLabel="继 续 跳 过"
+          onCancel={() => setExploreSkipConfirm(false)}
+          onConfirm={() => {
+            setExploreSkipConfirm(false);
+            performSkipExplore(true);
+          }}
+        />
       )}
 
       {/* 获得物品轻提示（杂项 / 线索） */}

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ShowcasePage } from "./ShowcasePage";
 import { stopBgm } from "../lib/audio";
 import { isPrologueSeen, markPrologueSeen } from "../lib/storage";
-import { TitleSequence, titleCardContent, studioCardContent, DialogueBox, ProgressDots, SoundSettings } from "../components";
+import { TitleSequence, titleCardContent, studioCardContent, DialogueBox, ProgressDots, SoundSettings, DevSettings } from "../components";
 import type { DialogueBoxHandle } from "../components/DialogueBox";
 
 interface CoverPageProps {
@@ -71,8 +71,6 @@ function PrologueScene({ onDone }: { onDone: () => void; replay?: boolean }) {
     if (!last) setIdx(idx + 1);
     else onDone();
   };
-  const prev = () => { if (idx > 0) setIdx(idx - 1); };
-
   const clearAuto = () => { if (autoTimer.current) { window.clearTimeout(autoTimer.current); autoTimer.current = 0; } };
   useEffect(() => clearAuto, []);
 
@@ -108,8 +106,6 @@ function PrologueScene({ onDone }: { onDone: () => void; replay?: boolean }) {
               text={PROLOGUE_LINES[idx]}
               isNarration
               onNext={next}
-              onPrev={prev}
-              canPrev={idx > 0}
               autoOn={autoOn}
               onToggleAuto={() => setAutoOn(v => !v)}
               onTypingDone={() => {
@@ -329,7 +325,8 @@ export function CoverPage({ onStart }: CoverPageProps) {
           textShadow: "0 1px 6px rgba(0,0,0,0.8)",
         }}>The LOREMENDER</div>
 
-        <div className="cover-sound-settings">
+        <div className="cover-sound-settings" style={{ display: "flex", gap: 10 }}>
+          <DevSettings />
           <SoundSettings />
         </div>
 

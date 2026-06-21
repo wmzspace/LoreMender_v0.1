@@ -212,13 +212,13 @@ export const STORY: Record<string, StoryChapter> = {
       {
         explore: {
           hint: "街市急症不是听方子就能治。先查看孩子、药炉和药包，收集足够线索。",
-          image: "/images/levels/1/chapters/ch2_beats/scene_01_market_chaos.webp",
+          image: "/images/levels/1/chapters/ch2_beats/explore.webp",
           hotspots: [
             {
               id: "child",
-              label: "孩童",
-              x: 49,
-              y: 54,
+              label: "孩童面相",
+              x: 86,
+              y: 26,
               image: "/images/levels/1/chapters/ch2_beats/scene_03_examine_child.webp",
               beats: [
                 { speaker: "aj", line: "额头烫，牙关紧，眼神散。" },
@@ -228,8 +228,9 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "palm",
               label: "孩童手掌",
-              x: 57,
-              y: 67,
+              x: 79,
+              y: 30,
+              image: "/images/levels/1/chapters/ch2_beats/scene_03_examine_child.webp",
               beats: [
                 { speaker: "aj", line: "手脚却冷。不是单纯发热。" },
                 { narration: true, line: "获得线索：手脚发冷。" },
@@ -238,8 +239,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "stove",
               label: "药炉",
-              x: 72,
-              y: 70,
+              x: 29,
+              y: 72,
               image: "/images/levels/1/chapters/ch2_beats/scene_06_chenbo_stove.webp",
               beats: [
                 { speaker: "aj", line: "炉底还有热灰，刚煎过药。" },
@@ -250,8 +251,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "packet",
               label: "翻倒药包",
-              x: 28,
-              y: 75,
+              x: 85,
+              y: 82,
               image: "/images/levels/1/chapters/ch2_beats/scene_05_herb_residue.webp",
               beats: [
                 { narration: true, line: "泥水里混着药材残渣，气味辛散。阿吉把能辨认的几味捡了出来。" },
@@ -261,8 +262,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "notice",
               label: "征药告示",
-              x: 18,
-              y: 29,
+              x: 20,
+              y: 25,
               set: { searchPressure: 1 },
               beats: [
                 { narration: true, line: "曹府征药令写得很急。药材被控制，民间救急会越来越难。" },
@@ -272,8 +273,8 @@ export const STORY: Record<string, StoryChapter> = {
             {
               id: "chenbo",
               label: "陈伯",
-              x: 76,
-              y: 43,
+              x: 44,
+              y: 36,
               beats: [
                 { speaker: "chenbo", line: "小先生，你看得太慢，孩子可等不了。" },
                 { speaker: "aj", line: "你知道该怎么救？" },

@@ -19,3 +19,5 @@ export { QuickMenu } from "./QuickMenu";
 export { TitleSequence, titleCardContent, studioCardContent } from "./TitleCard";
 export { BootScreen } from "./BootScreen";
 export { LoadingDots } from "./LoadingDots";
+export { ConfirmModal } from "./ConfirmModal";
+export { DevSettings } from "./DevSettings";

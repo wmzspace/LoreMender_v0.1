@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { PageShell, SoundSettings } from "../components";
 import { bgmPath, playBgm, stopBgm, playDialogueAudio, stopDialogueAudio } from "../lib/audio";
+import { consumeScrollToNextVolume } from "../lib/navHints";
 import type { GameState } from "../data/types";
 
 /** 第一卷起播时同步朗读的正文旁白（云希音色）。 */
@@ -174,6 +175,22 @@ export function ChapterSelectPage({ onBack, onEnter, state }: ChapterSelectPageP
   }, []);
 
   const goTo = (i: number) => panels.current[i]?.scrollIntoView({ behavior: "smooth" });
+
+  // 结局页点「下一章」进来时：先停在当前已开放卷（页面默认就停在这），停顿一下再平滑滚到下一卷，
+  // 让玩家看清"从这卷"滚到"下一卷"的过程，而不是直接定位过去。
+  // 用 ref 缓存消费结果：StrictMode 开发模式下 effect 会 mount→cleanup→mount 跑两遍，
+  // 若直接在 effect 里调用 consumeScrollToNextVolume()，第一遍会把标记读掉、定时器又被 cleanup 取消，
+  // 第二遍就读不到标记了，整个效果直接失效。缓存进 ref 后第二遍仍能照常补上定时器。
+  const scrollToNextRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (scrollToNextRef.current === null) scrollToNextRef.current = consumeScrollToNextVolume();
+    if (!scrollToNextRef.current) return;
+    const openIdx = VOLUMES.findIndex(v => v.open);
+    const target = Math.min((openIdx < 0 ? 0 : openIdx) + 1, VOLUMES.length - 1);
+    const t = window.setTimeout(() => goTo(target), 500);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <PageShell

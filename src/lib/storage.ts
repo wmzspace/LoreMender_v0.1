@@ -13,15 +13,16 @@ export function markPrologueSeen(): void {
 
 /**
  * 进度重置：删除本应用的本地存储（存档、章节进度、序幕标记等）。
- * 保留音量设置（loremender:huatuo:audio），重置不影响声音偏好。
+ * 保留音量设置（loremender:huatuo:audio）与开发者模式开关，重置不影响这类设备级偏好。
  */
 const AUDIO_SETTINGS_KEY = "loremender:huatuo:audio";
+const DEV_MODE_KEY = "loremender:devMode";
 export function clearAllStorage(): void {
   try {
     const keys: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k.startsWith("loremender:") && k !== AUDIO_SETTINGS_KEY) keys.push(k);
+      if (k && k.startsWith("loremender:") && k !== AUDIO_SETTINGS_KEY && k !== DEV_MODE_KEY) keys.push(k);
     }
     keys.forEach(k => localStorage.removeItem(k));
   } catch { /* 无痕模式忽略 */ }
@@ -62,6 +63,7 @@ export function defaultState(): GameState {
     ch3: null,
     ch4: null,
     finalDecision: null,
+    exploreLog: {},
   };
 }
 
@@ -85,6 +87,7 @@ export function normalizeState(value: Partial<GameState> | null | undefined): Ga
   merged.burn_tendency = Number(merged.burn_tendency || 0);
   merged.classifyRetry = merged.classifyRetry ?? null;
   merged.boxCompartment = merged.boxCompartment ?? null;
+  merged.exploreLog = merged.exploreLog && typeof merged.exploreLog === "object" ? merged.exploreLog : {};
   return merged;
 }
 

@@ -9,6 +9,13 @@ function allGameNodes() {
   );
 }
 
+/** 含探索场景的章节号列表（目前 ch1~ch4 各一处），供探索得分统计用。 */
+function explorableChapters(): number[] {
+  return Object.entries(STORY)
+    .filter(([, chapter]) => chapter.beats.some(b => "explore" in b))
+    .map(([key]) => Number(key.replace("ch", "")));
+}
+
 export interface ScoreBreakdown {
   label: string;
   score: number;
@@ -63,9 +70,22 @@ export function calcScore(state: GameState): ScoreResult {
   const finalScore = state.finalChoice ? (finalMap[state.finalChoice] ?? 0) : 0;
   const finalMax = 3;
 
+  // 探索得分：每章看完全部热点 +3，点「跳过」+0（不扣分，最低 0 分）；计入总评，但不参与 resolveEnding 判定。
+  const exploreChapters = explorableChapters();
+  const EXPLORE_FULL_SCORE = 3;
+  const exploreMax = exploreChapters.length * EXPLORE_FULL_SCORE;
+  let exploreFullCount = 0;
+  let exploreSkippedCount = 0;
+  const exploreScore = exploreChapters.reduce((sum, chNum) => {
+    const r = state.exploreLog?.[chNum];
+    if (r === "full") { exploreFullCount++; return sum + EXPLORE_FULL_SCORE; }
+    if (r === "skipped") { exploreSkippedCount++; return sum; }
+    return sum;
+  }, 0);
+
   const pressurePenalty = Math.min(state.searchPressure || 0, 4);
-  const total = Math.max(0, gameScore + trustScore + choiceScore + finalScore - pressurePenalty);
-  const maxTotal = gameMax + trustMax + choiceMax + finalMax;
+  const total = Math.max(0, gameScore + trustScore + choiceScore + finalScore + exploreScore - pressurePenalty);
+  const maxTotal = gameMax + trustMax + choiceMax + finalMax + exploreMax;
   const pct = Math.round((total / maxTotal) * 100);
 
   const grade =
@@ -92,6 +112,10 @@ export function calcScore(state: GameState): ScoreResult {
       { label: "过程判断", score: choiceScore, max: choiceMax },
       { label: "最终抉择", score: finalScore, max: finalMax },
       { label: "追索压力", score: -pressurePenalty, max: 0, detail: `${state.searchPressure || 0} 点` },
+      {
+        label: "场景探索", score: exploreScore, max: exploreMax,
+        detail: `全探索${exploreFullCount}·跳过${exploreSkippedCount}`,
+      },
     ],
   };
 }
