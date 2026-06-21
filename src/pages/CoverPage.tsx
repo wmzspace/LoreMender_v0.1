@@ -163,7 +163,7 @@ function CoverVideo() {
   return (
     <video
       ref={videoRef}
-      muted playsInline
+      muted playsInline preload="auto"
       onEnded={() => setShowVideo(false)}
       style={{
         position: "absolute", inset: 0,
@@ -200,7 +200,7 @@ function IntroVideo({ onDone }: { onDone: () => void }) {
       }}
     >
       <video
-        autoPlay playsInline
+        autoPlay playsInline preload="auto"
         onEnded={finish}
         onError={finish}
         style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}

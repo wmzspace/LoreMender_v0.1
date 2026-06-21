@@ -11,6 +11,9 @@ import type { GameState } from "./data/types";
 import { loadState, saveState } from "./lib/storage";
 import { bgmPath, playBgm, playSfx, primeAudio, stopBgm, type SfxName } from "./lib/audio";
 import type { PageKey } from "./lib/routes";
+import {
+  preloadChapterAssets, preloadGlobalTier, preloadIntroVideo, preloadVolumeSelectAssets,
+} from "./lib/assetPreload";
 const SFX_SELECTOR = "[data-sfx], .press, .choice, .navitem, .btn-primary, .btn-ghost, .icon-btn";
 
 /** Pages that share the same chapter BGM — switching among them keeps the music playing. */
@@ -67,6 +70,21 @@ export default function App() {
     } else {
       playBgm(MENU_THEME);
     }
+  }, [page, state.currentChapter]);
+
+  // 全局小体量素材(头像/物品图标/小游戏背景/结局插图):App 一启动就丢进空闲时段预取一次。
+  useEffect(() => { preloadGlobalTier(); }, []);
+
+  // 预测性预加载:按当前页面提前拿"大概率下一步会看到"的资源,真正进入那个页面时已经在缓存里。
+  useEffect(() => {
+    if (page === "cover") {
+      preloadIntroVideo();
+      preloadChapterAssets(1); // 「开始修补」之后大概率落到第一章
+    } else if (page === "dungeon" || page === "chapters") {
+      preloadVolumeSelectAssets();
+      preloadChapterAssets(state.currentChapter || 1);
+    }
+    // story 页面内部已自行预取当前章 + 下一章 + 终章结局视频,这里不重复。
   }, [page, state.currentChapter]);
 
   const gotoPage = (p: PageKey) => {

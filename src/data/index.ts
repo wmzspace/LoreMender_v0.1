@@ -15,6 +15,8 @@ export {
   parseGainedClueIds,
   ENDINGS,
   ENDING_NARRATION_BODIES,
+  ENDING_VIDEOS,
+  ENDING_IMAGES,
   resolveEnding,
   getEndingBody,
   getEndingAudioId,

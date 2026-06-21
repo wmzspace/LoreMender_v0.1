@@ -13,6 +13,8 @@ import { dialogueAudioPath, exploreAudioPath, playDialogueAudio, playSfx, stopDi
 import { loadBeat, saveBeat, saveState } from "../lib/storage";
 import { matchIf } from "../lib/beats";
 import type { PageKey } from "../lib/routes";
+import { preloadImages } from "../lib/preload";
+import { collectChapterImagePaths, preloadChapterAssets, preloadEndingVideos, preloadGlobalTier } from "../lib/assetPreload";
 
 interface StoryPageProps {
   state: GameState;
@@ -20,46 +22,6 @@ interface StoryPageProps {
   gotoPage: (p: PageKey) => void;
   gotoEnding: () => void;
   onValueDeltas?: (d: ValueDelta[]) => void;
-}
-
-const preloaded = new Set<string>();
-
-function preloadImages(paths: string[]) {
-  for (const p of paths) {
-    if (!p || preloaded.has(p)) continue;
-    preloaded.add(p);
-    const img = new Image();
-    img.src = p;
-  }
-}
-
-// 角色头像、物品图标都是小体量固定集合，整局只需预取一次，
-// 不必按章节裁剪——省去逐章追踪 itemReveal/speaker 引用的脆弱逻辑。
-let globalAssetsPreloaded = false;
-function preloadGlobalAssets() {
-  if (globalAssetsPreloaded) return;
-  globalAssetsPreloaded = true;
-  preloadImages(Object.values(CHARACTERS).map(c => c.portrait).filter((p): p is string => !!p));
-  preloadImages(Object.values(ITEMS).map(it => it.image).filter((p): p is string => !!p));
-}
-
-function collectImagePaths(beats: Beat[]): string[] {
-  const out: string[] = [];
-  const walk = (bs: Beat[]) => {
-    for (const beat of bs) {
-      if ("image" in beat && beat.image) out.push(beat.image);
-      if ("game" in beat && beat.game.nextBeatUnlockedImage) out.push(beat.game.nextBeatUnlockedImage);
-      if ("ifKey" in beat) walk(beat.beats);
-      if ("explore" in beat) {
-        if (beat.explore.image) out.push(beat.explore.image);
-        for (const hotspot of beat.explore.hotspots) {
-          if (hotspot.image) out.push(hotspot.image);
-        }
-      }
-    }
-  };
-  walk(beats);
-  return out;
 }
 
 function resolveImagePath(beats: Beat[], beatIdx: number, chapterNum: number, overrideImage?: string): string | undefined {
@@ -83,8 +45,9 @@ function AiSceneImage({ chapterNum, beats, beatIdx, overrideImage }: {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    preloadGlobalAssets();
-    preloadImages(collectImagePaths(beats));
+    preloadGlobalTier();
+    // 当前章节正在播放,直接预取(不丢进 idle 队列),比预测性的下一章更急迫。
+    preloadImages(collectChapterImagePaths(beats));
   }, [beats]);
 
   useEffect(() => {
@@ -164,6 +127,12 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
   const ch = state.currentChapter || 1;
   const chKey = "ch" + ch;
   const chapter = STORY[chKey];
+
+  // 预测性预加载:提前拿下一章插图;临近终章(第4/5章)时不知道具体会触发哪个结局,4 个结局视频一起预取。
+  useEffect(() => {
+    preloadChapterAssets(ch + 1);
+    if (ch >= 4) preloadEndingVideos();
+  }, [ch]);
   const [beatIdx, setBeatIdx] = useState(() => {
     const saved = loadBeat(ch);
     return saved;

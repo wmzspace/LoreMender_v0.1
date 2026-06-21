@@ -87,7 +87,7 @@ function CoverMedia({ audible }: { audible: boolean }) {
       />
       <video
         ref={videoRef}
-        muted playsInline
+        muted playsInline preload="auto"
         onEnded={() => { setHasPlayed(true); setShowVideo(false); }}
         style={{
           position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",

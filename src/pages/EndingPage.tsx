@@ -3,7 +3,9 @@ import { GoldDivider, PaperPanel, SealTag } from "../components";
 import {
   Particles, SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
 } from "../components/art";
-import { ENDINGS, ITEMS, resolveEnding, getEndingBody, getEndingAudioId } from "../data";
+import {
+  ENDINGS, ITEMS, ENDING_VIDEOS, ENDING_IMAGES, resolveEnding, getEndingBody, getEndingAudioId,
+} from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState, saveBeat } from "../lib/storage";
 import { playSfx, playDialogueAudio, stopDialogueAudio, useAudioMuted } from "../lib/audio";
@@ -19,28 +21,6 @@ const ENDING_NARRATION: Record<string, string> = {
   wangji_archive:     "/audio/levels/1/dialogue/endings/wangji_archive.mp3",
   wangji_trap:        "/audio/levels/1/dialogue/endings/wangji_trap.mp3",
   burn_ending:        "/audio/levels/1/dialogue/endings/burn_ending.mp3",
-};
-
-/** Map ending ID to its cinematic opening video（圆满/遗憾两版复用同角色的开场画面；配音不复用，见 ENDING_NARRATION） */
-const ENDING_VIDEOS: Record<string, string> = {
-  chenbo_true:      "/videos/levels/1/ending_chenbo_A_humble_village_doctor_s_hand.mp4",
-  chenbo_fallback:  "/videos/levels/1/ending_chenbo_A_humble_village_doctor_s_hand.mp4",
-  xuanyin_true:     "/videos/levels/1/ending_xuanyin.mp4",
-  wangji_archive:   "/videos/levels/1/ending_wangji_Lacquered_chest_closes_over_scroll_202606161241.mp4",
-  wangji_trap:      "/videos/levels/1/ending_wangji_Lacquered_chest_closes_over_scroll_202606161241.mp4",
-  xuanyin_fallback: "/videos/levels/1/ending_xuanyin.mp4",
-  burn_ending:      "/videos/levels/1/ending_burn.mp4",
-};
-
-/** Map ending ID to its dedicated scene illustration */
-const ENDING_IMAGES: Record<string, string> = {
-  chenbo_true: "/images/levels/1/chapters/endings/ending_chenbo.webp",
-  chenbo_fallback: "/images/levels/1/chapters/endings/ending_chenbo_caomu.webp",
-  xuanyin_true: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
-  xuanyin_fallback: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
-  wangji_archive: "/images/levels/1/chapters/endings/ending_wangji.webp", // TODO 占位：待生成 ending_wangji_archive.webp
-  wangji_trap: "/images/levels/1/chapters/endings/ending_wangji.webp",
-  burn_ending: "/images/levels/1/chapters/endings/ending_burn.webp",
 };
 
 /** Overlay AI-generated ending scene illustration on top of SVG scene */
@@ -421,6 +401,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             ref={videoRef}
             autoPlay
             playsInline
+            preload="auto"
             muted={isMuted}
             onCanPlay={() => setVideoReady(true)}
             onTimeUpdate={() => {

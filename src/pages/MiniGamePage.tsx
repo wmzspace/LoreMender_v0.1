@@ -326,7 +326,7 @@ function Shell({
   );
 }
 
-const CASE_TRIAGE_IMG = "/images/levels/1/chapters/ch3_beats/ch3_07_three_cases.webp";
+export const CASE_TRIAGE_IMG = "/images/levels/1/chapters/ch3_beats/ch3_07_three_cases.webp";
 
 const CASE_FILES = [
   { id: "child", name: "孩童", img: "/images/levels/1/chapters/ch3_beats/cases/case_child.webp" },
@@ -437,7 +437,7 @@ function CaseTriage({ finish, game, best, onBack }: {
     </div>
   );
 }
-const BAMBOO_TABLE_IMG = "/images/levels/1/chapters/ch1_beats/bamboo_table.webp";
+export const BAMBOO_TABLE_IMG = "/images/levels/1/chapters/ch1_beats/bamboo_table.webp";
 const slipImg = (word: string) => `/images/levels/1/chapters/ch1_beats/slips/${encodeURIComponent(word)}.webp`;
 
 const classifyWords = {
@@ -728,7 +728,7 @@ const KEY_ID = 1;
 const EXIT_ROW = 4; // 钥匙(1×2横)到达 row=4, col=2 占据(r4,c2)(r4,c3)即为出口
 const EXIT_COL = 2;
 const CELL_SIZE = typeof window !== "undefined" && window.innerWidth >= 1024 ? 92 : 56; // 每格像素大小(桌面端放大)
-const WOODENBOX_TABLE_IMG = "/images/levels/1/chapters/ch1_beats/woodenbox_table.webp";
+export const WOODENBOX_TABLE_IMG = "/images/levels/1/chapters/ch1_beats/woodenbox_table.webp";
 
 interface Block {
   id: number;
@@ -988,7 +988,7 @@ function WoodenBox({ finish, hardMode, game, best, onBack }: {
   );
 }
 
-const CLINIC_TABLE_IMG = "/images/levels/1/chapters/ch2_beats/clinic_table.webp";
+export const CLINIC_TABLE_IMG = "/images/levels/1/chapters/ch2_beats/clinic_table.webp";
 
 const prescriptions = [
   { name: "桂枝汤", herbs: ["桂枝", "芍药", "甘草", "生姜", "大枣"], img: "/images/levels/1/chapters/ch2_beats/clinic_herbs_guizhi.webp" },

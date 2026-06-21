@@ -3,21 +3,10 @@ import { BottomNav, SealTag, PageShell } from "../components";
 import {
   SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
 } from "../components/art";
-import { ENDINGS } from "../data";
+import { ENDINGS, ENDING_IMAGES } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { saveState } from "../lib/storage";
 import type { PageKey } from "../lib/routes";
-
-/** Map ending ID to its dedicated AI scene illustration */
-const ENDING_IMAGES: Record<string, string> = {
-  chenbo_true: "/images/levels/1/chapters/endings/ending_chenbo.webp",
-  chenbo_fallback: "/images/levels/1/chapters/endings/ending_chenbo_caomu.webp",
-  xuanyin_true: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
-  xuanyin_fallback: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
-  wangji_archive: "/images/levels/1/chapters/endings/ending_wangji.webp", // TODO 占位：待生成 ending_wangji_archive.webp
-  wangji_trap: "/images/levels/1/chapters/endings/ending_wangji.webp",
-  burn_ending: "/images/levels/1/chapters/endings/ending_burn.webp",
-};
 
 function sceneForEnding(id: string) {
   const glyph = ENDINGS[id]?.glyph;
