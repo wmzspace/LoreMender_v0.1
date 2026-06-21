@@ -16,11 +16,14 @@ export function BootScreen({ exiting, ready, onContinue }: {
     >
       <img className="boot-screen-logo" src="/images/logo_studio.webp" alt="拾遗工作室" />
       <div className="boot-screen-sub">出 品</div>
-      {ready ? (
-        <div className="boot-screen-continue">点 击 屏 幕 继 续</div>
-      ) : (
-        <div className="boot-screen-loading">典 故 记 载 中<LoadingDots /></div>
-      )}
+      <div className="boot-screen-status">
+        <div className={"boot-screen-loading" + (ready ? " is-hidden" : "")}>
+          <span className="boot-screen-loading-inner">典 故 记 载 中<LoadingDots /></span>
+        </div>
+        <div className={"boot-screen-continue" + (ready ? "" : " is-hidden")}>
+          <span className="boot-screen-continue-inner">点 击 屏 幕 继 续</span>
+        </div>
+      </div>
     </div>
   );
 }

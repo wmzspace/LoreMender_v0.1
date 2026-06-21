@@ -2505,7 +2505,7 @@ button:disabled,
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 0 26px rgba(236, 220, 166, 0.26));
-  animation: fadeIn 700ms ease both;
+  animation: bootLogoIn 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .boot-screen-sub {
   margin-top: 20px;
@@ -2515,17 +2515,15 @@ button:disabled,
   text-indent: 0.5em;
   color: var(--gold-pale);
   opacity: 0.68;
+  animation: bootRiseIn 600ms ease 320ms both;
 }
-.boot-screen-loading {
-  margin-top: 44px;
-  font-family: var(--font-han);
-  font-size: 18px;
-  letter-spacing: 0.28em;
-  text-indent: 0.28em;
-  color: var(--gold-pale);
-  display: flex;
-  align-items: baseline;
-  animation: portalHintPulse 1.8s ease-in-out infinite;
+@keyframes bootLogoIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes bootRiseIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 /* 素材就绪态:整屏可点;Logo 轻微提亮,提示交互可用。 */
 .boot-screen.is-ready {
@@ -2535,9 +2533,45 @@ button:disabled,
   filter: drop-shadow(0 0 36px rgba(236, 220, 166, 0.4));
   transition: filter 420ms ease;
 }
-/* 「点击屏幕继续」:明显的呼吸闪烁——透明度与轻微缩放一起起伏,比加载态的 portalHintPulse 更显眼,提示"该你点了"。 */
-.boot-screen-continue {
+/* 「记载中…」↔「点击屏幕继续」共用一个定位槽:两者都绝对定位叠在槎位里,
+   靠 opacity 过渡互相交叉淡化,容器高度固定,切换时上方 Logo/出品 不会被挤动。 */
+.boot-screen-status {
+  position: relative;
+  width: 100%;
   margin-top: 44px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.boot-screen-loading,
+.boot-screen-continue {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 480ms ease;
+}
+.boot-screen-loading.is-hidden,
+.boot-screen-continue.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+/* 内层单独承载呼吸/脉动动画,不与外层负责淡入淡出的 opacity 过渡互相打架。 */
+.boot-screen-loading-inner {
+  font-family: var(--font-han);
+  font-size: 18px;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  color: var(--gold-pale);
+  display: flex;
+  align-items: baseline;
+  animation: bootRiseIn 600ms ease 600ms backwards, portalHintPulse 1.8s ease-in-out 1200ms infinite;
+}
+/* 「点击屏幕继续」:明显的呼吸闪烁——透明度与轻微缩放一起起伏,比加载态的 portalHintPulse 更显眼,提示"该你点了"。 */
+.boot-screen-continue-inner {
   font-family: var(--font-han);
   font-size: 19px;
   letter-spacing: 0.32em;
@@ -4609,19 +4643,12 @@ button:disabled,
   z-index: 1;
 }
 
-.song-step {
-  font-size: 0.55em;
-  letter-spacing: 0.18em;
-  opacity: 0.6;
-  margin-left: 6px;
-}
-
-/* 待判 / 待选残句池：贴图顶部已写好参考字样的卷条所在区域 */
+/* 待判残句池：贴图顶部已写好参考字样的卷条所在区域 */
 .song-pool {
   position: absolute;
   left: 21%;
   right: 21%;
-  top: 11%;
+  top: 14%;
   height: 38%;
   display: flex;
   flex-wrap: wrap;
@@ -4629,13 +4656,6 @@ button:disabled,
   justify-content: center;
   gap: 2.2cqw 1.4cqw;
   padding: 1cqh 1cqw;
-}
-
-.song-pool--order {
-  top: auto;
-  bottom: 5%;
-  height: 38%;
-  align-content: flex-start;
 }
 
 /* 可入歌 / 不可入歌 两个木牌定位（对齐 scene_game1_classify.webp 下方两块空牌） */
@@ -4653,13 +4673,25 @@ button:disabled,
 }
 
 .song-bin--in {
-  left: 5%;
-  width: 43%;
+  left: 15%;
+  width: 32%;
+  transform: translateX(1.2%);
 }
 
 .song-bin--out {
-  right: 5%;
-  width: 43%;
+  right: 15%;
+  width: 32%;
+  transform: translateX(-1.2%);
+}
+
+.song-bin--in .song-bin-slips .song-slip {
+  scale: 1.4;
+  rotate: 12deg;
+}
+
+.song-bin--out .song-bin-slips .song-slip {
+  scale: 1.4;
+  rotate: -12deg;
 }
 
 .song-bin.can-drop {
@@ -4697,34 +4729,10 @@ button:disabled,
   display: flex;
   flex-wrap: wrap;
   gap: 0.6cqw;
-  align-content: flex-start;
+  align-content: center;
   justify-content: center;
   padding: 1cqh 0.6cqw;
   overflow: hidden;
-}
-
-/* 补全歌诀：把可入歌句子拖到这里排序（对齐 scene_game2_order.webp 上方空白卷面） */
-.song-order {
-  position: absolute;
-  left: 14%;
-  right: 14%;
-  top: 6%;
-  height: 46%;
-  border: 1.5px dashed transparent;
-  border-radius: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: center;
-  justify-content: center;
-  gap: 1.2cqw;
-  padding: 1cqh 1cqw;
-  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
-}
-
-.song-order.can-drop {
-  border-color: var(--gold-pale);
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: 0 0 18px -2px rgba(236, 220, 166, 0.55);
 }
 
 /* 残句卷条：直接裁自玄音残纸原图的贴图（非渲染文字），保留原图的纸面质感 */

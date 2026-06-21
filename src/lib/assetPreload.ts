@@ -101,5 +101,6 @@ export async function loadBootAssets(): Promise<void> {
   await Promise.all([
     loadAll(BOOT_IMAGE_PATHS, "image"),
     loadAll(BOOT_VIDEO_PATHS, "video"),
+    document.fonts.ready,
   ]);
 }

@@ -1318,6 +1318,7 @@ function SongBoundary({ finish, game, best, onBack }: {
   }, [drag !== null]);
 
   const bgImg = SONG_BG_CLASSIFY;
+  const activeVerse = drag?.moved ? drag.v : selected;
 
   return (
     <div className="song-fs">
@@ -1353,7 +1354,7 @@ function SongBoundary({ finish, game, best, onBack }: {
             ))}
         </div>
 
-        <div data-cat="in" className={"song-bin song-bin--in" + ((drag?.moved || selected) ? " can-drop" : "")}
+        <div data-cat="in" className={"song-bin song-bin--in" + (activeVerse && (inList.length < SONG_SAFE.length || bins[activeVerse] === "in") ? " can-drop" : "")}
           onClick={() => { if (selected) { assign(selected, "in"); setSelected(null); } }}>
           <div className="song-bin-slips">
             {inList.map(v => (
@@ -1367,7 +1368,7 @@ function SongBoundary({ finish, game, best, onBack }: {
           </div>
         </div>
 
-        <div data-cat="out" className={"song-bin song-bin--out" + ((drag?.moved || selected) ? " can-drop" : "")}
+        <div data-cat="out" className={"song-bin song-bin--out" + (activeVerse && (outList.length < SONG_DANGER.length || bins[activeVerse] === "out") ? " can-drop" : "")}
           onClick={() => { if (selected) { assign(selected, "out"); setSelected(null); } }}>
           <div className="song-bin-slips">
             {outList.map(v => (
@@ -1390,17 +1391,6 @@ function SongBoundary({ finish, game, best, onBack }: {
           <button className="btn-ghost press" onClick={() => setBins({})}>重新分拣</button>
           <button className="btn-primary press bamboo-submit" disabled={!binsBalanced} onClick={submitClassify}>完 成 定 界</button>
         </div>
-        {false && (
-          <>
-            <div className="bamboo-hint">尚未排定</div>
-            <div className="bamboo-actions">
-              <button className="btn-ghost press" onClick={resetOrder}>重排</button>
-              <button className="btn-primary press bamboo-submit" disabled={answer.length !== inList.length} onClick={submitOrder}>
-                定 稿 传 唱
-              </button>
-            </div>
-          </>
-        )}
         <div className="bamboo-dev">
           <span className="bamboo-dev-label">开 发 者 跳 过</span>
           {(["high", "mid", "low"] as GameResultRank[]).map(r => (

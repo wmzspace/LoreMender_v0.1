@@ -444,14 +444,14 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
               marginBottom:12,
             }}>THE LOREMENDER</div>
             <div className="title-han fade-in" style={{
-              fontSize:28, color:"var(--gold-pale)",
+              fontSize:38, color:"var(--gold-pale)",
               letterSpacing:"0.28em", textIndent:"0.28em",
               textShadow:"0 0 24px rgba(236,220,166,0.35), 0 2px 8px rgba(0,0,0,0.9)",
               animationDelay:"120ms",
             }}>{e.name}</div>
             <div className="fade-in" style={{
-              marginTop:10,
-              fontSize:13, fontStyle:"italic",
+              marginTop:12,
+              fontSize:16, fontStyle:"italic",
               color:"rgba(228,224,208,0.65)",
               letterSpacing:"0.06em",
               textShadow:"0 1px 6px rgba(0,0,0,0.8)",
@@ -459,8 +459,8 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             }}>「{e.epitaph}」</div>
             {displayedBody && (
               <div style={{
-                marginTop:22,
-                fontSize:14, lineHeight:2,
+                marginTop:24,
+                fontSize:18, lineHeight:1.95,
                 color:"rgba(228,224,208,0.88)",
                 whiteSpace:"pre-line",
                 letterSpacing:"0.05em",
