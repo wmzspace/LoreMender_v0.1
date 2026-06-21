@@ -26,7 +26,7 @@ export const CHARACTER_VOICES: Record<string, VoiceSetting> = {
   caocao: { voice: "zh-CN-YunyangNeural", rate: "-8%", pitch: "-15Hz" },  // 曹操 · 威压
   wangji: { voice: "zh-CN-YunyangNeural" },                               // 王济 · 油滑门客
   chenbo: { voice: "zh-CN-YunjianNeural", rate: "-15%" },                 // 陈伯 · 朴实乡野郎中
-  xuanyin: { voice: "zh-CN-XiaoyiNeural", rate: "-12%", pitch: "-4Hz" },   // 玄音 · 乐坊女伶
+  xuanyin: { voice: "zh-CN-YunjianNeural", rate: "-25%", pitch: "-12Hz" }, // 玄音 · 乐坊歌者(男)
   soldier: { voice: "zh-CN-YunjianNeural", rate: "+18%", pitch: "+8Hz", volume: "+20%" }, // 士卒 · 铿锵有士气的成年兵卒
   guard: { voice: "zh-CN-YunyangNeural", rate: "+5%", pitch: "-10Hz", volume: "+15%" },
   clerk: { voice: "zh-CN-YunyangNeural", rate: "+2%", pitch: "+2Hz" },

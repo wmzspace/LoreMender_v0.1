@@ -43,7 +43,7 @@ export const CHARACTERS: Record<string, Character> = {
     role: "民间乐坊歌者",
     tag: "歌诀传唱",
     short: "能把医理改成孩童也能记住的曲调。",
-    detail: "她相信曲子能绕开火与库房，也清楚传播越快，错误越危险。",
+    detail: "他相信曲子能绕开火与库房，也清楚传播越快，错误越危险。",
     silhouette: "songbird",
     portrait: "/images/levels/1/characters/xuanyin_square.webp",
   },

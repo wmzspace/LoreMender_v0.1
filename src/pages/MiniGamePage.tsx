@@ -249,18 +249,6 @@ const RANK_COLOR: Record<GameResultRank, string> = {
   low: "rgba(228,224,208,0.55)",
 };
 
-// 游戏说明文字样式（统一的美术风格）
-const instStyle: React.CSSProperties = {
-  fontSize: 15,
-  color: "rgba(228,224,208,0.62)",
-  lineHeight: 1.9,
-  letterSpacing: "0.04em",
-  textAlign: "center",
-  fontStyle: "italic",
-  margin: "0 0 16px",
-  padding: "0 4px",
-};
-
 function Shell({
   game, state, gotoPage, children, toast, setToast, overlay,
 }: {
@@ -1189,6 +1177,8 @@ const SONG_SAFE = ["急症先看神与息", "寒热未明莫乱投", "轻症可�
 // 夹在残纸里、不该乱传的重方细节（阶段二须划入「不可入歌」）
 const SONG_DANGER = ["三钱半夏急煎服", "针入寸半可回阳", "乌头入酒止痛快", "孩童高热强灌汤"];
 
+export const SONG_BG_CLASSIFY = "/images/levels/1/chapters/ch4_beats/scene_game3_classify_blank.webp";
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -1198,148 +1188,239 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/**
- * 残歌定界 —— 两步式玩法（第四章「知识传播的边界」主题）：
- *  ① 残歌定界：把混入的重方/禁忌划入「不可入歌」，安全句留在「可入歌」。
- *  ② 补全歌诀：把留下能入歌的安全残句排成可传唱的次序。
- * 评级：8 句全部归类正确且排序正确 → 高；归类错 ≤2 → 中；否则 → 低。
- */
-function SongBoundary({ finish }: { finish: (rank: GameResultRank) => void }) {
-  const [phase, setPhase] = useState<"classify" | "order">("classify");
-  const classErrorsRef = useRef(0);
+// 8 句残句的贴图：独立的干净卷条素材（已抠透明底），而非从透视实拍图裁切
+const SONG_SLIP_DIR = "/images/levels/1/chapters/ch4_beats/song_slips";
+const SONG_SLIP_IMG: Record<string, string> = {
+  "急症先看神与息": `${SONG_SLIP_DIR}/slip_safe_0.webp`,
+  "寒热未明莫乱投": `${SONG_SLIP_DIR}/slip_safe_1.webp`,
+  "轻症可记寻常法": `${SONG_SLIP_DIR}/slip_safe_2.webp`,
+  "重病仍须问医者": `${SONG_SLIP_DIR}/slip_safe_3.webp`,
+  "三钱半夏急煎服": `${SONG_SLIP_DIR}/slip_danger_0.webp`,
+  "针入寸半可回阳": `${SONG_SLIP_DIR}/slip_danger_1.webp`,
+  "乌头入酒止痛快": `${SONG_SLIP_DIR}/slip_danger_2.webp`,
+  "孩童高热强灌汤": `${SONG_SLIP_DIR}/slip_danger_3.webp`,
+};
 
-  // —— 阶段一：残歌定界（分类）——
+/** 残歌定界/补全歌诀的卷条：独立的残句贴图（透明底卷纸），随拖拽/选中状态变化。 */
+function SongSlip({ text, mini, dim, selected, onPointerDown, badge }: {
+  text: string;
+  mini?: boolean;
+  dim?: boolean;
+  selected?: boolean;
+  onPointerDown?: (e: React.PointerEvent) => void;
+  badge?: number;
+}) {
+  return (
+    <button
+      className={"song-slip" + (mini ? " song-slip--mini" : "") + (selected ? " is-selected" : "")}
+      style={{ touchAction: "none", opacity: dim ? 0.35 : 1 }}
+      onPointerDown={onPointerDown}
+      onClick={(e) => e.stopPropagation()} // 落点判定全部走 pointerup；阻止 click 再冒泡触发容器的 onClick
+    >
+      {badge !== undefined && <span className="song-slip-badge">{badge}</span>}
+      <img className="song-slip-img" src={SONG_SLIP_IMG[text]} alt={text} draggable={false} />
+    </button>
+  );
+}
+
+/**
+ * 残歌定界（第四章「知识传播的边界」主题），全屏沉浸场景：
+ * 把混入的重方/禁忌划入「不可入歌」，安全句留在「可入歌」（拖拽或点选），各侧最多 4 句。
+ * 评级：8 句全部归类正确 → 高；归类错 ≤2 → 中；否则 → 低。
+ */
+function SongBoundary({ finish, game, best, onBack }: {
+  finish: (rank: GameResultRank) => void;
+  game: GameNode;
+  best?: GameResultRank;
+  onBack: () => void;
+}) {
   const allVerses = useMemo(() => shuffle([...SONG_SAFE, ...SONG_DANGER]), []);
   const [bins, setBins] = useState<Record<string, "in" | "out">>({});
   const unassigned = allVerses.filter(v => !bins[v]);
   const inList = allVerses.filter(v => bins[v] === "in");
   const outList = allVerses.filter(v => bins[v] === "out");
-  // 必须可入歌、不可入歌各 4 句才能进入下一步
+  // 必须可入歌、不可入歌各 4 句才能定界
   const binsBalanced = inList.length === SONG_SAFE.length && outList.length === SONG_DANGER.length;
-  const assign = (v: string, bin: "in" | "out") => setBins(b => ({ ...b, [v]: bin }));
-  const unassign = (v: string) => setBins(b => { const n = { ...b }; delete n[v]; return n; });
+  const assign = (v: string, bin: "in" | "out" | null) => setBins(b => {
+    if (bin === "in" && inList.length >= SONG_SAFE.length && b[v] !== "in") return b;
+    if (bin === "out" && outList.length >= SONG_DANGER.length && b[v] !== "out") return b;
+    const n = { ...b };
+    if (bin) n[v] = bin; else delete n[v];
+    return n;
+  });
   const submitClassify = () => {
     let errors = 0;
     for (const v of SONG_SAFE) if (bins[v] !== "in") errors++;
     for (const v of SONG_DANGER) if (bins[v] !== "out") errors++;
-    classErrorsRef.current = errors;
-    // 用玩家选入「可入歌」的 4 句作为排序素材
-    setPool(shuffle(inList));
-    setAnswer([]);
-    setPhase("order");
-  };
-
-  // —— 阶段二：补全歌诀（用玩家选的可入歌 4 句排序）——
-  const [pool, setPool] = useState<string[]>([]);
-  const [answer, setAnswer] = useState<string[]>([]);
-  const chooseOrder = (v: string) => { setPool(p => p.filter(x => x !== v)); setAnswer(a => [...a, v]); };
-  const resetOrder = () => { setPool(shuffle(inList)); setAnswer([]); };
-  const submitOrder = () => {
-    const orderExact = answer.every((x, i) => x === SONG_SAFE[i]);
-    const errors = classErrorsRef.current;
-    const rank: GameResultRank =
-      orderExact && errors === 0 ? "high" : errors <= 2 ? "mid" : "low";
+    const rank: GameResultRank = errors === 0 ? "high" : errors <= 2 ? "mid" : "low";
     finish(rank);
   };
 
-  if (phase === "classify") {
-    return (
-      <>
-        <div style={instStyle}>
-          玄音的残纸上，救急常识与重方细节混在一处。把能传唱的 4 句放入「可入歌」，危险的剂量、针法、毒药 4 句放入「不可入歌」。
+  // ── 点选 + 拖拽并存（Pointer Events，触屏/鼠标通用）──
+  // 点选：先点一句（高亮选中），再点目标框（可入歌/不可入歌）完成归类；点已归类的句子则退回待判。
+  // 拖拽：直接把句子拖到目标框上即可，逻辑与点选共用同一落点判定。
+  const [selected, setSelected] = useState<string | null>(null);
+
+  type Drag = { v: string; from: string | null; startX: number; startY: number; x: number; y: number; moved: boolean };
+  const [drag, setDrag] = useState<Drag | null>(null);
+  const dragRef = useRef<Drag | null>(null);
+  dragRef.current = drag;
+
+  // 轻点（未移动）时的行为：待判池中的句子 → 切换选中；已归类的句子 → 有选中则把选中句子归入此处，否则把自己退回。
+  const handleTap = (v: string, from: string | null) => {
+    if (from === null) {
+      setSelected(s => (s === v ? null : v));
+    } else if (selected) {
+      assign(selected, from as "in" | "out");
+      setSelected(null);
+    } else {
+      assign(v, null);
+    }
+  };
+  const handleTapRef = useRef(handleTap);
+  handleTapRef.current = handleTap;
+
+  const startDrag = (e: React.PointerEvent, v: string, from: string | null) => {
+    setDrag({ v, from, startX: e.clientX, startY: e.clientY, x: e.clientX, y: e.clientY, moved: false });
+  };
+
+  useEffect(() => {
+    if (!drag) return;
+    const onMove = (e: PointerEvent) => {
+      setDrag(d => d && ({
+        ...d, x: e.clientX, y: e.clientY,
+        moved: d.moved || Math.hypot(e.clientX - d.startX, e.clientY - d.startY) > 6,
+      }));
+    };
+    const onUp = (e: PointerEvent) => {
+      const d = dragRef.current;
+      if (d) {
+        if (d.moved) {
+          const cat = (document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)
+            ?.closest("[data-cat]")?.getAttribute("data-cat") ?? null;
+          if (cat === "__pool__") assign(d.v, null);
+          else if (cat === "in" || cat === "out") { assign(d.v, cat); setSelected(null); }
+        } else {
+          handleTapRef.current(d.v, d.from);
+        }
+      }
+      setDrag(null);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drag !== null]);
+
+  const bgImg = SONG_BG_CLASSIFY;
+
+  return (
+    <div className="song-fs">
+      <div className="bamboo-fs-bg" style={{ backgroundImage: `url(${bgImg})` }} />
+      <div className="bamboo-fs-scrim" />
+
+      <div className="bamboo-top">
+        <button className="bamboo-back press" data-sfx="back" onClick={onBack} aria-label="返回">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M8 2 L3 6.5 L8 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <div className="bamboo-top-titles">
+          <div className="bamboo-top-title">{game.name}</div>
+          <div className="bamboo-top-sub">{game.context}</div>
         </div>
-        <div className="dialogue" style={{ margin: "10px 0" }}>
-          <div className="dialogue-name">你的判断</div>
-          <div>{`可入歌 ${inList.length} / ${SONG_SAFE.length} · 不可入歌 ${outList.length} / ${SONG_DANGER.length}`}</div>
+        <div className="bamboo-top-right">
+          {best
+            ? <span className="bamboo-badge" style={{ color: RANK_COLOR[best], borderColor: `${RANK_COLOR[best]}55` }}>最佳 · {RANK_LABEL[best]}</span>
+            : <span className="bamboo-badge bamboo-badge--new">初 次 挑 战</span>}
+        </div>
+      </div>
+
+      <div className="song-stage">
+        <img src={bgImg} alt="" className="bamboo-stage-bg" draggable={false} />
+
+        <div data-cat="__pool__" className="song-pool">
+          {unassigned.length === 0
+            ? <div className="bamboo-pool-empty">· 残句已全部分拣 ·</div>
+            : unassigned.map(v => (
+              <SongSlip key={v} text={v} selected={selected === v} dim={drag?.v === v && drag.moved}
+                onPointerDown={(e) => startDrag(e, v, null)} />
+            ))}
         </div>
 
-        {unassigned.length > 0 && (
-          <div style={{ display: "grid", gap: 8 }}>
-            {unassigned.map(v => (
-              <div key={v} style={{
-                display: "flex", alignItems: "center", gap: 8,
-                padding: "8px 10px",
-                background: "linear-gradient(180deg, rgba(34,30,22,0.7), rgba(20,18,14,0.7))",
-                border: "1px solid rgba(205,178,119,0.28)", borderRadius: 2,
-              }}>
-                <span style={{ flex: 1, fontSize: 14, color: "var(--paper)", letterSpacing: "0.04em" }}>{v}</span>
-                <button className="press" onClick={() => assign(v, "in")} style={{
-                  padding: "5px 12px", fontSize: 12, letterSpacing: "0.08em",
-                  border: "1px solid var(--gold-deep)", borderRadius: 2,
-                  background: "rgba(205,178,119,0.12)", color: "var(--gold-pale)",
-                }}>入歌</button>
-                <button className="press" onClick={() => assign(v, "out")} style={{
-                  padding: "5px 12px", fontSize: 12, letterSpacing: "0.08em",
-                  border: "1px solid #6e1f18", borderRadius: 2,
-                  background: "rgba(110,31,24,0.18)", color: "#d98a7e",
-                }}>封存</button>
-              </div>
+        <div data-cat="in" className={"song-bin song-bin--in" + ((drag?.moved || selected) ? " can-drop" : "")}
+          onClick={() => { if (selected) { assign(selected, "in"); setSelected(null); } }}>
+          <div className="song-bin-slips">
+            {inList.map(v => (
+              <SongSlip key={v} text={v} mini dim={drag?.v === v && drag.moved}
+                onPointerDown={(e) => { e.stopPropagation(); startDrag(e, v, "in"); }} />
             ))}
           </div>
-        )}
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
-          <SongBin title="可 入 歌" accent="var(--gold-pale)" border="var(--gold-deep)" list={inList} onTap={unassign} empty="可传唱的句子" />
-          <SongBin title="不 可 入 歌" accent="#d98a7e" border="#6e1f18" list={outList} onTap={unassign} empty="须留给医者" />
+          <div className="song-bin-label">
+            <span className="song-bin-label-text">可入歌</span>
+            <span>{inList.length}/{SONG_SAFE.length}</span>
+          </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16 }}>
+        <div data-cat="out" className={"song-bin song-bin--out" + ((drag?.moved || selected) ? " can-drop" : "")}
+          onClick={() => { if (selected) { assign(selected, "out"); setSelected(null); } }}>
+          <div className="song-bin-slips">
+            {outList.map(v => (
+              <SongSlip key={v} text={v} mini dim={drag?.v === v && drag.moved}
+                onPointerDown={(e) => { e.stopPropagation(); startDrag(e, v, "out"); }} />
+            ))}
+          </div>
+          <div className="song-bin-label">
+            <span className="song-bin-label-text">不可入歌</span>
+            <span>{outList.length}/{SONG_DANGER.length}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bamboo-bottom">
+        <div className="bamboo-hint">
+          {`可入歌 ${inList.length} / ${SONG_SAFE.length} · 不可入歌 ${outList.length} / ${SONG_DANGER.length}`}
+        </div>
+        <div className="bamboo-actions">
           <button className="btn-ghost press" onClick={() => setBins({})}>重新分拣</button>
-          <button className="btn-primary press" disabled={!binsBalanced} onClick={submitClassify}>完成定界</button>
+          <button className="btn-primary press bamboo-submit" disabled={!binsBalanced} onClick={submitClassify}>完 成 定 界</button>
         </div>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <div style={instStyle}>
-        边界已划定。把留下能入歌的句子，排成顺口能传的次序，让它真正被传唱。
-      </div>
-      <div className="dialogue" style={{ margin: "10px 0" }}>
-        <div className="dialogue-name">歌诀</div>
-        <div>{answer.join(" → ") || "尚未排定"}</div>
-      </div>
-      <div style={{ display: "grid", gap: 8 }}>
-        {pool.map(v => (
-          <button key={v} className="choice press" onClick={() => chooseOrder(v)} style={{ width: "100%" }}>
-            <span className="choice-label">{v}</span>
-          </button>
-        ))}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16 }}>
-        <button className="btn-ghost press" onClick={resetOrder}>重排</button>
-        <button className="btn-primary press" disabled={answer.length !== inList.length} onClick={submitOrder}>
-          定稿传唱
-        </button>
-      </div>
-    </>
-  );
-}
-
-/** 残歌定界的「可入歌 / 不可入歌」分区；点击已归类的句子可退回待判区。 */
-function SongBin({ title, accent, border, list, onTap, empty }: {
-  title: string; accent: string; border: string;
-  list: string[]; onTap: (v: string) => void; empty: string;
-}) {
-  return (
-    <div style={{
-      minHeight: 96, padding: "8px 8px 10px",
-      border: `1px solid ${border}`, borderRadius: 3,
-      background: `${border}14`,
-    }}>
-      <div style={{ fontSize: 11, letterSpacing: "0.2em", color: accent, textAlign: "center", marginBottom: 8 }}>{title}</div>
-      <div style={{ display: "grid", gap: 6 }}>
-        {list.length === 0
-          ? <div style={{ fontSize: 11, color: "rgba(228,224,208,0.3)", textAlign: "center", padding: "10px 0", fontStyle: "italic" }}>{empty}</div>
-          : list.map(v => (
-            <button key={v} className="press" onClick={() => onTap(v)} style={{
-              width: "100%", padding: "6px 8px", fontSize: 12.5,
-              border: `1px solid ${border}`, borderRadius: 2,
-              background: "rgba(20,18,14,0.5)", color: "var(--paper)", textAlign: "left",
-            }}>{v}</button>
+        {false && (
+          <>
+            <div className="bamboo-hint">尚未排定</div>
+            <div className="bamboo-actions">
+              <button className="btn-ghost press" onClick={resetOrder}>重排</button>
+              <button className="btn-primary press bamboo-submit" disabled={answer.length !== inList.length} onClick={submitOrder}>
+                定 稿 传 唱
+              </button>
+            </div>
+          </>
+        )}
+        <div className="bamboo-dev">
+          <span className="bamboo-dev-label">开 发 者 跳 过</span>
+          {(["high", "mid", "low"] as GameResultRank[]).map(r => (
+            <button key={r} className="btn-ghost press bamboo-dev-btn"
+              onClick={() => finish(r)}
+              style={{ borderColor: `${RANK_COLOR[r]}40`, color: RANK_COLOR[r] }}>
+              {RANK_LABEL[r]}
+            </button>
           ))}
+        </div>
       </div>
+
+      {drag?.moved && (
+        <div className="song-drag-ghost" style={{
+          position: "fixed", left: drag.x, top: drag.y,
+          transform: "translate(-50%, -60%)", zIndex: 100, pointerEvents: "none",
+        }}>
+          <SongSlip text={drag.v} mini />
+        </div>
+      )}
     </div>
   );
 }
@@ -1486,11 +1567,26 @@ export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniG
     );
   }
 
-  let body: React.ReactNode;
-  if (locked) {
-    body = <p>尚未获得进入此机关所需之物。</p>;
-  } else {
-    body = <SongBoundary key={retryKey} finish={finish} />;
+  // 歌诀纠错：全屏沉浸场景（玄音残纸贴图衬底，两步定界/排序）
+  if (game.kind === "songFormula" && !locked) {
+    return (
+      <>
+        <SongBoundary
+          key={retryKey}
+          finish={finish}
+          game={game}
+          best={state.gameResults[game.id]?.best}
+          onBack={() => gotoPage("story")}
+        />
+        <Toast text={toast} onDone={() => setToast("")} />
+        {feedback !== null && (
+          <GameFeedbackOverlay rank={feedback} game={game} onDismiss={dismissFeedback} />
+        )}
+        {feedback === null && grantedItems.length > 0 && (
+          <GameItemModal items={grantedItems} onDismiss={dismissItemModal} />
+        )}
+      </>
+    );
   }
 
   return (
@@ -1506,34 +1602,7 @@ export function MiniGamePage({ state, setState, gotoPage, onValueDeltas }: MiniG
         )}
       </>}
     >
-      {body}
-      {!locked && (
-        <div style={{
-          marginTop: 20, padding: "10px 0",
-          borderTop: "1px solid rgba(228,224,208,0.12)",
-          textAlign: "center",
-        }}>
-          <div style={{
-            fontSize: 9, color: "rgba(228,224,208,0.3)",
-            letterSpacing: "0.2em", marginBottom: 8,
-          }}>开 发 者 跳 过</div>
-          <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
-            {(["high", "mid", "low"] as GameResultRank[]).map(r => (
-              <button
-                key={r}
-                className="btn-ghost press"
-                onClick={() => finish(r)}
-                style={{
-                  minWidth: 56, padding: "6px 14px",
-                  fontSize: 11, letterSpacing: "0.12em",
-                  borderColor: `${RANK_COLOR[r]}40`,
-                  color: RANK_COLOR[r],
-                }}
-              >{RANK_LABEL[r]}</button>
-            ))}
-          </div>
-        </div>
-      )}
+      <p>尚未获得进入此机关所需之物。</p>
     </Shell>
   );
 }

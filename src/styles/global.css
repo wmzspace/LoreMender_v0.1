@@ -4557,6 +4557,207 @@ button:disabled,
   margin-bottom: 2px;
 }
 
+/* ── 歌诀纠错全屏（玄音残纸贴图衬底，复用 .bamboo-fs/.bamboo-top/.bamboo-bottom 浮层） ── */
+.song-fs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 10px 90px;
+  background: #07090c;
+  user-select: none;
+}
+
+.song-stage {
+  position: absolute;
+  inset: 0;
+  container-type: size;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.song-step {
+  font-size: 0.55em;
+  letter-spacing: 0.18em;
+  opacity: 0.6;
+  margin-left: 6px;
+}
+
+/* 待判 / 待选残句池：贴图顶部已写好参考字样的卷条所在区域 */
+.song-pool {
+  position: absolute;
+  left: 21%;
+  right: 21%;
+  top: 11%;
+  height: 38%;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 2.2cqw 1.4cqw;
+  padding: 1cqh 1cqw;
+}
+
+.song-pool--order {
+  top: auto;
+  bottom: 5%;
+  height: 38%;
+  align-content: flex-start;
+}
+
+/* 可入歌 / 不可入歌 两个木牌定位（对齐 scene_game1_classify.webp 下方两块空牌） */
+.song-bin {
+  position: absolute;
+  bottom: 5%;
+  height: 42%;
+  border: 1.5px dashed transparent;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+
+.song-bin--in {
+  left: 5%;
+  width: 43%;
+}
+
+.song-bin--out {
+  right: 5%;
+  width: 43%;
+}
+
+.song-bin.can-drop {
+  border-color: var(--gold-pale);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 18px -2px rgba(236, 220, 166, 0.55);
+}
+
+/* 文字牌匾，贴在木盘下沿 */
+.song-bin-label {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 0.6cqh;
+}
+
+.song-bin-label-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(236, 220, 166, 0.92);
+  letter-spacing: 0.08em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.song-bin-label span {
+  font-size: 11px;
+  color: rgba(228, 224, 208, 0.55);
+  letter-spacing: 0.06em;
+}
+
+.song-bin-slips {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6cqw;
+  align-content: flex-start;
+  justify-content: center;
+  padding: 1cqh 0.6cqw;
+  overflow: hidden;
+}
+
+/* 补全歌诀：把可入歌句子拖到这里排序（对齐 scene_game2_order.webp 上方空白卷面） */
+.song-order {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 6%;
+  height: 46%;
+  border: 1.5px dashed transparent;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 1.2cqw;
+  padding: 1cqh 1cqw;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+
+.song-order.can-drop {
+  border-color: var(--gold-pale);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 18px -2px rgba(236, 220, 166, 0.55);
+}
+
+/* 残句卷条：直接裁自玄音残纸原图的贴图（非渲染文字），保留原图的纸面质感 */
+.song-slip {
+  position: relative;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  line-height: 0;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 4px;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s;
+}
+
+.song-slip-img {
+  display: block;
+  height: 29cqh;
+  width: auto;
+  border-radius: 3px;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.55));
+}
+
+.song-slip--mini .song-slip-img {
+  height: 20cqh;
+}
+
+.song-slip-badge {
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--gold-deep);
+  color: #1c1610;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.song-slip:active {
+  transform: translateY(2px) scale(0.97);
+}
+
+.song-slip.is-selected {
+  transform: translateY(-4px);
+}
+
+.song-slip.is-selected .song-slip-img {
+  filter: drop-shadow(0 0 8px rgba(236, 220, 166, 0.95)) drop-shadow(0 4px 7px rgba(0, 0, 0, 0.55));
+}
+
+.song-drag-ghost .song-slip-img {
+  height: 17vmin;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.7));
+}
+
 /* ── 木盒机关全屏（复用 .bamboo-top / .bamboo-bottom 浮层） ── */
 .wb-fs {
   position: absolute;

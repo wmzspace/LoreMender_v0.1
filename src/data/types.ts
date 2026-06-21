@@ -113,6 +113,8 @@ export interface ExploreHotspot {
   y: number;           // 纵向定位，0–100 百分比
   image?: string;      // 点击热点后可切换到对应局部/物品图
   beats: Beat[];       // 点击后逐句展开的对白（仅 speaker / narration 行）
+  /** 该热点首次看完后应用的数值变化（与 Choice.set 同规则），会触发右上角数值卡片提示。 */
+  set?: Choice["set"];
 }
 
 /** 可交互探索场景：玩家点击场景中的人与物，分别跳到对应对白；可选要求全部看完后继续。 */

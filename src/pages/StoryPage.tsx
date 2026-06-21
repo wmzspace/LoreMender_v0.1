@@ -361,7 +361,20 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
     // 该热点对白看完:回到场景并标记已看
     setExploreOpen(null);
     setExploreSub(0);
-    setExploreVisited(v => v.includes(exHotspot.id) ? v : [...v, exHotspot.id]);
+    const firstVisit = !exploreVisited.includes(exHotspot.id);
+    setExploreVisited(v => firstVisit ? [...v, exHotspot.id] : v);
+    // 热点首次看完可附带数值变化(如「征药告示」推高追索压力)，与选择项 set 同规则，同样触发右上角数值卡片。
+    if (firstVisit && exHotspot.set) {
+      const ns = applyChoiceSet(state, exHotspot.set);
+      const deltas = diffValues(
+        state as unknown as Record<string, unknown>,
+        ns as unknown as Record<string, unknown>,
+        Date.now(),
+      );
+      if (deltas.length) onValueDeltas?.(deltas);
+      setState(ns);
+      saveState(ns);
+    }
   };
   const explorePrev = () => { if (exploreSub > 0) setExploreSub(exploreSub - 1); };
 
@@ -596,9 +609,9 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
                   <div className="story-action-btns">
                     <button
                       className="btn-ghost press"
-                      style={{ minHeight: 34, fontSize: 11, letterSpacing: "0.16em", opacity: 0.65 }}
+                      style={{ minHeight: 34, fontSize: 14, letterSpacing: "0.16em", opacity: 0.65 }}
                       onClick={() => {
-                        // 开发者跳过：自动收集本场景所有热点的可登记物品与线索
+                        // 跳过：自动收集本场景所有热点的可登记物品与线索
                         const ids: string[] = [];
                         const clueIds: string[] = [];
                         exploreScene.hotspots.forEach(h => h.beats.forEach(b => {
@@ -621,7 +634,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
                         }
                         setExploreVisited(exploreScene.hotspots.map(h => h.id));
                       }}
-                    >开 发 者 跳 过</button>
+                    >跳 过</button>
                   </div>
                 )}
               </div>

@@ -203,22 +203,23 @@ export const STORY: Record<string, StoryChapter> = {
       20: "/images/levels/1/chapters/ch2_beats/beat20_half_song.webp",
     },
     beats: [
-      { narration: true, line: "天色刚亮，许昌街市已经乱成一团。曹府征药的告示贴在墙上，药摊翻倒，药包滚进泥水里。", image: "/images/levels/1/chapters/ch2_beats/ch2_1_dawn_xuchang_escort_market.webp" },
-      { speaker: "woman", line: "谁来看看我孩子？他刚才还会哭，现在连哭声都没了！", image: "/images/levels/1/chapters/ch2_beats/ch2_2_half_song_aji_stops.webp" },
-      { speaker: "passerby", line: "曹府征药，药摊都被翻了，谁还有空管一个孩子？", image: "/images/levels/1/chapters/ch2_beats/ch2_3_.webp" },
+      { narration: true, line: "天色刚亮，许昌街市已经乱成一团。曹府征药的告示贴在墙上，药摊翻倒，药包滚进泥水里。", image: "/images/levels/1/chapters/ch2_beats/scene_01_market_chaos.webp" },
+      { speaker: "woman", line: "谁来看看我孩子？他刚才还会哭，现在连哭声都没了！", image: "/images/levels/1/chapters/ch2_beats/scene_02_woman_child.webp" },
+      { speaker: "passerby", line: "曹府征药，药摊都被翻了，谁还有空管一个孩子？" },
       { speaker: "aj", line: "让一让，我看看。" },
       { speaker: "woman", line: "你是大夫？" },
       { speaker: "aj", line: "不是大夫。只是……跟着大夫学过一点。" },
       {
         explore: {
           hint: "街市急症不是听方子就能治。先查看孩子、药炉和药包，收集足够线索。",
-          image: "/images/levels/1/chapters/ch2_beats/beat00_dawn_shop.webp",
+          image: "/images/levels/1/chapters/ch2_beats/scene_01_market_chaos.webp",
           hotspots: [
             {
               id: "child",
               label: "孩童",
               x: 49,
               y: 54,
+              image: "/images/levels/1/chapters/ch2_beats/scene_03_examine_child.webp",
               beats: [
                 { speaker: "aj", line: "额头烫，牙关紧，眼神散。" },
                 { narration: true, line: "获得线索：高热抽搐。" },
@@ -239,6 +240,7 @@ export const STORY: Record<string, StoryChapter> = {
               label: "药炉",
               x: 72,
               y: 70,
+              image: "/images/levels/1/chapters/ch2_beats/scene_06_chenbo_stove.webp",
               beats: [
                 { speaker: "aj", line: "炉底还有热灰，刚煎过药。" },
                 { speaker: "chenbo", line: "那锅药不是我开的。退热药下重了，孩子受不住。" },
@@ -250,6 +252,7 @@ export const STORY: Record<string, StoryChapter> = {
               label: "翻倒药包",
               x: 28,
               y: 75,
+              image: "/images/levels/1/chapters/ch2_beats/scene_05_herb_residue.webp",
               beats: [
                 { narration: true, line: "泥水里混着药材残渣，气味辛散。阿吉把能辨认的几味捡了出来。" },
                 { narration: true, line: "获得：药材残渣。" },
@@ -260,6 +263,7 @@ export const STORY: Record<string, StoryChapter> = {
               label: "征药告示",
               x: 18,
               y: 29,
+              set: { searchPressure: 1 },
               beats: [
                 { narration: true, line: "曹府征药令写得很急。药材被控制，民间救急会越来越难。" },
                 { narration: true, line: "追索压力上升：曹府开始控制药材。" },
@@ -280,7 +284,7 @@ export const STORY: Record<string, StoryChapter> = {
         },
       },
       { speaker: "aj", line: "高热，抽搐，手脚冷，刚用过重退热药。" },
-      { speaker: "chenbo", line: "这才像华先生门下出来的人。现在说，你敢不敢配？" },
+      { speaker: "chenbo", line: "这才像华先生门下出来的人。现在说，你敢不敢配？", image: "/images/levels/1/chapters/ch2_beats/scene_04_chenbo_teaching.webp" },
       { speaker: "aj", line: "我敢试，但你要在旁边看着。" },
       { speaker: "chenbo", line: "我看着。错了，我骂你；对了，我把药签给你。" },
       {
@@ -299,7 +303,7 @@ export const STORY: Record<string, StoryChapter> = {
           context: "根据高热抽搐、手脚发冷、退热药过重和药材残渣判断救急方向。药签越完整，民间经验越可能变成旁人也能用的东西。",
           reward: { item: "chenbo_prescription", skill: "chenbo_trust" },
         },
-        image: "/images/levels/1/chapters/ch2_beats/clinic_table.webp"
+        image: "/images/levels/1/chapters/ch2_beats/scene_07_herb_layout.webp"
       },
       {
         choices: [
@@ -308,8 +312,8 @@ export const STORY: Record<string, StoryChapter> = {
           { label: "拿出青囊残页求快些指点", set: { ch2: "show_fragment", searchPressure: 1 }, toast: "短期获得提示，但曹府探子可能看见。" },
         ],
       },
-      { speaker: "woman", line: "他手热回来了！他能喘了！" },
-      { speaker: "chenbo", line: "药不贵，贵的是看准。小先生，你救的不是一条命，是一张药签的去处。" },
+      { speaker: "woman", line: "他手热回来了！他能喘了！", image: "/images/levels/1/chapters/ch2_beats/scene_08_child_recovers.webp" },
+      { speaker: "chenbo", line: "药不贵，贵的是看准。小先生，你救的不是一条命，是一张药签的去处。", image: "/images/levels/1/chapters/ch2_beats/scene_09_prescription_handoff.webp" },
       { speaker: "aj", line: "药签？" },
       { speaker: "chenbo", line: "我不识几个字，画得也丑。你若能把它整理成别人看得懂的样子，它就不是我的手艺，是街市的活路。" },
       {
@@ -318,12 +322,12 @@ export const STORY: Record<string, StoryChapter> = {
           { label: "「我只想拿到能用的方子，别的不管。」", set: { chenbo_trust: -1 } },
         ],
       },
-      { speaker: "chenbo", line: "曹府今日查得紧，你这身药童衣撑不了多久。" },
-      { speaker: "aj", line: "我该去哪？" },
+      { speaker: "chenbo", line: "曹府今日查得紧，你这身药童衣撑不了多久。", image: "/images/levels/1/chapters/ch2_beats/scene_11_patrol_approach.webp" },
+      { speaker: "aj", line: "我该去哪？", image: "/images/levels/1/chapters/ch2_beats/scene_10_aj_thinking.webp" },
       { speaker: "chenbo", line: "曹府档案区有华先生旧问诊录。若你能拿到那东西，再配一张像样的文书，城里人就不敢随便拦你。" },
       { speaker: "aj", line: "去曹府？那不是自投罗网？" },
       { speaker: "chenbo", line: "不去，你连网在哪里都不知道。" },
-      { narration: true, line: "曹府搜查药市。阿吉发现单靠药童路引撑不过下一轮盘查，只能主动冒险进入曹府档案区。" },
+      { narration: true, line: "曹府搜查药市。阿吉发现单靠药童路引撑不过下一轮盘查，只能主动冒险进入曹府档案区。", image: "/images/levels/1/chapters/ch2_beats/scene_12_leave_market.webp" },
       { gotoChapter: "ch3" },
     ],
   },
@@ -497,14 +501,14 @@ export const STORY: Record<string, StoryChapter> = {
       24: "/images/levels/1/chapters/ch4_beats/beat24_leave_for_shrine.webp",
     },
     beats: [
-      { narration: true, line: "阿吉从曹府侧门离开，天色将明未明。巷子里有孩童拍手唱歌，曲调轻快，词却让他猛地停住。" },
+      { narration: true, line: "阿吉从曹府侧门离开，天色将明未明。巷子里有孩童拍手唱歌，曲调轻快，词却让他猛地停住。", image: "/images/levels/1/chapters/ch4_beats/scene_01_alley_singing.webp" },
       { speaker: "child", line: "头热惊，手足冷，猛灌汤，压喉声……" },
-      { speaker: "aj", line: "停！这句是谁教你的？" },
+      { speaker: "aj", line: "停！这句是谁教你的？", image: "/images/levels/1/chapters/ch4_beats/scene_02_aj_confronts_kids.webp" },
       { speaker: "child", line: "茶摊旁的哥哥唱的，大家都会唱。" },
       {
         explore: {
           hint: "错误歌诀会比错方子传得更快。追踪它从哪里来，再决定哪些能唱、哪些必须禁传。",
-          image: "/images/levels/1/chapters/ch4_beats/beat00_xuanyin_song.webp",
+          image: "/images/levels/1/chapters/ch4_beats/scene_explore_main.webp",
           hotspots: [
             {
               id: "singing_child",
@@ -521,6 +525,7 @@ export const STORY: Record<string, StoryChapter> = {
               label: "茶摊客",
               x: 63,
               y: 52,
+              image: "/images/levels/1/chapters/ch4_beats/scene_03_tea_guest.webp",
               beats: [
                 { speaker: "tea_guest", line: "我也是听乐坊唱的。说是华佗留下来的救命歌，谁不想学两句？" },
                 { speaker: "aj", line: "传得这么快……" },
@@ -569,9 +574,9 @@ export const STORY: Record<string, StoryChapter> = {
           ],
         },
       },
-      { speaker: "xuanyin", line: "你一路追到这里，是来抓唱歌的人，还是来改错字的人？" },
+      { speaker: "xuanyin", line: "你一路追到这里，是来抓唱歌的人，还是来改错字的人？", image: "/images/levels/1/chapters/ch4_beats/scene_05_xuanyin_appears.webp" },
       { speaker: "aj", line: "若只是错字，我不会追。错的是救命法子。" },
-      { speaker: "xuanyin", line: "那你来得正好。我能让一条巷子都记住它，却不能保证每张嘴都唱对它。" },
+      { speaker: "xuanyin", line: "那你来得正好。我能让一条巷子都记住它，却不能保证每张嘴都唱对它。", image: "/images/levels/1/chapters/ch4_beats/scene_06_xuanyin_performs.webp" },
       { speaker: "xuanyin", line: "字会被烧，简会被夺，曲子藏在人嘴里。" },
       { speaker: "aj", line: "可人嘴也会传错。" },
       { speaker: "xuanyin", line: "所以我等的不是会写字的人，是懂哪一句不能唱的人。" },
@@ -588,9 +593,11 @@ export const STORY: Record<string, StoryChapter> = {
           kind: "songFormula",
           unlockItem: "xuanyin_song_page",
           nextBeatUnlocked: "可入歌的救急句与必须禁传的危险句被分开。歌页能走远，禁录也必须同行。",
+          nextBeatUnlockedImage: "/images/levels/1/chapters/ch4_beats/scene_game2_order.webp",
           context: "把正确歌词和错误歌词分开，判断哪些基础救急可以入歌，哪些毒药剂量、针刺深浅和复杂辨证必须禁传。",
           reward: { item: "xuanyin_song_page", skill: "xuanyin_trust" },
         },
+        image: "/images/levels/1/chapters/ch4_beats/scene_song_reference.webp"
       },
       {
         choices: [
@@ -598,17 +605,18 @@ export const STORY: Record<string, StoryChapter> = {
           { label: "保留传播禁录，要求歌页与禁录同行", set: { ch4: "keep_forbidden_record", spread_tendency: 1 }, toast: "玄音线更稳：传播有了边界。" },
           { label: "主动销毁错误歌词碎片", set: { ch4: "destroy_wrong_song", burn_tendency: 1 }, toast: "焚毁倾向上升，但误传风险下降。" },
         ],
+        image: "/images/levels/1/chapters/ch4_beats/scene_game2_order.webp"
       },
-      { speaker: "xuanyin", line: "基础救急可入歌，毒药剂量不可入歌，针刺深浅不可入歌。" },
+      { speaker: "xuanyin", line: "基础救急可入歌，毒药剂量不可入歌，针刺深浅不可入歌。", image: "/images/levels/1/chapters/ch4_beats/scene_07_negotiation.webp" },
       { speaker: "aj", line: "能让人撑到见大夫的，可以唱；必须见了病人才知道的，不能唱。" },
-      { speaker: "xuanyin", line: "这张歌页，我收下。但这张禁录，你也要收下。没有边界的传播，比沉默更危险。" },
+      { speaker: "xuanyin", line: "这张歌页，我收下。但这张禁录，你也要收下。没有边界的传播，比沉默更危险。", image: "/images/levels/1/chapters/ch4_beats/scene_09_song_page_handoff.webp" },
       {
         choices: [
           { label: "「唱错的那些太危险，必须先毁掉。」", set: { burn_tendency: 1 }, toast: "你更倾向把危险的部分付之一炬。" },
           { label: "「我信你能把它唱对、唱远——歌页交给你。」", set: { xuanyin_trust: 1 }, toast: "玄音把歌页贴到了胸口。" },
         ],
       },
-      { speaker: "patrol", line: "里面的人，出来！曹府查华佗妖歌！" },
+      { speaker: "patrol", line: "里面的人，出来！曹府查华佗妖歌！", image: "/images/levels/1/chapters/ch4_beats/scene_10_patrol_diversion.webp" },
       { speaker: "xuanyin", line: "官爷，唱错词的人在东巷。我带你们去。" },
       { speaker: "aj", line: "你会被抓。" },
       { speaker: "xuanyin", line: "错歌若传出去，抓不抓我都一样糟。走。" },
@@ -622,7 +630,7 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "xuanyin", line: "你要把青囊交给谁？" },
       { speaker: "aj", line: "我还不知道。" },
       { speaker: "xuanyin", line: "那就去一个安静的地方，把你手里的东西都摆出来。东西会比人诚实。" },
-      { narration: true, line: "阿吉带着青囊残页、陈伯药签、曹府问诊录和玄音歌页，前往华佗旧义诊的城外旧祠。这里不是随机终点，而是华佗曾经把医术交给民间的地方。" },
+      { narration: true, line: "阿吉带着青囊残页、陈伯药签、曹府问诊录和玄音歌页，前往华佗旧义诊的城外旧祠。这里不是随机终点，而是华佗曾经把医术交给民间的地方。", image: "/images/levels/1/chapters/ch4_beats/scene_08_teaching_song.webp" },
       { gotoChapter: "ch5" },
     ],
   },
@@ -640,7 +648,7 @@ export const STORY: Record<string, StoryChapter> = {
       8: "/images/levels/1/chapters/ch5_beats/beat08_farewell.webp",
     },
     beats: [
-      { narration: true, line: "城外旧祠荒草没阶，墙上还残留着华佗当年义诊时贴过方子的痕迹。阿吉推门进去，晨风吹得木盒轻轻作响。" },
+      { narration: true, line: "城外旧祠荒草没阶，墙上还残留着华佗当年义诊时贴过方子的痕迹。阿吉推门进去，晨风吹得木盒轻轻作响。", image: "/images/levels/1/chapters/ch5_beats/scene_01_enter_shrine.webp" },
       { speaker: "aj", line: "师父，我带出来了。" },
       { narration: true, line: "没有人回答。案台上只有积灰和几枚旧针痕。" },
       { speaker: "aj", line: "可我还是不知道该交给谁。" },
@@ -663,7 +671,7 @@ export const STORY: Record<string, StoryChapter> = {
           { narration: true, line: "有几处字仍然模糊，像没有来得及说完的话。" },
         ],
       },
-      { speaker: "aj", line: "陈伯的药签。画得粗，却能让药工看懂。" },
+      { speaker: "aj", line: "陈伯的药签。画得粗，却能让药工看懂。", image: "/images/levels/1/chapters/ch5_beats/scene_02_lay_out_relics.webp" },
       { speaker: "aj", line: "王济的问诊录。字很正，门也很深。" },
       { speaker: "aj", line: "玄音的歌页。唱得出去，也可能唱错。" },
       {
@@ -673,9 +681,9 @@ export const STORY: Record<string, StoryChapter> = {
           { narration: true, line: "歌页旁另有禁录，标明不可入歌的危险内容。" },
         ],
       },
-      { speaker: "huatuo", line: "你问哪条路不会断。阿吉，没有不会断的路，只有不断修的人。" },
-      { speaker: "aj", line: "所以我不是选一个人，是选一种以后还会被修正的方法。" },
-      { speaker: "aj", line: "陈伯能让药进街市，王济能让字进府库，玄音能让歌进人群。" },
+      { speaker: "huatuo", line: "你问哪条路不会断。阿吉，没有不会断的路，只有不断修的人。", image: "/images/levels/1/chapters/ch5_beats/scene_03_huatuo_spirit.webp" },
+      { speaker: "aj", line: "所以我不是选一个人，是选一种以后还会被修正的方法。", image: "/images/levels/1/chapters/ch5_beats/scene_04_two_mentors.webp" },
+      { speaker: "aj", line: "陈伯能让药进街市，王济能让字进府库，玄音能让歌进人群。", image: "/images/levels/1/chapters/ch5_beats/scene_05_three_mentors.webp" },
       { speaker: "aj", line: "可街市会散，府库会锁，歌也会错。" },
       {
         choices: [
@@ -690,7 +698,7 @@ export const STORY: Record<string, StoryChapter> = {
           { label: "「您的每一句话，我都没有空手忘掉。」", set: { huatuo_trust: 1 }, toast: "华佗的神色，第一次松了一分。" },
         ],
       },
-      { narration: true, line: "阿吉伸手之前，案台上的物件已经替他说出了一半答案。剩下的一半，才是他的选择。" },
+      { narration: true, line: "阿吉伸手之前，案台上的物件已经替他说出了一半答案。剩下的一半，才是他的选择。", image: "/images/levels/1/chapters/ch5_beats/scene_06_aj_alone_thinking.webp" },
       { gotoTrust: true },
       { narration: true, line: "阿吉做出了最后动作。青囊残术的归处，不只由这一刻决定，也由他一路留下的证据决定。" },
       { gotoEnding: true },
