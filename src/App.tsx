@@ -47,8 +47,10 @@ export default function App() {
   const [state, setState] = useState<GameState>(() => loadState());
   const [page, setPage] = useState<PageKey>("cover");
   const [transKey, setTransKey] = useState(0);
-  // 启动画面:先亮工作室 LOGO,期间把首页封面/视频 + 典故卷宗每卷封面/视频加载完再进封面页。
+  // 启动画面:先亮工作室 LOGO,期间把首页封面/视频 + 典故卷宗每卷封面/视频加载完。
+  // 素材就绪后切到「点击屏幕继续」,等玩家点一下再淡出进封面页(避免一闪而过、也顺带满足浏览器自动播放策略的用户手势要求)。
   const [booted, setBooted] = useState(false);
+  const [bootReady, setBootReady] = useState(false);
   const [bootExiting, setBootExiting] = useState(false);
   useEffect(() => {
     let cancelled = false;
@@ -56,14 +58,15 @@ export default function App() {
     loadBootAssets().then(() => {
       if (cancelled) return;
       const wait = Math.max(0, MIN_BOOT_MS - (Date.now() - start));
-      window.setTimeout(() => {
-        if (cancelled) return;
-        setBootExiting(true);
-        window.setTimeout(() => { if (!cancelled) setBooted(true); }, BOOT_EXIT_MS);
-      }, wait);
+      window.setTimeout(() => { if (!cancelled) setBootReady(true); }, wait);
     });
     return () => { cancelled = true; };
   }, []);
+  const continueBoot = () => {
+    if (bootExiting) return;
+    setBootExiting(true);
+    window.setTimeout(() => setBooted(true), BOOT_EXIT_MS);
+  };
   const [navCollapsed, setNavCollapsed] = useState(false);
   // 侧栏悬停展开 / 移开自动收缩：延时收缩，避免指针从展开按钮移入侧栏途中的间隙误触收起。
   const navCollapseTimer = useRef<number>(0);
@@ -138,7 +141,7 @@ export default function App() {
       <div className="stage">
         <div className="phone">
           <div className="screen">
-            <BootScreen exiting={bootExiting} />
+            <BootScreen exiting={bootExiting} ready={bootReady} onContinue={continueBoot} />
           </div>
         </div>
       </div>

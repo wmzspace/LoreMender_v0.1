@@ -2519,6 +2519,29 @@ button:disabled,
   align-items: baseline;
   animation: portalHintPulse 1.8s ease-in-out infinite;
 }
+/* 素材就绪态:整屏可点;Logo 轻微提亮,提示交互可用。 */
+.boot-screen.is-ready {
+  cursor: pointer;
+}
+.boot-screen.is-ready .boot-screen-logo {
+  filter: drop-shadow(0 0 36px rgba(236, 220, 166, 0.4));
+  transition: filter 420ms ease;
+}
+/* 「点击屏幕继续」:明显的呼吸闪烁——透明度与轻微缩放一起起伏,比加载态的 portalHintPulse 更显眼,提示"该你点了"。 */
+.boot-screen-continue {
+  margin-top: 44px;
+  font-family: var(--font-han);
+  font-size: 19px;
+  letter-spacing: 0.32em;
+  text-indent: 0.32em;
+  color: var(--gold-pale);
+  text-shadow: 0 0 14px rgba(236, 220, 166, 0.5);
+  animation: bootContinueBreathe 2s ease-in-out infinite;
+}
+@keyframes bootContinueBreathe {
+  0%, 100% { opacity: 0.45; transform: scale(0.985); }
+  50%      { opacity: 1;    transform: scale(1.015); }
+}
 
 /* 加载省略号:固定宽度槽位,1→2→3 个点循环时不挤动前面的文字。 */
 .loading-dots {
