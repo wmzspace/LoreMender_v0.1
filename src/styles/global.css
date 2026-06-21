@@ -129,7 +129,11 @@ button {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: var(--ink-deep);
+  /* 与 .boot-screen / .night-deep-bg 同款冷墨黑渐变基底,
+     启动画面淡出时露出的下层与上层同色,无色跳;各页自带背景盖在其上。 */
+  background:
+    radial-gradient(ellipse at 50% -6%, rgba(205, 178, 119, 0.06), transparent 54%),
+    linear-gradient(180deg, #090c10 0%, #070a0d 55%, #05070a 100%);
 }
 
 /* Lock the outer document so the whole UI can't be dragged/overflow when a
@@ -2484,9 +2488,11 @@ button:disabled,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* 用 var(--ink-deep) 与下层 .screen 背景一致:退场淡出 420ms 期间不会露出另一色块,
-     退场完毕 CoverPage 挂载时基底也是同色,整段过渡无色跳。 */
-  background: var(--ink-deep);
+  /* 与 .night-deep-bg 同语言:冷墨黑纵向渐变 + 顶部一抹极淡香槟金光晕,
+     呼应全站高级感;同时与退场后挂载的 CoverPage 基底一致,淡出无色跳。 */
+  background:
+    radial-gradient(ellipse at 50% -6%, rgba(205, 178, 119, 0.07), transparent 54%),
+    linear-gradient(180deg, #090c10 0%, #070a0d 55%, #05070a 100%);
   opacity: 1;
   transition: opacity 420ms ease;
 }
