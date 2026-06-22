@@ -12,37 +12,37 @@ export const ENDINGS: Record<string, Ending> = {
   },
   chenbo_fallback: {
     id: "chenbo_fallback",
-    name: "残卷余音",
+    name: "残方诉民",
     rank: "遗憾半修",
     rankColor: "#8f7846",
-    epitaph: "药签未成卷，余法入人声",
+    epitaph: "碎笺记疾苦，良药落尘凡",
     body: "你把残卷托给陈伯。\n他凭一双老手救下不少急症，也把能记住的法子讲给街坊。\n可药签残缺，记录太少，许多病机只能靠口耳相传。\n青囊没有彻底断绝，却只能留下零散余音。",
     glyph: "shoots",
   },
   xuanyin_true: {
     id: "xuanyin_true",
-    name: "残卷余音",
+    name: "江曲传医",
     rank: "典故修补",
     rankColor: "#2c6657",
-    epitaph: "歌行渡口，禁录同行",
+    epitaph: "渔歌载医道，舟楫传仁术",
     body: "你把残卷托给玄音。\n他把难懂的医理改作歌诀，带向乐坊、渡口与山门。\n后世未必能得到全卷，却能从曲调里记住该救什么、又该避开什么。\n有些句子在流传中变形，有些禁忌被谨慎保留下来。\n残术不再完整，但没有完全失声。",
     glyph: "living",
   },
   xuanyin_fallback: {
     id: "xuanyin_fallback",
-    name: "残卷余音",
+    name: "声消字泯",
     rank: "遗憾半修",
     rankColor: "#8f7846",
-    epitaph: "歌声走远，错句难清",
+    epitaph: "曲散文残缺，医脉渐飘零",
     body: "你把残卷托给玄音。\n歌诀比竹简走得更远，也比竹简更难追回。\n有些救急法门留在曲调里，有些错句也混入人群。\n玄音一路校正，仍无法保证每个渡口唱出的都是原意。\n青囊没有完全失声，却留下了长久的遗憾。",
     glyph: "wall",
   },
   wangji_archive: {
     id: "wangji_archive",
-    name: "医案存世",
+    name: "卷藏生民",
     rank: "典故修补",
     rankColor: "#2c6657",
-    epitaph: "医案藏府库，济世写卷首",
+    epitaph: "手札留百世，笔墨济苍生",
     body: "你把残卷托给王济。\n他把「医术当以济世为先，不以权势为序」写在医案首页，督促曹府医官照录、照用。\n它没有流入街巷，却在府库里被一代代医官翻阅、引证、补全。\n书被锁着，钥匙却交到了愿意开柜的人手里。",
     glyph: "wall",
   },
@@ -125,7 +125,7 @@ export function resolveEnding(state: GameState): EndingId {
     case "wangji":
       // 4. 偷改病案 / 按身份排序（病案排错）→ 强制重锁深阁
       if (tampered || !correctTriage) return "wangji_trap";
-      // 1. 王济对称化：达标 → 医案存世（积极），否则 → 重锁深阁
+      // 1. 王济对称化：达标 → 卷藏生民（积极），否则 → 重锁深阁
       return state.wangji_trust >= 2 && completeCaseRecord && highCount >= 2 && (state.system_tendency || 0) >= 1
         ? "wangji_archive"
         : "wangji_trap";
@@ -168,8 +168,8 @@ export const ENDING_IMAGES: Record<string, string> = {
   chenbo_true: "/images/levels/1/chapters/endings/ending_chenbo.webp",
   chenbo_fallback: "/images/levels/1/chapters/endings/ending_chenbo_caomu.webp",
   xuanyin_true: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
-  xuanyin_fallback: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
-  wangji_archive: "/images/levels/1/chapters/endings/ending_wangji.webp", // TODO 占位：待生成 ending_wangji_archive.webp
+  xuanyin_fallback: "/images/levels/1/chapters/endings/ending_xuanyin_fallback.webp",
+  wangji_archive: "/images/levels/1/chapters/endings/ending_wangji_archive.webp",
   wangji_trap: "/images/levels/1/chapters/endings/ending_wangji.webp",
   burn_ending: "/images/levels/1/chapters/endings/ending_burn.webp",
 };

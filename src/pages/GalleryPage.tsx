@@ -71,7 +71,7 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
       bg="night-deep-bg"
       eyebrow="ENDINGS · CODEX"
       title="结 局 图 鉴"
-      subtitle={<>已解锁 <span style={{color:"var(--gold-pale)"}}>{unlocked.length}</span> / {Object.keys(ENDINGS).length}</>}
+      subtitle={<span style={{ fontSize: 18, fontWeight: 600, letterSpacing:"0.16em" }}>已解锁 <span style={{color:"var(--gold-pale)", textShadow:"0 0 12px rgba(236,220,166,0.55)"}}>{unlocked.length}</span> / {Object.keys(ENDINGS).length}</span>}
       onBack={() => gotoPage("story")}
       footer={<BottomNav active="gallery" onNav={gotoPage}/>}
     >
@@ -145,12 +145,12 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
                   borderTop:"1px solid " + (has ? "rgba(205,178,119,0.3)" : "rgba(70,62,38,0.5)"),
                 }}>
                   <div className="title-han" style={{
-                    fontSize: 16,
+                    fontSize: 20,
                     color: has ? "var(--gold-pale)" : "rgba(140,107,41,0.6)",
                     letterSpacing:"0.2em", textIndent:"0.2em",
                   }}>{has ? e.name : "？ ？ ？"}</div>
                   <div style={{
-                    fontSize: 12, marginTop: 6,
+                    fontSize: 14, marginTop: 6,
                     opacity: has ? 0.8 : 0.45,
                     fontStyle:"italic",
                     color:"rgba(228,224,208,0.85)",
