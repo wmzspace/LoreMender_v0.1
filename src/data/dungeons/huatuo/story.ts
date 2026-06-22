@@ -219,7 +219,7 @@ export const STORY: Record<string, StoryChapter> = {
               label: "孩童面相",
               x: 86,
               y: 26,
-              image: "/images/levels/1/chapters/ch2_beats/scene_03_examine_child.webp",
+              image: "/images/levels/1/chapters/ch2_beats/scene_03_examine_child_2.webp",
               beats: [
                 { speaker: "aj", line: "额头烫，牙关紧，眼神散。" },
                 { narration: true, line: "获得线索：高热抽搐。" },
