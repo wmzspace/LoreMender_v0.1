@@ -39,6 +39,15 @@ const ROUTE_DESC: Record<string, string> = {
   chenbo: "民间经验之路。药方不锁进高阁，而在街巷间誊写、背诵、校正。可能散失，也可能因人而异，但它最接近真正需要救命的人。",
   wangji: "制度府库之路。医书进入曹府医案，有制度保护，也有抄本流传的可能。但门第、功名与权力会重新筛选文字，不合时宜的提醒可能被删去，民间经验可能被轻看。",
   xuanyin: "歌诀传播之路。医理被改成歌诀，带向乐坊、山门与村巷。后世未必能得到全卷，却能从曲调里记住该救什么、又该避开什么。残术不再完整，但没有完全失声。",
+  burn: "火光保住了秘密，也烧断了去路。无人能借它作恶，也无人能据它救人。后世只记得那本应当存在的书。",
+};
+
+// 与该人物「交托」那一刻的对话插图——选择前再看一眼，提醒这是托付给谁。
+const ROUTE_IMAGE: Record<string, string> = {
+  chenbo: "/images/levels/1/chapters/ch2_beats/scene_09_prescription_handoff.webp",
+  wangji: "/images/levels/1/chapters/ch3_beats/ch3_09_documents_handoff.webp",
+  xuanyin: "/images/levels/1/chapters/ch4_beats/scene_09_song_page_handoff.webp",
+  burn: "/images/levels/1/chapters/endings/ending_burn.webp",
 };
 
 // 选择前提示：依信任最高者 / 低完成度数量，给一句情感旁白（轻量倾向）
@@ -59,6 +68,44 @@ function preChoiceHint(state: GameState): string | null {
   if (lowGrades >= 2) return "你还没有完全理解青囊，但天已经快亮了。";
   if (top.v > 0) return top.line;
   return null;
+}
+
+function TrustCard({
+  id, name, tag, portrait, desc, image, selected, onPick, zoomSide,
+}: {
+  id: string;
+  name: string;
+  tag?: string;
+  portrait?: string;
+  desc: string;
+  image: string;
+  selected: boolean;
+  onPick: () => void;
+  zoomSide: "left" | "right";
+}) {
+  return (
+    <button
+      key={id}
+      className={"trust-card press" + (selected ? " is-selected" : "")}
+      onClick={onPick}
+    >
+      <div className="trust-card-frame">
+        {portrait
+          ? <img src={portrait} alt={name} className="trust-card-portrait" />
+          : <img src={image} alt={name} className="trust-card-portrait trust-card-portrait--wide" />}
+        {selected && <div className="trust-card-pick">已 选</div>}
+      </div>
+      <div className="trust-card-caption">
+        <strong>{name}</strong>
+        {tag && <span>{tag}</span>}
+      </div>
+
+      <div className={"trust-card-zoom trust-card-zoom--" + zoomSide}>
+        <img src={image} alt="" className="trust-card-zoom-img" />
+        <div className="trust-card-zoom-text">{desc}</div>
+      </div>
+    </button>
+  );
 }
 
 export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProps) {
@@ -92,94 +139,42 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
         </div>
       }
     >
-        <div style={{
-          height: "clamp(170px, 28vh, 280px)",
-          position: "relative",
-          overflow: "hidden",
-          border: "1px solid rgba(205,178,119,0.30)",
-          borderRadius: 4,
-          background: "#071013",
-          marginBottom: 16,
-        }}>
-          <img
-            src="/images/levels/1/chapters/trust/trust_scene.webp"
-            alt="青囊归处"
-            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.88 }}
-          />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent, rgba(7,11,14,0.94))" }} />
-          <div className="title-han" style={{ position: "absolute", left: 16, bottom: 14, color: "var(--gold-pale)", fontSize: 22 }}>
-            残卷应归何处
-          </div>
-        </div>
-
-        <div style={{ color: "var(--paper)", opacity: 0.76, fontSize: 13, lineHeight: 1.8, marginBottom: 14 }}>
-          前四章所得道具、最佳成绩与信任，会影响后世怎样读到这卷残术。此刻不再考验手速，只考验托付。
+        <div className="trust-intro">
+          前四章所得道具、最佳成绩与信任，会影响后世怎样读到这卷残术。此刻不再考验手速，只考验托付——把鼠标停在每张脸上，再看一眼当时的承诺。
         </div>
 
         {hint && (
-          <div style={{
-            display: "flex", alignItems: "center", gap: 9,
-            padding: "10px 13px", marginBottom: 16,
-            border: "1px solid rgba(95,168,146,0.3)",
-            borderLeft: "3px solid var(--jade)",
-            borderRadius: 3,
-            background: "rgba(95,168,146,0.07)",
-          }}>
-            <div style={{ width: 4, height: 4, background: "var(--jade)", transform: "rotate(45deg)", flexShrink: 0, opacity: 0.8 }} />
-            <div style={{
-              fontSize: 12.5, fontStyle: "italic",
-              color: "rgba(166,220,203,0.9)",
-              lineHeight: 1.7, letterSpacing: "0.03em",
-            }}>{hint}</div>
+          <div className="trust-hint">
+            <div className="trust-hint-mark" />
+            <div className="trust-hint-text">{hint}</div>
           </div>
         )}
 
-        <div className="grid-2">
-          {TRUST_OPTIONS.map(c => {
-            const selectedThis = selected === c.id;
-            return (
-              <button
-                key={c.id}
-                className="press"
-                onClick={() => setSelected(c.id)}
-                style={{
-                  width: "100%",
-                  textAlign: "left",
-                  border: `1px solid ${selectedThis ? "var(--jade)" : "rgba(205,178,119,0.28)"}`,
-                  background: selectedThis ? "rgba(95,168,146,0.13)" : "rgba(10,16,20,0.62)",
-                  borderRadius: 4,
-                  padding: 13,
-                  color: "var(--paper)",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <img src={c.portrait} alt={c.name} style={{ width: 42, height: 42, borderRadius: "50%", objectFit: "cover", objectPosition: "center top" }} />
-                  <div>
-                    <div className="title-han" style={{ color: selectedThis ? "var(--jade-pale)" : "var(--gold-pale)", fontSize: 16 }}>{c.name}</div>
-                  </div>
-                </div>
-                <div style={{ fontSize: 12, lineHeight: 1.65, opacity: 0.75, marginTop: 9 }}>{ROUTE_DESC[c.id] ?? c.short}</div>
-              </button>
-            );
-          })}
-
-          <button
-            className="press span-all"
-            onClick={() => setSelected(BURN)}
-            style={{
-              width: "100%",
-              textAlign: "left",
-              gridColumn: "1 / -1",
-              border: `1px solid ${selected === BURN ? "#b23a2c" : "rgba(178,58,44,0.35)"}`,
-              background: selected === BURN ? "rgba(178,58,44,0.18)" : "rgba(20,9,7,0.62)",
-              borderRadius: 4,
-              padding: 13,
-              color: "var(--paper)",
-            }}
-          >
-            <div className="title-han" style={{ color: selected === BURN ? "#ffd0c0" : "var(--gold-pale)", fontSize: 16 }}>焚毁残卷</div>
-            <div style={{ fontSize: 12, lineHeight: 1.65, opacity: 0.75, marginTop: 7 }}>火光保住了秘密，也烧断了去路。无人能借它作恶，也无人能据它救人。后世只记得那本应当存在的书。</div>
-          </button>
+        <div className="trust-grid">
+          {TRUST_OPTIONS.map((c, i) => (
+            <TrustCard
+              key={c.id}
+              id={c.id}
+              name={c.name}
+              tag={c.tag}
+              portrait={c.portrait}
+              desc={ROUTE_DESC[c.id] ?? c.short ?? ""}
+              image={ROUTE_IMAGE[c.id]}
+              selected={selected === c.id}
+              onPick={() => setSelected(c.id)}
+              zoomSide={i < 2 ? "left" : "right"}
+            />
+          ))}
+          <TrustCard
+            id={BURN}
+            name="焚毁残卷"
+            tag="付之一炬"
+            desc={ROUTE_DESC.burn}
+            image={ROUTE_IMAGE.burn}
+            selected={selected === BURN}
+            onPick={() => setSelected(BURN)}
+            zoomSide="right"
+          />
         </div>
     </PageShell>
   );

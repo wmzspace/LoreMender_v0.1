@@ -22,18 +22,18 @@ export const ITEMS: Record<string, ItemDef> = {
   wooden_box_set:     { id: "wooden_box_set", name: "藏卷木盒", image: `${IMG}/item_wooden_box_set.webp`, desc: "暗格机关木盒，可藏青囊残页。" },
 
   // 后续章节物品（暂无专属图标，用默认印记展示）
-  travel_pass:         { id: "travel_pass", name: "药童路引", desc: "补过华佗印记的路引，能解释阿吉为何能在城中短时间行动。" },
+  travel_pass:         { id: "travel_pass", name: "药童路引", image: "/images/levels/1/items/ch1/item_travel_pass.webp", desc: "补过华佗印记的路引，能解释阿吉为何能在城中短时间行动。" },
   wooden_box:          { id: "wooden_box", name: "藏卷木盒" },
   herb_residue:        { id: "herb_residue", name: "药材残渣", image: "/images/levels/1/items/ch2/item_herb_residue.webp", desc: "泥水里捡出的几味可辨药材，是判断孩子误服了什么的实证。" },
   song_fragment_correct: { id: "song_fragment_correct", name: "正确歌词碎片", image: "/images/levels/1/chapters/ch4_beats/item_song_fragment_correct.webp", desc: "残纸上抄对的救急句，能入歌、可传唱。" },
   song_fragment_wrong:   { id: "song_fragment_wrong", name: "错误歌词碎片", image: "/images/levels/1/chapters/ch4_beats/item_song_fragment_wrong.webp", desc: "夹在残纸里的危险重方细节，若随歌传开会害人，必须另列禁录。" },
-  chenbo_prescription: { id: "chenbo_prescription", name: "陈伯药签", image: "/images/levels/1/items/ch2/item_chenbo_prescription.webp" },
-  chenbo_prescription_full: { id: "chenbo_prescription_full", name: "完整药签", image: "/images/levels/1/items/ch2/item_chenbo_prescription_full.webp" },
-  wangji_document:     { id: "wangji_document", name: "曹府问诊录", image: "/images/levels/1/items/ch3/item_wangji_document.webp" },
-  wangji_fake_doc:     { id: "wangji_fake_doc", name: "假文书", image: "/images/levels/1/items/ch3/item_wangji_fake_doc.webp" },
-  xuanyin_song_page:   { id: "xuanyin_song_page", name: "玄音歌页", image: "/images/levels/1/chapters/ch4_beats/item_xuanyin_song_page.webp" },
-  xuanyin_song_page_complete: { id: "xuanyin_song_page_complete", name: "完整歌页", image: "/images/levels/1/chapters/ch4_beats/item_xuanyin_song_page_complete.webp" },
-  forbidden_record:    { id: "forbidden_record", name: "禁录", image: "/images/levels/1/chapters/ch4_beats/item_forbidden_record.webp" },
+  chenbo_prescription: { id: "chenbo_prescription", name: "陈伯药签", image: "/images/levels/1/items/ch2/item_chenbo_prescription.webp", desc: "陈伯凭经验开出的救急药签，记下了药材与用量，是这味方子第一次离开他一双手、可能被旁人验证的样子。" },
+  chenbo_prescription_full: { id: "chenbo_prescription_full", name: "完整药签", image: "/images/levels/1/items/ch2/item_chenbo_prescription_full.webp", desc: "补全药材、用量与禁忌的药签，连没学过医的人也能照着用，经验终于变成了能传下去的东西。" },
+  wangji_document:     { id: "wangji_document", name: "曹府问诊录", image: "/images/levels/1/items/ch3/item_wangji_document.webp", desc: "按病情轻重重排的曹府问诊记录，证明阿吉是按谁更急、而非谁的身份在排定救治顺序。" },
+  wangji_fake_doc:     { id: "wangji_fake_doc", name: "假文书", image: "/images/levels/1/items/ch3/item_wangji_fake_doc.webp", desc: "王济递出的「残卷已焚」归档文书，只能撑到天亮，却是他暗中放阿吉一条生路的证据。" },
+  xuanyin_song_page:   { id: "xuanyin_song_page", name: "玄音歌页", image: "/images/levels/1/chapters/ch4_beats/item_xuanyin_song_page.webp", desc: "把救急常识改写成曲调的歌页，能唱出去、记得住，却还混着几句必须挑出来的危险细节。" },
+  xuanyin_song_page_complete: { id: "xuanyin_song_page_complete", name: "完整歌页", image: "/images/levels/1/chapters/ch4_beats/item_xuanyin_song_page_complete.webp", desc: "已经把可入歌的救急常识和必须禁传的内容彻底分开的歌页，能放心传唱，不必担心唱出人命。" },
+  forbidden_record:    { id: "forbidden_record", name: "禁录", image: "/images/levels/1/chapters/ch4_beats/item_forbidden_record.webp", desc: "从歌页里单列出来的危险方细——毒药剂量、针刺深浅，传错一句就会害人，只能随歌页同行、不能入歌。" },
 
   // 典故信物：与华佗羁绊≥3、在结局达成时由华佗亲手授予，点亮《拾遗残卷》一处空白。
   huatuo_manuscript:   { id: "huatuo_manuscript", name: "华佗手书残句", desc: "「没有不会断的路，只有不断修的人。」——华佗临别留给阿吉的一句话，终于被记了下来。这是《青囊残术》这卷典故的信物。" },

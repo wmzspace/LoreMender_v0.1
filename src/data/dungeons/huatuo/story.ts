@@ -54,7 +54,7 @@ export const STORY: Record<string, StoryChapter> = {
               id: "bamboo",
               label: "散落竹简",
               x: 46,
-              y: 82,
+              y: 78,
               image: "/images/levels/1/chapters/ch1_beats/ch1_04_scattered_bamboo.webp",
               beats: [
                 { narration: true, line: "牢门边散落着断裂竹简，墨迹被血与潮气洇开。病症、医理、药方混在一处。" },
@@ -688,9 +688,10 @@ export const STORY: Record<string, StoryChapter> = {
       { speaker: "aj", line: "可街市会散，府库会锁，歌也会错。" },
       {
         choices: [
-          { label: "「会错，也好过让它彻底消失。」", set: { burn_tendency: -1 } },
-          { label: "「与其传错、被滥用，不如一把火了断。」", set: { burn_tendency: 1 }, toast: "你心底升起了焚毁的念头。" },
+          { label: "「青囊残卷应该交给需要的人。」", set: { burn_tendency: -1 } },
+          { label: "「青囊残卷应该一把火了断。」", set: { burn_tendency: 1 }, toast: "你心底升起了焚毁的念头。" },
         ],
+        image: "/images/levels/1/chapters/ch5_beats/scene_05_four_mentors.webp"
       },
       { speaker: "huatuo", line: "那就看你一路留下了什么。空手托付，叫赌；带着证据托付，才叫传承。" },
       {
@@ -699,7 +700,7 @@ export const STORY: Record<string, StoryChapter> = {
           { label: "「您的每一句话，我都没有空手忘掉。」", set: { huatuo_trust: 1 }, toast: "华佗的神色，第一次松了一分。" },
         ],
       },
-      { narration: true, line: "阿吉伸手之前，案台上的物件已经替他说出了一半答案。剩下的一半，才是他的选择。", image: "/images/levels/1/chapters/ch5_beats/scene_06_aj_alone_thinking.webp" },
+      { narration: true, line: "阿吉伸手之前，案台上的物件已经替他说出了一半答案。剩下的一半，才是他的选择。", image: "/images/levels/1/chapters/ch5_beats/scene_02_lay_out_relics.webp" },
       { gotoTrust: true },
       { narration: true, line: "阿吉做出了最后动作。青囊残术的归处，不只由这一刻决定，也由他一路留下的证据决定。" },
       { gotoEnding: true },

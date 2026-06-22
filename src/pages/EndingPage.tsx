@@ -3,9 +3,11 @@ import { GoldDivider, PaperPanel, SealTag } from "../components";
 import {
   Particles, SceneEndingAsh, SceneEndingLiving, SceneEndingSealed,
 } from "../components/art";
+import { GameItemModal } from "./MiniGamePage";
 import {
   ENDINGS, ITEMS, ENDING_VIDEOS, ENDING_IMAGES, resolveEnding, getEndingBody, getEndingAudioId,
 } from "../data";
+import type { ItemDef } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState, saveBeat } from "../lib/storage";
 import { playSfx, playDialogueAudio, stopDialogueAudio, useAudioMuted } from "../lib/audio";
@@ -240,6 +242,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   const isFirstUnlock = useRef(e ? !state.unlockedEndings.includes(endId) : false);
   const [showVideo, setShowVideo] = useState(!!videoSrc);
   const [fadingOut, setFadingOut] = useState(false);
+  const [manuscriptGrant, setManuscriptGrant] = useState<ItemDef | null>(null);
   const [videoReady, setVideoReady] = useState(false);
   const lastTapRef = useRef(0);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -335,21 +338,27 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   };
 
   useEffect(() => {
+    // 与华佗羁绊≥3、本结局尚未收得「华佗手书残句」时，结算时一并授予该典故信物。
+    const earnsManuscript = state.huatuo_trust >= 3 && !state.items.includes("huatuo_manuscript");
+    const items = earnsManuscript ? [...state.items, "huatuo_manuscript"] : state.items;
+
     if (e && !state.unlockedEndings.includes(endId)) {
       // sfx deferred to dismissVideo when video exists; fire immediately otherwise
       if (!videoSrc) playSfx("unlock");
       const ns: GameState = {
         ...state,
+        items,
         unlockedEndings: [...state.unlockedEndings, endId],
         lastEnding: endId,
       };
       setState(ns);
       saveState(ns);
-    } else if (state.lastEnding !== endId) {
-      const ns: GameState = { ...state, lastEnding: endId };
+    } else if (state.lastEnding !== endId || earnsManuscript) {
+      const ns: GameState = { ...state, items, lastEnding: endId };
       setState(ns);
       saveState(ns);
     }
+    if (earnsManuscript) setManuscriptGrant(ITEMS["huatuo_manuscript"]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -604,11 +613,11 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
                 style={{ width:"100%" }}>
                 查 看 结 局 图 鉴
               </button>
+              <button className="btn-ghost press" onClick={replay}>重 新 选 择</button>
               <button className="btn-ghost press" onClick={() => { requestScrollToNextVolume(); gotoPage("chapters"); }}>
                 下 一 章
               </button>
-              <button className="btn-ghost press" onClick={replay}>重 新 选 择</button>
-              <button className="btn-ghost press" onClick={reset}>青 史 空 间</button>
+              <button className="btn-ghost press" onClick={reset}>返 回 主 界 面</button>
             </div>
             <div style={{
               textAlign:"center", fontSize: 10,
@@ -618,6 +627,10 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
           </div>
         </div>
       </div>
+
+      {!showVideo && manuscriptGrant && (
+        <GameItemModal items={[manuscriptGrant]} onDismiss={() => setManuscriptGrant(null)} />
+      )}
     </div>
   );
 }

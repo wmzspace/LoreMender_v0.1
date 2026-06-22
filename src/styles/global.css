@@ -652,11 +652,11 @@ body {
   top: calc(100% + 10px);
   right: 0;
   z-index: 261;
-  width: 248px;
-  padding: 10px;
+  width: 320px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
   background: linear-gradient(180deg, rgba(14, 20, 24, 0.97), rgba(9, 13, 16, 0.97));
   border: 1px solid rgba(205, 178, 119, 0.32);
   border-radius: 14px;
@@ -670,19 +670,19 @@ body {
 }
 
 .quick-menu-eyebrow {
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 0.34em;
   text-indent: 0.34em;
   color: var(--gold-pale);
-  opacity: 0.55;
-  padding: 2px 6px 4px;
+  opacity: 0.6;
+  padding: 2px 6px 6px;
 }
 
 .quick-menu-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px;
+  gap: 14px;
+  padding: 14px 16px;
   text-align: left;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(205, 178, 119, 0.16);
@@ -701,21 +701,21 @@ body {
 .quick-menu-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
 }
 
 .quick-menu-label {
   font-family: var(--font-han);
-  font-size: 14px;
+  font-size: 19px;
   letter-spacing: 0.14em;
   color: var(--gold-pale);
 }
 
 .quick-menu-desc {
-  font-size: 11px;
+  font-size: 15px;
   letter-spacing: 0.02em;
-  color: rgba(228, 224, 208, 0.5);
+  color: rgba(228, 224, 208, 0.58);
 }
 
 /* —— 退出按钮：从快捷菜单进入的页面，右上角返回剧情 —— */
@@ -3055,17 +3055,138 @@ button:disabled,
   color: var(--jade-pale);
 }
 
+/* ============================================================
+   典籍设定 (WorldPage) — 封面图氛围背景 + 卷页式条目
+   每条用竖排书名替代图标徽章：典籍本就是竖排的字，不需要再画一个圆框图标。
+   ============================================================ */
+/* cover.jpg 本身带「典故修补者」标题字（位于图片上方约 30%），页面是竖向容器、
+   图片是横向图，cover 裁切只会裁左右、留全部高度——必须额外放大并以底部为锚点，
+   把上方的标题字区裁出可视范围，只留下方无字的法阵/书房场景做氛围底图。 */
+.codex-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  transform-origin: center bottom;
+  transform: scale(1.65);
+  filter: saturate(0.8) brightness(0.62) blur(1.5px);
+}
+
+.codex-bg-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(5, 8, 11, 0.2), transparent 60%),
+    radial-gradient(ellipse 90% 70% at 50% 100%, rgba(5, 8, 11, 0.55), transparent 55%),
+    linear-gradient(180deg, rgba(5, 8, 11, 0.62) 0%, rgba(7, 10, 13, 0.74) 45%, rgba(6, 9, 12, 0.88) 100%);
+}
+
+.codex-footer {
+  padding: 14px 20px calc(18px + var(--safe-bottom));
+  background: linear-gradient(180deg, transparent, rgba(6, 9, 12, 0.92) 35%);
+}
+
+.codex-page {
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 8px 4px 4px;
+}
+
+.codex-intro {
+  text-align: center;
+  max-width: 480px;
+  margin: 6px auto 30px;
+  font-size: 14px;
+  line-height: 1.85;
+  color: rgba(236, 230, 214, 0.82);
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
+}
+
+.codex-intro-mark {
+  color: var(--gold);
+  opacity: 0.7;
+  margin: 0 8px;
+}
+
+.codex-scroll {
+  display: flex;
+  flex-direction: column;
+}
+
+.codex-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: stretch;
+  gap: 16px;
+  padding: 22px 6px;
+  border-top: 1px solid rgba(205, 178, 119, 0.22);
+}
+
+.codex-scroll-end {
+  border-top: 1px solid rgba(205, 178, 119, 0.22);
+}
+
+/* 竖排书名：典籍本身的字就是竖的，用书法排版本身作为这一页的视觉重心。 */
+.codex-row-title {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: var(--font-han);
+  font-size: 21px;
+  letter-spacing: 0.3em;
+  color: var(--gold-pale);
+  text-shadow: 0 0 14px rgba(236, 220, 166, 0.3);
+}
+
+.codex-row-rule {
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--gold-deep) 18%, var(--gold-deep) 82%, transparent);
+  opacity: 0.65;
+}
+
+.codex-row--vermillion .codex-row-title {
+  color: #d99a85;
+  text-shadow: 0 0 14px rgba(178, 58, 44, 0.35);
+}
+
+.codex-row--vermillion .codex-row-rule {
+  background: linear-gradient(180deg, transparent, var(--vermillion) 18%, var(--vermillion) 82%, transparent);
+}
+
+.codex-row-line {
+  align-self: center;
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: rgba(236, 230, 214, 0.85);
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 480px) {
+  .codex-row {
+    grid-template-columns: auto auto 1fr;
+    padding: 18px 2px;
+    gap: 12px;
+  }
+  .codex-row-title {
+    font-size: 18px;
+  }
+}
+
 /* —— StoryPage 小游戏/动作面板(沿用 galgame 面板外框) —— */
 .story-action {
   text-align: center;
 }
 
 .story-action-text {
-  font-size: 15.5px;
-  line-height: 1.9;
+  font-size: 18px;
+  line-height: 1.85;
   letter-spacing: 0.04em;
   font-style: italic;
-  color: rgba(228, 224, 208, 0.82);
+  color: rgba(228, 224, 208, 0.86);
 }
 
 .story-action-btns {
@@ -3719,7 +3840,7 @@ button:disabled,
 }
 
 .item-modal {
-  width: min(360px, 100%);
+  width: min(480px, 100%);
   max-height: 86%;
   overflow-y: auto;
   padding: 20px 22px 22px;
@@ -3733,7 +3854,7 @@ button:disabled,
 .item-modal-eyebrow {
   text-align: center;
   font-family: var(--font-han);
-  font-size: 13px;
+  font-size: 17px;
   letter-spacing: 0.34em;
   text-indent: 0.34em;
   color: var(--gold-pale);
@@ -3803,17 +3924,17 @@ button:disabled,
 
 .item-modal-name {
   font-family: var(--font-han);
-  font-size: 17px;
+  font-size: 21px;
   letter-spacing: 0.08em;
   color: var(--gold-bright, #ecdca6);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   text-shadow: 0 0 10px rgba(236, 220, 166, 0.25);
 }
 
 .item-modal-desc {
-  font-size: 12px;
-  line-height: 1.7;
-  color: rgba(228, 224, 208, 0.72);
+  font-size: 15px;
+  line-height: 1.75;
+  color: rgba(228, 224, 208, 0.8);
 }
 
 .item-modal-btn {
@@ -3825,17 +3946,17 @@ button:disabled,
 .confirm-modal-title {
   text-align: center;
   font-family: var(--font-han);
-  font-size: 16px;
+  font-size: 26px;
   color: var(--gold-pale);
-  letter-spacing: 0.08em;
-  margin-top: 10px;
+  letter-spacing: 0.1em;
+  margin-top: 12px;
 }
 
 .confirm-modal-text {
-  margin-top: 10px;
-  font-size: 12.5px;
-  line-height: 1.7;
-  color: rgba(228, 224, 208, 0.75);
+  margin-top: 14px;
+  font-size: 18px;
+  line-height: 1.75;
+  color: rgba(228, 224, 208, 0.88);
   text-align: center;
 }
 
@@ -4070,7 +4191,7 @@ button:disabled,
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 56px 10px 74px;
+  padding: 0;
   background: #07090c;
   user-select: none;
 }
@@ -4092,14 +4213,22 @@ button:disabled,
 
 .bamboo-stage {
   position: relative;
-  aspect-ratio: 16 / 9;
-  width: min(96%, calc((100dvh - 150px) * 16 / 9));
+  width: 100%;
+  height: 100%;
   container-type: size;
-  border-radius: 6px;
   overflow: hidden;
-  border: 1px solid rgba(205, 178, 119, 0.22);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.72);
   z-index: 1;
+}
+
+/* 按图片原始 16/9 比例铺满裁切（等效 object-fit: cover），木桶/桌面坐标按此 frame 的百分比校准 */
+.bamboo-stage-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100cqw, 177.778cqh);
+  height: max(100cqh, 56.25cqw);
+  transform: translate(-50%, -50%);
+  container-type: size;
 }
 
 .bamboo-stage-bg {
@@ -4127,21 +4256,21 @@ button:disabled,
   left: 12.5%;
   top: 14%;
   width: 25%;
-  height: 48%;
+  height: 35%;
 }
 
 .bamboo-bin--1 {
   left: 37.5%;
   top: 14%;
   width: 25%;
-  height: 48%;
+  height: 35%;
 }
 
 .bamboo-bin--2 {
   left: 62.5%;
   top: 14%;
   width: 25%;
-  height: 48%;
+  height: 35%;
 }
 
 .bamboo-bin.can-drop {
@@ -4171,19 +4300,21 @@ button:disabled,
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  align-content: center;
+  align-content: flex-start;
   justify-content: center;
   padding: 4px;
+  margin-top: 4cqh;
   overflow: hidden;
 }
 
-/* 桌面竹简区：定位在背景图的桌面上，整体后仰透视，像平铺在桌面 */
+/* 桌面竹简区：定位在背景图的桌面上，整体后仰透视，像平铺在桌面。
+   顶部让开木桶触发框（高度已收到 49% 处），底部留出余量避开 .bamboo-bottom 浮层（含 3D 透视下溢的视觉范围）。 */
 .bamboo-deck {
   position: absolute;
   left: 5%;
   right: 5%;
-  top: 60%;
-  bottom: 3%;
+  top: 52%;
+  bottom: 25%;
   display: flex;
   flex-wrap: wrap;
   align-content: center;
@@ -4199,8 +4330,8 @@ button:disabled,
 }
 
 .bamboo-pool-empty {
-  font-size: 11.5px;
-  color: rgba(228, 224, 208, 0.4);
+  font-size: 36px;
+  color: rgba(228, 224, 208, 0.55);
   letter-spacing: 0.14em;
   font-style: italic;
   padding: 6px;
@@ -4270,17 +4401,19 @@ button:disabled,
   left: 0;
   right: 0;
   z-index: 4;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 18px;
-  background: linear-gradient(180deg, rgba(5, 8, 11, 0.82), transparent);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px 22px;
+  background: linear-gradient(180deg, rgba(5, 8, 11, 0.86), transparent);
 }
 
 .bamboo-back {
+  justify-self: start;
   flex: none;
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4292,39 +4425,42 @@ button:disabled,
 }
 
 .bamboo-top-titles {
-  flex: 1;
   text-align: center;
   min-width: 0;
 }
 
 .bamboo-top-title {
   font-family: var(--font-han);
-  font-size: 19px;
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
+  font-size: 28px;
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;
   color: var(--gold-pale);
   text-shadow: 0 0 14px rgba(0, 0, 0, 0.92);
 }
 
 .bamboo-top-sub {
-  font-size: 12px;
+  font-size: 16px;
+  line-height: 1.5;
   font-style: italic;
-  color: rgba(228, 224, 208, 0.6);
-  letter-spacing: 0.04em;
-  margin-top: 5px;
+  color: rgba(228, 224, 208, 0.68);
+  letter-spacing: 0.03em;
+  margin-top: 8px;
+  max-width: 640px;
+  margin-inline: auto;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
 }
 
 .bamboo-top-right {
+  justify-self: end;
   flex: none;
-  min-width: 52px;
+  min-width: 58px;
   text-align: right;
 }
 
 .bamboo-badge {
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  padding: 3px 9px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  padding: 4px 10px;
   border-radius: 2px;
   border: 1px solid currentColor;
   white-space: nowrap;
@@ -4345,17 +4481,22 @@ button:disabled,
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 14px 18px calc(14px + var(--safe-bottom));
-  background: linear-gradient(180deg, transparent, rgba(5, 8, 11, 0.88) 38%);
+  gap: 10px;
+  padding: 20px 20px calc(20px + var(--safe-bottom));
+  background: linear-gradient(180deg, transparent, rgba(5, 8, 11, 0.5) 30%, rgba(5, 8, 11, 0.68) 100%);
+  backdrop-filter: blur(3px);
 }
 
 .bamboo-hint {
-  font-size: 12px;
-  color: rgba(228, 224, 208, 0.62);
+  font-size: 26px;
+  line-height: 1.5;
+  max-width: 640px;
+  margin-bottom: 6px;
+  color: var(--gold-pale);
+  font-weight: 500;
   text-align: center;
   letter-spacing: 0.04em;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.95), 0 0 3px rgba(0, 0, 0, 0.9), 0 0 14px rgba(0, 0, 0, 0.85);
 }
 
 .bamboo-hint--warn {
@@ -4364,6 +4505,8 @@ button:disabled,
 
 .bamboo-actions {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -4375,7 +4518,6 @@ button:disabled,
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 2px;
   opacity: 0.7;
 }
 
@@ -4405,7 +4547,7 @@ button:disabled,
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 84px 18px 128px;
+  padding: 140px 18px 128px;
   background: #100a07;
   user-select: none;
 }
@@ -4431,13 +4573,13 @@ button:disabled,
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 620px;
+  max-width: 960px;
   max-height: 100%;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
 }
 
 .clinic-timer {
@@ -4451,15 +4593,17 @@ button:disabled,
 .clinic-cards {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
 }
 
 /* 药签卡片：暖色羊皮纸质感 */
 .clinic-card {
   width: 100%;
   border-radius: 10px;
-  padding: 16px 20px;
+  padding: 8px 14px;
   background: linear-gradient(180deg, rgba(36, 24, 13, 0.78), rgba(20, 13, 7, 0.86));
   border: 1px solid rgba(205, 178, 119, 0.3);
   box-shadow: inset 0 1px 0 rgba(236, 220, 166, 0.1), 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -4474,13 +4618,16 @@ button:disabled,
 .clinic-card--herb {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
+/* 药材插图原图是很宽的横条（约 4.3~4.9:1），用 aspect-ratio 让容器比例贴近原图，
+   避免 cover 裁切上下内容、或 contain 在左右留出大片空白。 */
 .clinic-card-thumb {
   display: block;
   width: 100%;
-  height: 92px;
+  aspect-ratio: 4.6;
+  height: auto;
   border-radius: 7px;
   object-fit: cover;
   object-position: center;
@@ -4514,7 +4661,7 @@ button:disabled,
   font-size: 18px;
   letter-spacing: 0.16em;
   color: var(--gold-pale);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .clinic-card-herbs {
@@ -4724,6 +4871,228 @@ button:disabled,
   letter-spacing: 0.12em;
   color: var(--gold-pale);
   margin-bottom: 2px;
+}
+
+/* ============================================================
+   青囊归处 (TrustRoutePage) — 参考「曹府查案」病案卡的悬浮放大交互：
+   平时只是一张人物小像，停留鼠标时浮出当时交托那一刻的插图与文字。
+   ============================================================ */
+.trust-intro {
+  font-size: 14.5px;
+  line-height: 1.8;
+  color: rgba(228, 224, 208, 0.78);
+  letter-spacing: 0.03em;
+  margin-bottom: 16px;
+}
+
+.trust-hint {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(95, 168, 146, 0.3);
+  border-left: 3px solid var(--jade);
+  border-radius: 3px;
+  background: rgba(95, 168, 146, 0.07);
+}
+
+.trust-hint-mark {
+  width: 4px;
+  height: 4px;
+  flex-shrink: 0;
+  background: var(--jade);
+  transform: rotate(45deg);
+  opacity: 0.8;
+}
+
+.trust-hint-text {
+  font-size: 13.5px;
+  font-style: italic;
+  color: rgba(166, 220, 203, 0.92);
+  line-height: 1.7;
+  letter-spacing: 0.03em;
+}
+
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  padding-bottom: 8px;
+}
+
+@media (max-width: 720px) {
+  .trust-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.trust-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--paper);
+}
+
+.trust-card-frame {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(205, 178, 119, 0.3);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.32s cubic-bezier(.2,.8,.3,1), box-shadow 0.32s cubic-bezier(.2,.8,.3,1), transform 0.32s cubic-bezier(.2,.8,.3,1);
+}
+
+.trust-card:hover .trust-card-frame {
+  border-color: rgba(205, 178, 119, 0.6);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.6);
+  transform: translateY(-4px);
+}
+
+.trust-card.is-selected .trust-card-frame {
+  border-color: var(--jade);
+  box-shadow: 0 0 0 2px rgba(95, 168, 146, 0.35), 0 8px 22px rgba(0, 0, 0, 0.55);
+  transform: translateY(-2px);
+}
+
+.trust-card-portrait {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: center top;
+  background: rgba(6, 10, 14, 0.92);
+  filter: brightness(0.88) saturate(0.94);
+  transition: transform 0.5s cubic-bezier(.2,.8,.3,1), filter 0.4s ease;
+}
+
+.trust-card:hover .trust-card-portrait {
+  transform: scale(1.06);
+  filter: brightness(1) saturate(1);
+}
+
+.trust-card-portrait--wide {
+  object-position: center 35%;
+}
+
+.trust-card-pick {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #0e1a16;
+  background: var(--jade-pale);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  animation: trustPickIn 0.28s cubic-bezier(.2,.8,.3,1) both;
+}
+
+@keyframes trustPickIn {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.trust-card-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trust-card-caption strong {
+  font-family: var(--font-han);
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  color: var(--gold-pale);
+  transition: color 0.25s ease, text-shadow 0.25s ease;
+}
+
+.trust-card:hover .trust-card-caption strong {
+  text-shadow: 0 0 14px rgba(236, 220, 166, 0.4);
+}
+
+.trust-card-caption span {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: rgba(228, 224, 208, 0.55);
+}
+
+/* 悬浮放大层：默认隐藏在卡片正下方，hover 时浮现交托插图 + 完整文字。
+   开向下方（而非上方）是为了避开 .page-shell-body 的纵向滚动容器在顶部裁切弹层。
+   显示有小延迟、收起无延迟（delay 只写在 :hover 规则里）——划过整排卡片时不会一路连续闪烁。 */
+.trust-card-zoom {
+  position: absolute;
+  top: calc(100% + 16px);
+  width: min(360px, 86vw);
+  padding: 12px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(20, 28, 34, 0.97), rgba(8, 12, 16, 0.98));
+  border: 1px solid var(--gold-pale);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  transform: translateY(-8px) scale(0.95);
+  pointer-events: none;
+  z-index: 20;
+  transition: opacity 0.22s cubic-bezier(.2,.8,.3,1), transform 0.22s cubic-bezier(.2,.8,.3,1);
+}
+
+.trust-card-zoom::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  width: 11px;
+  height: 11px;
+  background: var(--gold-pale);
+  clip-path: polygon(50% 0, 0 100%, 100% 100%);
+}
+
+.trust-card-zoom--left {
+  left: 0;
+  transform-origin: top left;
+}
+
+.trust-card-zoom--left::before {
+  left: 28px;
+}
+
+.trust-card-zoom--right {
+  right: 0;
+  transform-origin: top right;
+}
+
+.trust-card-zoom--right::before {
+  right: 28px;
+}
+
+.trust-card:hover .trust-card-zoom,
+.trust-card:focus-visible .trust-card-zoom {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  transition-delay: 0.12s;
+}
+
+.trust-card-zoom-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.trust-card-zoom-text {
+  font-size: 13px;
+  line-height: 1.75;
+  color: rgba(228, 224, 208, 0.85);
+  letter-spacing: 0.02em;
 }
 
 /* ── 歌诀纠错全屏（玄音残纸贴图衬底，复用 .bamboo-fs/.bamboo-top/.bamboo-bottom 浮层） ── */
@@ -4941,8 +5310,8 @@ button:disabled,
 }
 
 .wb-steps {
-  font-size: 12px;
-  color: rgba(228, 224, 208, 0.62);
+  font-size: 17px;
+  color: rgba(228, 224, 208, 0.75);
   letter-spacing: 0.14em;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
 }

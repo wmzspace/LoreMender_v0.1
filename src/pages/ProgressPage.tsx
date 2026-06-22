@@ -182,26 +182,26 @@ function ExpandedCard({
         marginBottom: 10, position: "relative", zIndex: 1,
       }}>
         <div style={{
-          fontSize: 10, color: `${PAPER}0.45)`, letterSpacing: "0.3em",
+          fontSize: 13, color: `${PAPER}0.45)`, letterSpacing: "0.3em",
         }}>{ch.numCn}</div>
         <button
           onClick={onCollapse}
           style={{
             background: "none", border: "none", cursor: "pointer",
-            color: `${PAPER}0.4)`, fontSize: 10,
+            color: `${PAPER}0.4)`, fontSize: 13,
             padding: "2px 0", letterSpacing: "0.14em", fontFamily: "inherit",
           }}
         >收 起 ▲</button>
       </div>
 
-      <div style={{ display: "flex", gap: 13, position: "relative", zIndex: 1 }}>
-        <NodeMedallion size={88} accent={isCurrent ? "jade" : isDone ? "gold" : undefined}
+      <div style={{ display: "flex", gap: 16, position: "relative", zIndex: 1 }}>
+        <NodeMedallion size={100} accent={isCurrent ? "jade" : isDone ? "gold" : undefined}
           portrait={ch.characters[0]?.portrait} />
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <div style={{
-              fontSize: 20, fontFamily: "var(--font-han)",
+              fontSize: 24, fontFamily: "var(--font-han)",
               color: isCurrent ? JADE_PALE : GOLD_PALE,
               letterSpacing: "0.18em", textIndent: "0.18em",
               textShadow: isCurrent
@@ -210,57 +210,57 @@ function ExpandedCard({
             }}>{ch.title}</div>
             {isCurrent && (
               <div style={{
-                fontSize: 9, color: JADE_PALE,
-                border: `1px solid ${JADE}`, borderRadius: 2, padding: "1px 6px",
+                fontSize: 12, color: JADE_PALE,
+                border: `1px solid ${JADE}`, borderRadius: 2, padding: "2px 8px",
                 letterSpacing: "0.16em",
                 animation: "glowPulse 2s ease-in-out infinite",
               }}>进 行 中</div>
             )}
             {isDone && (
               <div style={{
-                fontSize: 9, color: GOLD_PALE,
-                border: `1px solid ${GOLD_DEEP}`, borderRadius: 2, padding: "1px 6px",
+                fontSize: 12, color: GOLD_PALE,
+                border: `1px solid ${GOLD_DEEP}`, borderRadius: 2, padding: "2px 8px",
                 letterSpacing: "0.16em", opacity: 0.8,
               }}>已 通 览</div>
             )}
           </div>
 
           <div style={{
-            fontSize: 11.5, color: `${PAPER}0.7)`,
-            marginTop: 6, lineHeight: 1.65, letterSpacing: "0.03em",
+            fontSize: 14.5, color: `${PAPER}0.7)`,
+            marginTop: 8, lineHeight: 1.65, letterSpacing: "0.03em",
           }}>{ch.desc}</div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "10px 0 6px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "12px 0 8px" }}>
             <div style={{ width: 16, height: 1, background: GOLD_DEEP }} />
             <div style={{ width: 3, height: 3, background: GOLD, borderRadius: "50%", opacity: 0.8 }} />
             <div style={{ flex: 1, height: 1, background: GOLD_DEEP, opacity: 0.35 }} />
           </div>
 
           <div style={{
-            fontSize: 9.5, color: `rgba(236,220,166,0.55)`,
-            letterSpacing: "0.2em", marginBottom: 4,
+            fontSize: 12.5, color: `rgba(236,220,166,0.55)`,
+            letterSpacing: "0.2em", marginBottom: 6,
           }}>剧 情 预 览</div>
           <div style={{
-            fontSize: 11, color: `${PAPER}0.62)`,
+            fontSize: 14, color: `${PAPER}0.62)`,
             lineHeight: 1.75, letterSpacing: "0.02em",
           }}>{ch.preview}</div>
 
           {ch.characters && ch.characters.length > 0 && (
             <div style={{
               display: "flex", alignItems: "center", gap: 8,
-              marginTop: 10,
+              marginTop: 12,
             }}>
               <div style={{
-                fontSize: 9, color: `rgba(236,220,166,0.55)`,
+                fontSize: 12, color: `rgba(236,220,166,0.55)`,
                 letterSpacing: "0.2em",
               }}>关 键 人 物</div>
-              <div style={{ display: "flex", gap: 6 }}>
+              <div style={{ display: "flex", gap: 8 }}>
                 {ch.characters.map((c, ci) => (
                   <div key={ci} style={{
-                    display: "flex", alignItems: "center", gap: 4,
+                    display: "flex", alignItems: "center", gap: 5,
                   }}>
                     <div style={{
-                      width: 24, height: 24, borderRadius: "50%",
+                      width: 30, height: 30, borderRadius: "50%",
                       overflow: "hidden",
                       border: `1px solid ${isCurrent ? "rgba(95,168,146,0.6)" : "rgba(205,178,119,0.4)"}`,
                       flexShrink: 0,
@@ -269,7 +269,7 @@ function ExpandedCard({
                         style={{width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top"}} />
                     </div>
                     <div style={{
-                      fontSize: 10, color: `${PAPER}0.6)`,
+                      fontSize: 13, color: `${PAPER}0.6)`,
                       letterSpacing: "0.06em",
                     }}>{c.name}</div>
                   </div>
@@ -372,20 +372,20 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                   }}>
                     <div style={{
-                      fontSize: 9, color: locked ? `${PAPER}0.4)` : "rgba(236,220,166,0.6)",
+                      fontSize: 12, color: locked ? `${PAPER}0.4)` : "rgba(236,220,166,0.6)",
                       letterSpacing: "0.1em",
                     }}>{ch.numCn}</div>
                     <div style={{ position: "relative" }}>
-                      <NodeMedallion size={isCurrent ? 64 : 58} dim={isDone} accent={accent}
+                      <NodeMedallion size={isCurrent ? 76 : 68} dim={isDone} accent={accent}
                         portrait={ch.characters[0]?.portrait} />
                       {isDone && (
                         <div style={{
                           position: "absolute", bottom: 0, right: 0,
-                          width: 16, height: 16, borderRadius: "50%",
+                          width: 19, height: 19, borderRadius: "50%",
                           background: INK_DEEP, border: `1px solid ${GOLD}`,
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}>
-                          <svg width="8" height="7" viewBox="0 0 8 7" fill="none">
+                          <svg width="10" height="9" viewBox="0 0 8 7" fill="none">
                             <path d="M1 3.5 L3 5.5 L7 1" stroke={GOLD_PALE} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         </div>
@@ -395,7 +395,7 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 17, fontFamily: "var(--font-han)",
+                      fontSize: 20, fontFamily: "var(--font-han)",
                       color: titleColor,
                       letterSpacing: "0.14em", textIndent: "0.14em",
                       textShadow: isCurrent ? "0 0 10px rgba(166,220,203,0.35)" : "none",
@@ -403,10 +403,10 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                     <div style={{
                       width: 34, height: 1,
                       background: `linear-gradient(90deg, ${isCurrent ? JADE : GOLD_DEEP}, transparent)`,
-                      margin: "5px 0 4px",
+                      margin: "6px 0 5px",
                     }} />
                     <div style={{
-                      fontSize: 11, color: locked ? `${PAPER}0.4)` : `${PAPER}0.55)`,
+                      fontSize: 14, color: locked ? `${PAPER}0.4)` : `${PAPER}0.55)`,
                       lineHeight: 1.5, letterSpacing: "0.03em",
                     }}>{locked ? "尚 未 解 锁" : ch.desc}</div>
                   </div>
@@ -415,7 +415,7 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
                     <div style={{
                       flexShrink: 0, paddingRight: 2,
                       color: isCurrent ? JADE : "rgba(205,178,119,0.5)",
-                      fontSize: 11,
+                      fontSize: 14,
                       transform: isExpanded ? "rotate(90deg)" : "none",
                       transition: "transform 0.25s",
                     }}>▶</div>
@@ -467,7 +467,7 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
               <div style={{ width: 12, height: 1, background: "rgba(205,178,119,0.4)" }} />
             </div>
             <div style={{
-              fontSize: 11, color: `${PAPER}0.62)`,
+              fontSize: 14, color: `${PAPER}0.62)`,
               letterSpacing: "0.06em", textAlign: "center",
             }}>
               你的每一次选择，都会改变这段遗憾被记住的方式。
@@ -489,7 +489,7 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
               padding: "8px 18px",
               cursor: "pointer",
               color: confirmReset ? "rgba(225,110,90,0.9)" : `${PAPER}0.45)`,
-              fontSize: 11,
+              fontSize: 14,
               letterSpacing: "0.16em",
               fontFamily: "inherit",
               transition: "all 0.2s",
@@ -503,7 +503,7 @@ export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
               style={{
                 background: "none", border: "1px solid rgba(228,224,208,0.15)",
                 borderRadius: 3, padding: "6px 14px", cursor: "pointer",
-                color: `${PAPER}0.38)`, fontSize: 10, letterSpacing: "0.12em",
+                color: `${PAPER}0.38)`, fontSize: 13, letterSpacing: "0.12em",
                 fontFamily: "inherit", marginLeft: 10, transition: "all 0.2s",
               }}
             >取 消</button>

@@ -159,15 +159,15 @@ function RankSeal({ rank }: { rank: GameResultRank }) {
     : rank === "mid"
       ? { ring: "#cdb277", text: "#ecdca6", glow: "rgba(205,178,119,0.4)" }
       : { ring: "rgba(228,224,208,0.5)", text: "rgba(228,224,208,0.75)", glow: "rgba(228,224,208,0.12)" };
-  const sz = 92, r = sz / 2;
+  const sz = 124, r = sz / 2;
   return (
     <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}
       style={{ filter: `drop-shadow(0 0 16px ${c.glow})` }}>
-      <circle cx={r} cy={r} r={r - 2} fill="none" stroke={c.ring} strokeWidth="1" strokeOpacity="0.4" />
-      <circle cx={r} cy={r} r={r - 7} fill="#060d14" />
-      <circle cx={r} cy={r} r={r - 7} fill="none" stroke={c.ring} strokeWidth="1.8" />
-      <text x={r} y={r + 11} textAnchor="middle"
-        fontFamily="var(--font-han)" fontSize="32" fill={c.text}>
+      <circle cx={r} cy={r} r={r - 2} fill="none" stroke={c.ring} strokeWidth="1.2" strokeOpacity="0.4" />
+      <circle cx={r} cy={r} r={r - 9} fill="#060d14" />
+      <circle cx={r} cy={r} r={r - 9} fill="none" stroke={c.ring} strokeWidth="2.2" />
+      <text x={r} y={r + 15} textAnchor="middle"
+        fontFamily="var(--font-han)" fontSize="44" fill={c.text}>
         {rank === "high" ? "优" : rank === "mid" ? "良" : "勉"}
       </text>
     </svg>
@@ -199,19 +199,19 @@ function GameFeedbackOverlay({ rank, game, onDismiss }: {
         <RankSeal rank={rank} />
       </div>
       <div className="title-han fade-in" style={{
-        fontSize: 26, color: "var(--gold-pale)",
+        fontSize: 32, color: "var(--gold-pale)",
         letterSpacing: "0.22em", textAlign: "center",
-        marginBottom: 16, animationDelay: "180ms",
+        marginBottom: 20, animationDelay: "180ms",
       }}>{fb.title}</div>
       <div className="fade-in" style={{
-        fontSize: 16.5, color: "rgba(228,224,208,0.82)",
+        fontSize: 19, color: "rgba(228,224,208,0.86)",
         lineHeight: 2, letterSpacing: "0.04em",
-        textAlign: "center", maxWidth: 360,
-        marginBottom: 42, fontStyle: "italic",
+        textAlign: "center", maxWidth: 460,
+        marginBottom: 46, fontStyle: "italic",
         animationDelay: "320ms",
       }}>{fb.text}</div>
       <div className="fade-in" style={{
-        fontSize: 14, color: "rgba(228,224,208,0.4)",
+        fontSize: 16, color: "rgba(228,224,208,0.5)",
         letterSpacing: "0.35em", animationDelay: "550ms",
       }}>轻 触 继 续</div>
     </div>
@@ -219,7 +219,7 @@ function GameFeedbackOverlay({ rank, game, onDismiss }: {
 }
 
 /** 小游戏结算后，若获得带图物品，复用「获得物品弹窗」展示插图（与剧情台词触发的同款）。 */
-function GameItemModal({ items, onDismiss }: { items: ItemDef[]; onDismiss: () => void }) {
+export function GameItemModal({ items, onDismiss }: { items: ItemDef[]; onDismiss: () => void }) {
   return (
     <div className="item-modal-backdrop" onClick={onDismiss} style={{ zIndex: 210 }}>
       <div className="item-modal" onClick={(e) => e.stopPropagation()}>
@@ -367,7 +367,7 @@ function GameSkipControls({ finish }: { finish: (rank: GameResultRank) => void }
       <div className="bamboo-skip">
         <button
           className="btn-ghost press"
-          style={{ minHeight: 32, fontSize: 12.5, letterSpacing: "0.12em", opacity: 0.6 }}
+          style={{ minHeight: 52, fontSize: 15, letterSpacing: "0.16em", opacity: 0.8 }}
           onClick={() => setConfirmOpen(true)}
         >跳 过 本 关</button>
       </div>
@@ -464,8 +464,8 @@ function CaseTriage({ finish, game, best, onBack }: {
           <button className="btn-primary press bamboo-submit" disabled={order.length !== CASE_FILES.length} onClick={submit}>
             提 交 病 案
           </button>
+          <GameSkipControls finish={finish} />
         </div>
-        <GameSkipControls finish={finish} />
       </div>
     </div>
   );
@@ -578,8 +578,12 @@ function BambooPuzzle({ finish, onClassifyRetry, game, best, onBack }: {
             setPlaced(prev => { const n = { ...prev }; delete n[d.id]; return n; });
             setSelected(null);
           } else if (cat) {
-            setPlaced(prev => ({ ...prev, [d.id]: cat }));
-            setSelected(null);
+            const countInCat = Object.values(placed).filter(v => v === cat).length;
+            const alreadyInCat = placed[d.id] === cat;
+            if (alreadyInCat || countInCat < 5) {
+              setPlaced(prev => ({ ...prev, [d.id]: cat }));
+              setSelected(null);
+            }
           }
         } else {
           handleTapRef.current(d.id, placed[d.id] ?? null);
@@ -611,7 +615,6 @@ function BambooPuzzle({ finish, onClassifyRetry, game, best, onBack }: {
   };
 
   const remaining = allWords.filter(w => !placed[w.id]);
-  const placedCount = allWords.length - remaining.length;
   const reviewing = submitted && !allCorrect;
 
   return (
@@ -638,13 +641,15 @@ function BambooPuzzle({ finish, onClassifyRetry, game, best, onBack }: {
         </div>
       </div>
 
-      {/* 居中 16/9 舞台 */}
+      {/* 全屏舞台：内部 frame 按图片原始 16/9 比例铺满裁切，木桶坐标仍按图片比例校准 */}
       <div className="bamboo-stage">
+        <div className="bamboo-stage-frame">
         <img src={BAMBOO_TABLE_IMG} alt="" className="bamboo-stage-bg" draggable={false} />
         {classifyCategories.map((cat, i) => {
           const theme = CAT_THEME[cat] ?? CAT_THEME["病症"];
           const catWords = Object.entries(placed).filter(([, v]) => v === cat).map(([k]) => k);
-          const canDrop = !reviewing && (!!selected || !!drag?.moved);
+          const isFull = catWords.length >= 5;
+          const canDrop = !reviewing && !isFull && (!!selected || !!drag?.moved);
           return (
             <div
               key={cat}
@@ -652,7 +657,7 @@ function BambooPuzzle({ finish, onClassifyRetry, game, best, onBack }: {
               className={"bamboo-bin bamboo-bin--" + i + (canDrop ? " can-drop" : "")}
               style={{ ["--bin-accent" as string]: theme.accent } as React.CSSProperties}
               onClick={() => {
-                if (reviewing || !selected) return;
+                if (reviewing || !selected || isFull) return;
                 setPlaced(prev => ({ ...prev, [selected]: cat }));
                 setSelected(null);
               }}
@@ -692,6 +697,7 @@ function BambooPuzzle({ finish, onClassifyRetry, game, best, onBack }: {
             <div className="bamboo-pool-empty">· 所有竹简已归位 ·</div>
           )}
         </div>
+        </div>
       </div>
 
       {/* 底部浮层：完成 / 校验 */}
@@ -723,11 +729,14 @@ function BambooPuzzle({ finish, onClassifyRetry, game, best, onBack }: {
           <>
             <div className="bamboo-hint">把竹简拖进对应的木桶；点选竹简再点木桶也可，点桶中竹简可取回。</div>
             <div className="bamboo-actions">
-              <button className="btn-primary press bamboo-submit" disabled={!allPlaced} onClick={() => setSubmitted(true)}>
-                {allPlaced ? "完 成 分 类" : `完成分类（${placedCount}/${allWords.length}）`}
-              </button>
+              {allPlaced ? (
+                <button className="btn-primary press bamboo-submit" onClick={() => setSubmitted(true)}>
+                  完 成 分 类
+                </button>
+              ) : (
+                <GameSkipControls finish={finish} />
+              )}
             </div>
-            <GameSkipControls finish={finish} />
           </>
         )}
       </div>
@@ -988,15 +997,17 @@ function WoodenBox({ finish, hardMode, game, best, onBack }: {
       <div className="bamboo-bottom">
         <div className="bamboo-hint">拖动方块，引导金钥匙滑到右下「出」格。步少者，医道精。</div>
         <div className="bamboo-actions">
-          <button
-            className="btn-primary press bamboo-submit"
-            disabled={!solved}
-            onClick={() => finish(steps <= rankThresholds.high ? "high" : steps <= rankThresholds.mid ? "mid" : "low")}
-          >
-            {solved ? "解 开 木 盒" : "把 钥 匙 移 到 出 口"}
-          </button>
+          {solved ? (
+            <button
+              className="btn-primary press bamboo-submit"
+              onClick={() => finish(steps <= rankThresholds.high ? "high" : steps <= rankThresholds.mid ? "mid" : "low")}
+            >
+              解 开 木 盒
+            </button>
+          ) : (
+            <GameSkipControls finish={finish} />
+          )}
         </div>
-        <GameSkipControls finish={finish} />
       </div>
     </div>
   );
@@ -1116,7 +1127,7 @@ function HerbMemory({ finish, game, best, onBack }: {
                   onClick={() => setSelected(h)}>{h}</button>
               ))}
             </div>
-            <div className="bamboo-hint">拖拽药材到药方框，或先点选药材再点药方框；点已配药材可取出重置。</div>
+            <div className="bamboo-hint">拖拽上方药材到药方框，或先点选药材再点药方框；点已配药材可取出重置。</div>
             <div className="clinic-cards clinic-cards--target">
               {prescriptions.map(p => (
                 <div key={p.name}
@@ -1180,8 +1191,8 @@ function HerbMemory({ finish, game, best, onBack }: {
               <button className="btn-primary press bamboo-submit" onClick={submit}>
                 提 交 验 方（{placedCount}/{totalHerbCount}）
               </button>
+              <GameSkipControls finish={finish} />
             </div>
-            <GameSkipControls finish={finish} />
           </>
         )}
       </div>
@@ -1407,8 +1418,8 @@ function SongBoundary({ finish, game, best, onBack }: {
         <div className="bamboo-actions">
           <button className="btn-ghost press" onClick={() => setBins({})}>重新分拣</button>
           <button className="btn-primary press bamboo-submit" disabled={!binsBalanced} onClick={submitClassify}>完 成 定 界</button>
+          <GameSkipControls finish={finish} />
         </div>
-        <GameSkipControls finish={finish} />
       </div>
 
       {drag?.moved && (

@@ -676,7 +676,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
                   </div>
                   <div className="story-action-btns">
                     <button className="btn-primary press" onClick={next}>继 续 剧 情</button>
-                    <button className="btn-ghost press" onClick={enterGame} style={{ minHeight: 44, fontSize: 13 }}>重 玩</button>
+                    <button className="btn-ghost press" onClick={enterGame} style={{ minHeight: 52, fontSize: 16 }}>重 玩</button>
                   </div>
                 </>
               ) : (

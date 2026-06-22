@@ -1,0 +1,548 @@
+> /clear 
+  ⎿ (No content)
+
+> 把public/images/levels/1/chapters/ch2_beats/scene_03_examine_child_2.png
+  压缩成public/images/levels/1/chapters/ch2_beats/scene_03_examine_child_2.webp
+
+● 我将把该 PNG 转换并压缩为 WebP 格式。
+
+  Listed 1 directory (ctrl+o to expand)
+
+● Bash(python3 -c "import PIL; print(PIL.__version__)" 2>&1)
+  ⎿ 12.1.0
+
+● Bash(python3 -c "
+      from PIL import Image…)
+  ⎿ 原始大小: 2441738
+     压缩后大小: 199378
+
+● 已完成转换,大小从约 2.4MB 压缩到约 195KB(quality=85)。文件已生成在
+  public/images/levels/1/chapters/ch2_beats/scene_03_examine_child_2.webp。
+
+  是否需要我删除原始的 .png 文件?
+
+> 提交并推送
+
+● Bash(git status; echo ---; git diff --stat)
+  ⎿ On branch main
+     Your branch is up to date with 'origin/main'.
+     … +13 lines (ctrl+o to expand)
+
+● Bash(git status -uall -- public/images/levels/1/chapters/ch2_beats/
+      2>/dev/null; echo ---; ls public/images/levels/1/chapters/ch2_beats/; echo
+      ---; git diff --cached…)
+  ⎿ On branch main
+     Your branch is up to date with 'origin/main'.
+     … +32 lines (ctrl+o to expand)
+
+  Listed 1 directory (ctrl+o to expand)
+
+● Bash(git diff --cached -- src/data/dungeons/huatuo/story.ts; echo ---LOG---;
+      git log --oneline -5)
+  ⎿ diff --git a/src/data/dungeons/huatuo/story.ts b/src/data/dungeons/hua
+     tuo/story.ts
+     index 4c49822..6804e74 100644
+     … +21 lines (ctrl+o to expand)
+
+● All changes are already staged (new ch2 image + the unrelated chapter01-05
+  deletions/story.ts reference update). I'll commit them together as a single
+  commit.
+
+● Bash(git commit -m "$(cat <<'EOF'
+      feat(ch2): 替换孩童面相场景图为新版,清理已废弃的章节封面图…)
+  ⎿ [main 8bd4c1b] feat(ch2):
+     替换孩童面相场景图为新版,清理已废弃的章节封面
+     图
+      7 files changed, 1 insertion(+), 1 deletion(-)
+     … +17 lines (ctrl+o to expand)
+
+● 已提交,现在推送到远程仓库。
+
+● Bash(git push)
+  ⎿ To github.com:wmzspace/LoreMender_v0.1.git
+        3627fac..8bd4c1b  main -> main
+
+● 已提交并推送(8bd4c1b),包含新的 scene_03_examine_child_2.webp、对 story.ts
+  的引用更新,以及之前已暂存待删除的 5 个旧版章节封面图。
+
+> 分析一下当前游戏的完成度，还有哪些需要做的
+● Explore(分析游戏整体完成度)
+  ⎿ Done (43 tool uses · 60.5k tokens · 2m 56s)
+ (ctrl+o to expand)
+
+● 完成度盘点
+
+  整体：约 85-90%，核心副本（华佗传）已具备完整可玩的单副本演示规模。
+
+  已完成的核心系统
+
+  - 5 章线性叙事引擎：许昌大牢逃脱 → 街市救人 → 潜入府库 → 乐坊纠错 →
+  旧祠裁断，分支判定正常运转
+  - 5 个小游戏：竹简拼合、木盒机关、配药救急、病案排序、歌诀纠错，均有高/中/低三
+  档评分
+  - 7 个结局分支：3 位 NPC 各真/假两线 + 1
+  个焚毁结局，基于信任度/完成度/选择/追索压力的判定逻辑完整
+  - 探索评分系统：4 个可探索章节独立计分，已计入总评（你最近几个 commit
+  加的功能确认是真完整实现，非半成品）
+  - 开发者模式：可指定小游戏评级、跳过对话，带二次确认，已上线
+  - 美术资源：137 张图齐全，预加载/音视频系统正常
+  - 构建状态：npm run build 无错误，无 console.log 残留、无空函数体、无 FIXME
+
+  明显未完成/占位
+
+  - src/data/dungeons/huatuo/endings.ts:174 有一处 TODO ——
+  王济线两个结局共用同一张
+  ending_wangji_archive.webp，视觉上不独立（不影响功能，纯美术债）
+  - 仅有华佗这一个副本，src/data/dungeons/ 下没有第二个副本的数据骨架
+  - Twine 转换工具链存在但只是辅助脚手架，非主线功能
+
+  建议优先做的下一步
+
+  1. 高优先：补一张 ending_wangji_archive.webp，让王济线两个结局视觉区分开
+  2. 中优先：规划下一个副本（dungeon）的故事数据结构和第一章内容
+  3. 可选：做一次预加载策略和移动端适配的体验检查
+
+  整体看，"故事 → 玩法 → 评分 →
+  结局"这条闭环已经打通，目前主要缺的是内容广度（更多副本)，而不是系统能力。
+
+> 这个界面UI的提示文字太小了，顶部标题文字也很小。
+
+● Explore(定位拼竹简界面标题与提示文字样式)
+  ⎿ Done (13 tool uses · 73.9k tokens · 51s)
+ (ctrl+o to expand)
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+  ⎿ Loaded src/CLAUDE.md
+  ⎿ Loaded src/pages/CLAUDE.md
+
+● CSS 在 src/styles/global.css,不在 tsx 文件里。我看一下实际定义。
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+  ⎿ Loaded src/styles/CLAUDE.md
+
+● 没有响应式覆盖,只有这一处定义,改动会同时影响全部 5
+  个小游戏(竹简拼合、木盒机关、配药救急、病案排序、歌诀纠错)的标题和提示文字 ——
+  这本身也是统一体验所需的。我直接调大字号。
+
+● Edit(src/styles/global.css)
+  ⎿ Added 2 lines, removed 2 lines
+      4299
+      4300  .bamboo-top-title {
+      4301    font-family: var(--font-han);
+      4302 -  font-size: 19px;
+      4302 +  font-size: 24px;
+      4303    letter-spacing: 0.3em;
+      4304    text-indent: 0.3em;
+      4305    color: var(--gold-pale);
+     ...
+      4307  }
+      4308
+      4309  .bamboo-top-sub {
+      4310 -  font-size: 12px;
+      4310 +  font-size: 14px;
+      4311    font-style: italic;
+      4312    color: rgba(228, 224, 208, 0.6);
+      4313    letter-spacing: 0.04em;
+
+● Edit(src/styles/global.css)
+  ⎿ Added 1 line, removed 1 line
+      4351  }
+      4352
+      4353  .bamboo-hint {
+      4354 -  font-size: 12px;
+      4354 +  font-size: 14px;
+      4355    color: rgba(228, 224, 208, 0.62);
+      4356    text-align: center;
+      4357    letter-spacing: 0.04em;
+
+● 已调整 src/styles/global.css 中的共用样式(影响全部 5 个小游戏):
+
+  - .bamboo-top-title(主标题):19px → 24px
+  - .bamboo-top-sub(副标题/说明文字):12px → 14px
+  - .bamboo-hint(底部操作提示):12px → 14px
+
+  要不要我启动开发服务器截图确认一下实际效果?
+
+> 我建议把这个游戏的插图改为全屏
+
+● Explore(定位拼竹简插图渲染样式)
+  ⎿ Done (7 tool uses · 15.6k tokens · 24s)
+ (ctrl+o to expand)
+
+  Searched for 1 pattern, read 2 files (ctrl+o to expand)
+
+● Bash(python3 -c "
+      from PIL import Image…)
+  ⎿ public/images/levels/1/chapters/ch1_beats/bamboo_table.webp (1600, 900
+     ) 1.7777777777777777
+     public/images/levels/1/chapters/ch1_beats/bamboo_table_finished.webp (
+     … +11 lines (ctrl+o to expand)
+
+● 我查了一下,这张图原始尺寸正好是 16:9(1600×900),目前的 .bamboo-stage 用
+  aspect-ratio: 16/9 框住它,木桶的点击区域(.bamboo-bin--0/1/2)是按这个 16:9
+  画面手动校准的百分比坐标,对齐图里三个木桶的实际位置。
+
+  如果直接把舞台改成"铺满整个屏幕"(不管设备实际宽高比),在非 16:9
+  的屏幕(几乎所有手机都是竖屏比例)上,object-fit: cover
+  会裁切画面,三个木桶的视觉位置就会和写死的百分比坐标错位,点击区域对不上木桶了。
+● User answered Claude's questions:
+  ⎿ · 你想要的“全屏”具体是哪种效果? → 完全铺满裁切,重新校准木桶坐标
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Bash(grep -n "drag\b\|onPointerDown\|onPointerMove\|elementFromPoint\|setDrag\
+      |drag\.moved\|data-cat"
+      /home/wumianzi/workspace/codespace/LoreMender_v0.1/src/pages/Mi…)
+  ⎿ 537:  const [drag, setDrag] = useState<Drag | null>(null);
+     539:  dragRef.current = drag;
+     559:    setDrag({ id, text, startX: e.clientX, startY: e.clientY, x: e
+     … +37 lines (ctrl+o to expand)
+
+  Searched for 1 pattern, read 2 files (ctrl+o to expand)
+
+● Bash(grep -n "cqw\|cqh\|container-type"
+      /home/wumianzi/workspace/codespace/LoreMender_v0.1/src/styles/global.css |
+      sed -n '1,40p')
+  ⎿ 4097:  container-type: size;
+     4155:  font-size: 3.4cqh;
+     4164:  font-size: 2.4cqh;
+     … +10 lines (ctrl+o to expand)
+
+  Read 1 file (ctrl+o to expand)
+
+● Edit(src/pages/MiniGamePage.tsx)
+  ⎿ Added 2 lines, removed 1 line
+      638          </div>
+      639        </div>
+      640
+      641 -      {/* 居中 16/9 舞台 */}
+      641 +      {/* 全屏舞台：内部 frame 按图片原始 16/9 比例铺满裁切，
+          +木桶坐标仍按图片比例校准 */}
+      642        <div className="bamboo-stage">
+      643 +        <div className="bamboo-stage-frame">
+      644          <img src={BAMBOO_TABLE_IMG} alt="" className="bamboo-s
+           tage-bg" draggable={false} />
+      645          {classifyCategories.map((cat, i) => {
+      646            const theme = CAT_THEME[cat] ?? CAT_THEME["病症"];
+
+● Edit(src/pages/MiniGamePage.tsx)
+  ⎿ Added 1 line
+      693              <div className="bamboo-pool-empty">· 所有竹简已归
+           位 ·</div>
+      694            )}
+      695          </div>
+      696 +        </div>
+      697        </div>
+      698
+      699        {/* 底部浮层：完成 / 校验 */}
+
+● 现在更新 CSS。
+
+● Edit(src/styles/global.css)
+  ⎿ Added 13 lines, removed 2 lines
+      4092
+      4093  .bamboo-stage {
+      4094    position: relative;
+      4095 -  aspect-ratio: 16 / 9;
+      4096 -  width: min(96%, calc((100dvh - 150px) * 16 / 9));
+      4095 +  width: 100%;
+      4096 +  height: 100%;
+      4097    container-type: size;
+      4098    border-radius: 6px;
+      4099    overflow: hidden;
+     ...
+      4102    z-index: 1;
+      4103  }
+      4104
+      4105 +/* 按图片原始 16/9 比例铺满裁切（等效 object-fit: cover），木
+           +桶/桌面坐标按此 frame 的百分比校准 */
+      4106 +.bamboo-stage-frame {
+      4107 +  position: absolute;
+      4108 +  left: 50%;
+      4109 +  top: 50%;
+      4110 +  width: max(100cqw, 177.778cqh);
+      4111 +  height: max(100cqh, 56.25cqw);
+      4112 +  transform: translate(-50%, -50%);
+      4113 +  container-type: size;
+      4114 +}
+      4115 +
+      4116  .bamboo-stage-bg {
+      4117    position: absolute;
+      4118    inset: 0;
+
+● Bash(npm run build 2>&1 | tail -40)
+  ⎿ > loremender@0.0.0 build
+     > tsc -b && vite build
+     … +11 lines (ctrl+o to expand)
+
+● 构建通过。改动总结:
+
+  1. .bamboo-stage:去掉了原来 aspect-ratio:16/9 + width:min(96%,...)
+  的居中限位框,改为 width/height: 100% 真正铺满整个屏幕。
+  2. 新增 .bamboo-stage-frame:用 max(100cqw, 177.778cqh) / max(100cqh, 56.25cqw)
+  纯 CSS 公式还原 object-fit: cover 的裁切效果——保持图片原始 16:9
+  比例不被拉伸变形,同时让它铺满任意宽高比的屏幕。
+  3. 把背景图、三个木桶、桌面竹简区一起挪进这个新 frame
+  内,它们原有的百分比坐标(按图片画面校准的)完全不用改,因为现在 frame
+  本身就是"按原始比例缩放铺满"的那个矩形,百分比含义没变,自然对齐图里的木桶位置,
+  在任何屏幕宽高比下都不会错位。
+
+  这样无论桌面宽屏还是手机竖屏,插图都会真正铺满屏幕、无黑边,且交互区域始终和画面
+  对齐。要不要现在跑一下开发服务器,我截图确认下实际效果?
+
+> 提示文字和插图重合了，不太显眼
+
+  Read 1 file (ctrl+o to expand)
+
+● Edit(src/styles/global.css)
+  ⎿ Added 5 lines, removed 4 lines
+      4357    flex-direction: column;
+      4358    align-items: center;
+      4359    gap: 8px;
+      4360 -  padding: 14px 18px calc(14px + var(--safe-bottom));
+      4361 -  background: linear-gradient(180deg, transparent, rgba(5, 8,
+           - 11, 0.88) 38%);
+      4360 +  padding: 18px 18px calc(18px + var(--safe-bottom));
+      4361 +  background: linear-gradient(180deg, transparent, rgba(5, 8,
+           + 11, 0.82) 22%, rgba(5, 8, 11, 0.94) 60%);
+      4362 +  backdrop-filter: blur(2px);
+      4363  }
+      4364
+      4365  .bamboo-hint {
+      4366    font-size: 14px;
+      4366 -  color: rgba(228, 224, 208, 0.62);
+      4367 +  color: rgba(228, 224, 208, 0.88);
+      4368    text-align: center;
+      4369    letter-spacing: 0.04em;
+      4369 -  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+      4370 +  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.95), 0 0 3px rgba(0,
+           + 0, 0, 0.9);
+      4371  }
+      4372
+      4373  .bamboo-hint--warn {
+
+● Bash(npm run build 2>&1 | tail -20)
+  ⎿ > loremender@0.0.0 build
+     > tsc -b && vite build
+     … +11 lines (ctrl+o to expand)
+● 已修复 .bamboo-bottom 区域(全部小游戏共用的底部浮层):
+
+  - 渐变改为更早、更深地变暗(22% 处就到 0.82,60% 处到
+  0.94),不再只在底部很窄的范围内变暗
+  - 加了 backdrop-filter: blur(2px) 给文字下方的图案做模糊衬底
+  - 提示文字 .bamboo-hint 透明度从 0.62 提到 0.88,阴影也加强了双层
+
+  构建无报错,这样底部提示文字应该能从竹简贴图背景中清晰浮出来了。要不要我跑一下
+  开发服务器截图确认效果?
+
+> 感觉文字还是有点小，你可以再优化调整一下布局
+
+  Read 1 file (ctrl+o to expand)
+
+● Edit(src/styles/global.css)
+  ⎿ Added 20 lines, removed 17 lines
+      4282    right: 0;
+      4283    z-index: 4;
+      4284    display: flex;
+      4285 -  align-items: flex-start;
+      4286 -  gap: 12px;
+      4287 -  padding: 14px 18px;
+      4288 -  background: linear-gradient(180deg, rgba(5, 8, 11, 0.82), t
+           -ransparent);
+      4285 +  align-items: center;
+      4286 +  gap: 14px;
+      4287 +  padding: 18px 20px 22px;
+      4288 +  background: linear-gradient(180deg, rgba(5, 8, 11, 0.86), t
+           +ransparent);
+      4289  }
+      4290
+      4291  .bamboo-back {
+      4292    flex: none;
+      4293 -  width: 34px;
+      4294 -  height: 34px;
+      4293 +  width: 38px;
+      4294 +  height: 38px;
+      4295    display: flex;
+      4296    align-items: center;
+      4297    justify-content: center;
+     ...
+      4310
+      4311  .bamboo-top-title {
+      4312    font-family: var(--font-han);
+      4313 -  font-size: 24px;
+      4314 -  letter-spacing: 0.3em;
+      4315 -  text-indent: 0.3em;
+      4313 +  font-size: 28px;
+      4314 +  letter-spacing: 0.26em;
+      4315 +  text-indent: 0.26em;
+      4316    color: var(--gold-pale);
+      4317    text-shadow: 0 0 14px rgba(0, 0, 0, 0.92);
+      4318  }
+      4319
+      4320  .bamboo-top-sub {
+      4321 -  font-size: 14px;
+      4321 +  font-size: 16px;
+      4322 +  line-height: 1.5;
+      4323    font-style: italic;
+      4323 -  color: rgba(228, 224, 208, 0.6);
+      4324 -  letter-spacing: 0.04em;
+      4325 -  margin-top: 5px;
+      4324 +  color: rgba(228, 224, 208, 0.68);
+      4325 +  letter-spacing: 0.03em;
+      4326 +  margin-top: 8px;
+      4327 +  max-width: 640px;
+      4328 +  margin-inline: auto;
+      4329    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+      4330  }
+      4331
+      4332  .bamboo-top-right {
+      4333    flex: none;
+      4331 -  min-width: 52px;
+      4334 +  min-width: 58px;
+      4335    text-align: right;
+      4336  }
+      4337
+      4338  .bamboo-badge {
+      4336 -  font-size: 10px;
+      4337 -  letter-spacing: 0.14em;
+      4338 -  padding: 3px 9px;
+      4339 +  font-size: 12px;
+      4340 +  letter-spacing: 0.12em;
+      4341 +  padding: 4px 10px;
+      4342    border-radius: 2px;
+      4343    border: 1px solid currentColor;
+      4344    white-space: nowrap;
+
+● Edit(src/styles/global.css)
+  ⎿ Added 6 lines, removed 4 lines
+      4359    display: flex;
+      4360    flex-direction: column;
+      4361    align-items: center;
+      4362 -  gap: 8px;
+      4363 -  padding: 18px 18px calc(18px + var(--safe-bottom));
+      4362 +  gap: 10px;
+      4363 +  padding: 20px 20px calc(20px + var(--safe-bottom));
+      4364    background: linear-gradient(180deg, transparent, rgba(5, 8,
+             11, 0.82) 22%, rgba(5, 8, 11, 0.94) 60%);
+      4365    backdrop-filter: blur(2px);
+      4366  }
+      4367
+      4368  .bamboo-hint {
+      4369 -  font-size: 14px;
+      4369 +  font-size: 16px;
+      4370 +  line-height: 1.5;
+      4371 +  max-width: 640px;
+      4372    color: rgba(228, 224, 208, 0.88);
+      4373    text-align: center;
+      4372 -  letter-spacing: 0.04em;
+      4374 +  letter-spacing: 0.03em;
+      4375    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.95), 0 0 3px rgba(0,
+             0, 0, 0.9);
+      4376  }
+      4377
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Edit(src/styles/global.css)
+  ⎿ Added 1 line, removed 1 line
+      4070    display: flex;
+      4071    align-items: center;
+      4072    justify-content: center;
+      4073 -  padding: 56px 10px 74px;
+      4073 +  padding: 104px 10px 100px;
+      4074    background: #07090c;
+      4075    user-select: none;
+      4076  }
+
+● Bash(npm run build 2>&1 | tail -15)
+  ⎿ > loremender@0.0.0 build
+     > tsc -b && vite build
+     … +11 lines (ctrl+o to expand)
+
+● 本次调整(均为共用样式,影响全部 5 个小游戏):
+
+  - 主标题:24px → 28px,字距从 0.3em 收紧到 0.26em 避免过宽
+  - 副标题/说明:14px → 16px,加了 line-height:1.5 和 max-width:640px
+  居中,长句子换行更舒展
+  - 底部提示:14px → 16px,同样加了行高和最大宽度
+  - 顶部/底部浮层 padding 都加大了一档,呼吸感更强,徽章 初次挑战 也从 10px 提到
+  12px 保持比例协调
+  - 同步把 .bamboo-fs 给舞台预留的上下边距从 56px/74px 调到
+  104px/100px,避免变高的顶/底浮层盖住舞台区域的木桶和竹简
+
+  构建无报错。要不要我跑开发服务器实际截图确认一下?
+
+> 游戏的左上角两个按钮冲突了。同时你要把这个游戏的插图完全铺满屏幕
+
+● Explore(排查左上角两个返回按钮重叠问题)
+  ⎿ Done (9 tool uses · 24.9k tokens · 36s)
+ (ctrl+o to expand)
+
+  Searched for 2 patterns, read 1 file (ctrl+o to expand)
+
+● 找到根因了:左上角的 >
+  箭头是全局侧栏收起后的"展开导航"悬浮按钮(App.tsx:244-256),它只在
+  IMMERSIVE_PAGES(目前只有 cover、ending)里被隐藏。小游戏页面 minigame
+  没被列入沉浸页,所以侧栏收起态时这个按钮会浮在左上角,正好和小游戏自己的 <
+  返回按钮(bamboo-back)重叠。
+
+  Searched for 2 patterns, read 1 file (ctrl+o to expand)
+
+● Edit(src/App.tsx)
+  ⎿ Added 2 lines, removed 2 lines
+      29  /** 自带音频/留白、不放主题曲的页面：结局(旁白配音)、信任抉择(
+          留白)、典故卷宗(自行接管为第一章 BGM，避免与主题曲抢播)。 */
+      30  const NO_THEME_PAGES: PageKey[] = ["ending", "trust", "chapters
+          "];
+      31
+      32 -/** 沉浸页:无 SideNav 概念(封面/结局)。剧情页参与正常侧栏体系:
+         -默认收起=全屏 + 左上展开键,展开则显示侧栏。 */
+      33 -const IMMERSIVE_PAGES: PageKey[] = ["cover", "ending"];
+      32 +/** 沉浸页:无 SideNav 概念(封面/结局/小游戏)。剧情页参与正常侧
+         +栏体系:默认收起=全屏 + 左上展开键,展开则显示侧栏。 */
+      33 +const IMMERSIVE_PAGES: PageKey[] = ["cover", "ending", "minigam
+         +e"];
+      34
+      35  /** 由右上角快捷菜单进入的页面:右上角显示「退出」按钮,返回剧情
+          。 */
+      36  const QUICKMENU_PAGES: PageKey[] = ["map", "clue", "gallery"];
+
+● 现在处理插图完全铺满屏幕的问题。先确认当前 .bamboo-fs
+  容器的尺寸限制是否还受到手机壳(phone frame)的约束。
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+● 发现问题了:我上一步为了给变高的顶/底浮层"让位",给 .bamboo-fs 加了 104px/100px
+  的内边距,这会把舞台往里推,导致图片又没填满屏幕(边缘露出模糊底图的虚化条带)。这
+  其实是错误修复方向——浮层应该是半透明覆盖在图片上,而不是把图片挤小。撤回这处
+  padding。
+
+● Edit(src/styles/global.css)
+  ⎿ Added 1 line, removed 1 line
+      4070    display: flex;
+      4071    align-items: center;
+      4072    justify-content: center;
+      4073 -  padding: 104px 10px 100px;
+      4073 +  padding: 0;
+      4074    background: #07090c;
+      4075    user-select: none;
+      4076  }
+
+● Bash(npm run build 2>&1 | tail -15)
+  ⎿ > loremender@0.0.0 build
+     > tsc -b && vite build
+     … +11 lines (ctrl+o to expand)
+
+● 两处都修好了:
+
+  1. 左上角按钮重叠:根因是 App.tsx:33 的
+  IMMERSIVE_PAGES(沉浸页,不显示侧栏/展开按钮)只包含 cover、ending,没把 minigame
+  算进去——侧栏收起时全局的"展开导航"圆形箭头按钮会浮在左上角,和小游戏自己的返回
+  按钮 < 撞在一起。已把 "minigame" 加进
+  IMMERSIVE_PAGES,小游戏页面不再渲染侧栏/展开按钮。
+  2. 插图铺满屏幕:上一轮我给 .bamboo-fs 加的 104px/100px
+  内边距把舞台往里挤了,导致边缘又露出模糊虚化的底图条带。已撤回,改为 padding:
+  0,让舞台真正贴边铺满整屏,顶/底浮层以半透明渐变叠在图片上方(不挤占空间)。
+
+  构建无报错。建议跑一下开发服务器实际截图确认下左上角和铺满效果,要我现在跑吗?
+
+> /export
