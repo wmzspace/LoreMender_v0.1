@@ -2759,9 +2759,11 @@ button:disabled,
   text-shadow: 0 0 22px rgba(236, 220, 166, 0.4), 0 2px 14px rgba(0, 0, 0, 0.9);
 }
 
-/* 过场序列：单层持续黑底，首尾淡入/淡出一次（卡间不闪场景） */
+/* 过场序列：单层持续黑底，进入即纯黑（覆盖 .title-card 自带的淡入淡出动画，
+   不淡入，避免露出底下场景一闪），结尾淡出一次 */
 .title-card--seq {
-  animation: fadeIn 360ms ease both;
+  animation: none;
+  opacity: 1;
 }
 .title-card--seq.is-exiting {
   animation: titleSeqOut 360ms ease forwards;
@@ -2770,13 +2772,17 @@ button:disabled,
   from { opacity: 1; }
   to { opacity: 0; }
 }
-/* 卡内：随 key 变化重挂载、每张独立做文字淡入→停留→淡出 */
+/* 卡内：随 key 变化重挂载、每张独立做文字淡入→停留→淡出。
+   显式声明初始 opacity/transform（=keyframe 0%），避免重挂载那一帧先以默认样式
+   （完全不透明）渲染、动画才接管，造成"先全亮一闪、再变暗淡入"的闪烁。 */
 .title-seq-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   padding: 0 24px;
+  opacity: 0;
+  transform: translateY(12px);
   animation: titleCardText 2600ms ease forwards;
 }
 
