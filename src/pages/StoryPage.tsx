@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ChoiceList, ConfirmModal, DialogueBox, LoadingDots, ProgressDots, QuickMenu, SoundSettings, TitleSequence, titleCardContent, Toast,
+  ChoiceList, ConfirmModal, DialogueBox, LoadingDots, ProgressDots, QuickMenu, QualitySettings, SoundSettings, TitleSequence, titleCardContent, Toast,
   diffValues, type ValueDelta,
 } from "../components";
 import type { DialogueBoxHandle } from "../components/DialogueBox";
@@ -624,6 +624,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
         </div>
 
         <div className="story-top-actions">
+          <QualitySettings />
           <SoundSettings />
           <QuickMenu onNav={gotoPage} />
         </div>

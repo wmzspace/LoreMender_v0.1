@@ -1,6 +1,7 @@
 import { StrictMode, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/global.css";
+import "./lib/quality"; // 副作用：尽早把 data-quality 写到 <html>，让画质相关 CSS 首帧即生效
 import App from "./App";
 
 const EditorApp = lazy(() => import("./editor/EditorApp"));

@@ -428,6 +428,39 @@ body {
 }
 
 /* ============================================================
+   画质档位（data-quality 写在 <html> 上，右上角「画质」可切换）
+   ultra = 基线全特效(无覆盖)；high = 降模糊；medium = 去磨砂/颗粒。
+   粒子数量/分布由 Particles 组件读 useQuality() 处理，这里只管纯 CSS 部分。
+   ============================================================ */
+/* 高画质：常驻对白框的 backdrop-filter 模糊半径减半——半径是该滤镜的成本主因，
+   配合「粒子不再飘到对白框背后」(JS)，对白框背景基本静止、blur 不再逐帧重算。 */
+html[data-quality="high"] .galgame-dialogue {
+  -webkit-backdrop-filter: blur(5px) saturate(1.04);
+  backdrop-filter: blur(5px) saturate(1.04);
+}
+
+/* 中画质：彻底去掉 backdrop-filter 模糊（最贵的一项），对白框改用更实的背景维持可读；
+   同时关闭颗粒层与各类弹窗/遮罩的毛玻璃，最省电、最流畅。 */
+html[data-quality="medium"] .galgame-dialogue {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: linear-gradient(180deg, rgba(10, 14, 18, 0.84) 0%, rgba(7, 10, 13, 0.9) 58%, rgba(5, 8, 11, 0.93) 100%);
+}
+html[data-quality="medium"] .grain { display: none; }
+html[data-quality="medium"] .value-change-card,
+html[data-quality="medium"] .clue-card,
+html[data-quality="medium"] .sheet-backdrop,
+html[data-quality="medium"] .cover-modal-backdrop,
+html[data-quality="medium"] .cover-modal-close,
+html[data-quality="medium"] .item-modal-backdrop,
+html[data-quality="medium"] .quick-exit-btn,
+html[data-quality="medium"] .nav-expand-btn,
+html[data-quality="medium"] .bamboo-bottom {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* ============================================================
    Game button — like an ancient seal/scroll button
    ============================================================ */
 .btn-primary {
@@ -796,6 +829,46 @@ body {
   align-items: center;
   justify-content: space-between;
 }
+
+/* —— 画质设置面板：三档可选行 —— */
+.quality-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.quality-opt {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(205, 178, 119, 0.18);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+.quality-opt:hover { border-color: rgba(205, 178, 119, 0.42); }
+.quality-opt.is-active {
+  background: rgba(205, 178, 119, 0.16);
+  border-color: rgba(205, 178, 119, 0.65);
+}
+.quality-opt-label {
+  flex: 0 0 auto;
+  font-family: var(--font-han);
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  color: var(--paper);
+}
+.quality-opt.is-active .quality-opt-label { color: var(--gold-pale); }
+.quality-opt-hint {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--paper-shadow);
+}
+.quality-opt.is-active .quality-opt-hint { color: rgba(236, 220, 166, 0.7); }
 
 /* 「?」说明角标：默认小圆点，悬停/聚焦展开提示文字。 */
 .settings-help {

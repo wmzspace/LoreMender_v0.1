@@ -22,16 +22,18 @@ export function markDialogueHintSeen(): void {
 
 /**
  * 进度重置：删除本应用的本地存储（存档、章节进度、序幕标记等）。
- * 保留音量设置（loremender:huatuo:audio）与开发者模式开关，重置不影响这类设备级偏好。
+ * 保留音量、开发者模式、画质等设备级偏好，重置不影响它们。
  */
 const AUDIO_SETTINGS_KEY = "loremender:huatuo:audio";
 const DEV_MODE_KEY = "loremender:devMode";
+const QUALITY_KEY = "loremender:quality";
+const PRESERVED_KEYS = new Set([AUDIO_SETTINGS_KEY, DEV_MODE_KEY, QUALITY_KEY]);
 export function clearAllStorage(): void {
   try {
     const keys: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k.startsWith("loremender:") && k !== AUDIO_SETTINGS_KEY && k !== DEV_MODE_KEY) keys.push(k);
+      if (k && k.startsWith("loremender:") && !PRESERVED_KEYS.has(k)) keys.push(k);
     }
     keys.forEach(k => localStorage.removeItem(k));
   } catch { /* 无痕模式忽略 */ }

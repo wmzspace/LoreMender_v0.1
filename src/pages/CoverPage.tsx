@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ShowcasePage } from "./ShowcasePage";
 import { stopBgm } from "../lib/audio";
 import { isPrologueSeen, markPrologueSeen } from "../lib/storage";
-import { TitleSequence, titleCardContent, studioCardContent, DialogueBox, ProgressDots, SoundSettings, DevSettings } from "../components";
+import { TitleSequence, titleCardContent, studioCardContent, DialogueBox, ProgressDots, SoundSettings, DevSettings, QualitySettings } from "../components";
 import type { DialogueBoxHandle } from "../components/DialogueBox";
 
 interface CoverPageProps {
@@ -91,7 +91,8 @@ function PrologueScene({ onDone }: { onDone: () => void; replay?: boolean }) {
         />
       ) : (
         <>
-          <div className="cover-sound-settings" onClick={(e) => e.stopPropagation()}>
+          <div className="cover-sound-settings" onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: 10 }}>
+            <QualitySettings />
             <SoundSettings />
           </div>
           <div style={{
@@ -335,6 +336,7 @@ export function CoverPage({ onStart }: CoverPageProps) {
 
         <div className="cover-sound-settings" style={{ display: "flex", gap: 10 }}>
           <DevSettings />
+          <QualitySettings />
           <SoundSettings />
         </div>
 

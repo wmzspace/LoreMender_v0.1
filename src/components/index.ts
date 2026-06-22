@@ -21,3 +21,4 @@ export { BootScreen } from "./BootScreen";
 export { LoadingDots } from "./LoadingDots";
 export { ConfirmModal } from "./ConfirmModal";
 export { DevSettings } from "./DevSettings";
+export { QualitySettings } from "./QualitySettings";
