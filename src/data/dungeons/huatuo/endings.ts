@@ -154,22 +154,22 @@ export function getEndingBody(_state: GameState, endId: EndingId): string {
 
 /** 结局收场视频(原在 EndingPage.tsx / GalleryPage.tsx 各存一份,现合一,供两页与预加载共用)。 */
 export const ENDING_VIDEOS: Record<string, string> = {
-  chenbo_true:      "/videos/levels/1/ending_chenbo_A_humble_village_doctor_s_hand.mp4",
-  chenbo_fallback:  "/videos/levels/1/ending_chenbo_A_humble_village_doctor_s_hand.mp4",
-  xuanyin_true:     "/videos/levels/1/ending_xuanyin.mp4",
-  xuanyin_fallback: "/videos/levels/1/ending_xuanyin.mp4",
-  wangji_archive:   "/videos/levels/1/ending_wangji_Lacquered_chest_closes_over_scroll_202606161241.mp4",
-  wangji_trap:      "/videos/levels/1/ending_wangji_Lacquered_chest_closes_over_scroll_202606161241.mp4",
-  burn_ending:      "/videos/levels/1/ending_burn.mp4",
+  chenbo_true:      "/videos/levels/1/1-chenbo-he.mp4",
+  chenbo_fallback:  "/videos/levels/1/2-chenbo-be.mp4",
+  xuanyin_true:     "/videos/levels/1/3-xuanyin-he.mp4",
+  xuanyin_fallback: "/videos/levels/1/4-xuanyin-be.mp4",
+  wangji_archive:   "/videos/levels/1/5-wangji-he.mp4",
+  wangji_trap:      "/videos/levels/1/6-wangji-be.mp4",
+  burn_ending:      "/videos/levels/1/7-burn-be.mp4",
 };
 
 /** 结局插图(原在 EndingPage.tsx / GalleryPage.tsx 各存一份,现合一)。 */
 export const ENDING_IMAGES: Record<string, string> = {
-  chenbo_true: "/images/levels/1/chapters/endings/ending_chenbo.webp",
-  chenbo_fallback: "/images/levels/1/chapters/endings/ending_chenbo_caomu.webp",
-  xuanyin_true: "/images/levels/1/chapters/endings/ending_xuanyin.webp",
-  xuanyin_fallback: "/images/levels/1/chapters/endings/ending_xuanyin_fallback.webp",
-  wangji_archive: "/images/levels/1/chapters/endings/ending_wangji_archive.webp",
-  wangji_trap: "/images/levels/1/chapters/endings/ending_wangji.webp",
-  burn_ending: "/images/levels/1/chapters/endings/ending_burn.webp",
+  chenbo_true: "/images/levels/1/chapters/endings/1-chenbo-he.webp",
+  chenbo_fallback: "/images/levels/1/chapters/endings/2-chenbo-be.webp",
+  xuanyin_true: "/images/levels/1/chapters/endings/3-xuanyin-he.webp",
+  xuanyin_fallback: "/images/levels/1/chapters/endings/4-xuanyin-be.webp",
+  wangji_archive: "/images/levels/1/chapters/endings/5-wangji-he.webp",
+  wangji_trap: "/images/levels/1/chapters/endings/6-wangji-be.webp",
+  burn_ending: "/images/levels/1/chapters/endings/7-burn-be.webp",
 };

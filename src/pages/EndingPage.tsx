@@ -5,26 +5,20 @@ import {
 } from "../components/art";
 import { GameItemModal } from "./MiniGamePage";
 import {
-  ENDINGS, ITEMS, ENDING_VIDEOS, ENDING_IMAGES, resolveEnding, getEndingBody, getEndingAudioId,
+  ENDINGS, ITEMS, ENDING_VIDEOS, ENDING_IMAGES, resolveEnding, getEndingBody,
 } from "../data";
 import type { ItemDef } from "../data";
 import type { EndingId, GameState } from "../data/types";
 import { defaultState, saveState, saveBeat } from "../lib/storage";
-import { playSfx, playDialogueAudio, stopDialogueAudio, useAudioMuted } from "../lib/audio";
+import { playSfx, stopDialogueAudio, useAudioMuted } from "../lib/audio";
 import { calcScore } from "../lib/score";
 import { requestScrollToNextVolume } from "../lib/navHints";
 import type { PageKey } from "../lib/routes";
 
-/** Map ending ID to narrator voiceover for the ending body text */
-const ENDING_NARRATION: Record<string, string> = {
-  chenbo_true:        "/audio/levels/1/dialogue/endings/chenbo_true.mp3",
-  chenbo_fallback:    "/audio/levels/1/dialogue/endings/chenbo_fallback.mp3",
-  xuanyin_true:       "/audio/levels/1/dialogue/endings/xuanyin_true.mp3",
-  xuanyin_fallback:   "/audio/levels/1/dialogue/endings/xuanyin_fallback.mp3",
-  wangji_archive:     "/audio/levels/1/dialogue/endings/wangji_archive.mp3",
-  wangji_trap:        "/audio/levels/1/dialogue/endings/wangji_trap.mp3",
-  burn_ending:        "/audio/levels/1/dialogue/endings/burn_ending.mp3",
-};
+/** 结局文案逐行渐变上浮显示的总耗时——所有行需在此时长内全部显示完。 */
+const ENDING_BODY_REVEAL_MS = 3000;
+/** 每行渐变上浮动画自身的时长（须与 global.css 的 .fade-up / fadeInUp 保持一致）。 */
+const ENDING_LINE_ANIM_MS = 600;
 
 /** Overlay AI-generated ending scene illustration on top of SVG scene */
 function EndingSceneImage({ endId }: { endId: string }) {
@@ -254,11 +248,12 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   const [manuscriptGrant, setManuscriptGrant] = useState<ItemDef | null>(null);
   const [showScrollHint, setShowScrollHint] = useState(true);
   const [videoReady, setVideoReady] = useState(false);
+  // 视频播完后不再自动 dismiss——先切到对应结局插图停留，等用户再次轻触才真正退出。
+  const [videoEnded, setVideoEnded] = useState(false);
   const lastTapRef = useRef(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const isMuted = useAudioMuted();
 
-  // dismissVideo must be defined BEFORE any ref that captures it (avoids const TDZ crash)
   const dismissVideo = () => {
     if (fadingOut) return;
     setFadingOut(true);
@@ -267,74 +262,11 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
     setTimeout(() => setShowVideo(false), 600);
   };
 
-  // Keep a ref to the latest dismissVideo so async callbacks always call the current closure
-  const dismissVideoRef = useRef(dismissVideo);
-  useEffect(() => { dismissVideoRef.current = dismissVideo; });
-
-  // Track independent completion of video and narration
-  const videoEndedRef = useRef(false);
-  const narrationEndedRef = useRef(false);
-
-  // Evaluated fresh on every call — avoids stale isMuted capture.
-  // When narration is present: video loops, dismiss when narration ends.
-  // When no narration (or muted): video plays once, dismiss when it ends.
-  const checkAndDismissRef = useRef(() => {});
-  useEffect(() => {
-    checkAndDismissRef.current = () => {
-      const hasNarration = !!ENDING_NARRATION[getEndingAudioId(state, endId)] && !isMuted;
-      if (hasNarration ? narrationEndedRef.current : videoEndedRef.current) {
-        dismissVideoRef.current();
-      }
-    };
-  });
-
-  // Reset completion flags each time the overlay opens
-  useEffect(() => {
-    if (showVideo) {
-      videoEndedRef.current = false;
-      narrationEndedRef.current = false;
-    }
-  }, [showVideo]);
-
-  // Typewriter + narration
-  const [displayedBody, setDisplayedBody] = useState("");
-  useEffect(() => {
-    if (!showVideo || !e?.body) return;
-    setDisplayedBody("");
-    let i = 0;
-    const body = getEndingBody(state, endId);
-    let intervalId: ReturnType<typeof setInterval>;
-    const narrationSrc = ENDING_NARRATION[getEndingAudioId(state, endId)];
-    const timeoutId = setTimeout(() => {
-      if (narrationSrc) {
-        playDialogueAudio(narrationSrc, () => {
-          narrationEndedRef.current = true;
-          checkAndDismissRef.current();
-        }, 1.2);
-      }
-      intervalId = setInterval(() => {
-        i++;
-        setDisplayedBody(body.slice(0, i));
-        if (i >= body.length) clearInterval(intervalId);
-      }, 90);
-    }, 1000);
-    return () => {
-      clearTimeout(timeoutId);
-      clearInterval(intervalId);
-      stopDialogueAudio();
-    };
-  }, [showVideo, e?.body, state, endId]);
-
-  // Tracks whether narration audio is active — read by onTimeUpdate and onEnded closures.
-  // We use a ref (not state) so the video event handlers always see the current value
-  // without needing to be recreated on every isMuted change.
-  const hasNarrationRef = useRef(false);
-  useEffect(() => { hasNarrationRef.current = !!ENDING_NARRATION[getEndingAudioId(state, endId)] && !isMuted; });
+  // 结局视频不再配旁白音频，也不再用打字机——文案按行渐变上浮，全部行在
+  // ENDING_BODY_REVEAL_MS 内显示完（每行 delay 均匀分布，见下方 JSX）。
+  const bodyLines = e?.body ? e.body.split("\n") : [];
 
   // React doesn't reliably sync `muted` DOM property via JSX props — drive directly.
-  // We intentionally do NOT set loop=true here: iOS Safari still fires the `ended` event
-  // even on looping videos, which interrupts the audio session. Instead we seek back
-  // to 0 in onTimeUpdate (see below) and replay in onEnded when narration is active.
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = isMuted;
@@ -342,6 +274,8 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   }, [isMuted, showVideo]);
 
   const handleVideoTap = () => {
+    // 已停在插图上：单触即可继续；视频播放中：双触跳过。
+    if (videoEnded) { dismissVideo(); return; }
     const now = Date.now();
     if (now - lastTapRef.current < 350) dismissVideo();
     lastTapRef.current = now;
@@ -424,27 +358,10 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             preload="auto"
             muted={isMuted}
             onCanPlay={() => setVideoReady(true)}
-            onTimeUpdate={() => {
-              // Seek back before the natural end to prevent iOS Safari from firing `ended`
-              // on a "looping" video — that event interrupts the audio session on iOS.
-              if (!hasNarrationRef.current) return;
-              const vid = videoRef.current;
-              if (vid?.duration && vid.currentTime >= vid.duration - 0.5) {
-                vid.currentTime = 0;
-              }
-            }}
-            onEnded={() => {
-              if (hasNarrationRef.current) {
-                // Narration still playing — replay video manually (loop=true is unsafe on iOS).
-                if (videoRef.current) videoRef.current.play().catch(() => {});
-                return;
-              }
-              videoEndedRef.current = true;
-              checkAndDismissRef.current();
-            }}
+            onEnded={() => setVideoEnded(true)}
             style={{
               position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover",
-              opacity: videoReady ? 1 : 0,
+              opacity: videoReady && !videoEnded ? 1 : 0,
               transition: "opacity 600ms ease",
             }}
           >
@@ -459,7 +376,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
             pointerEvents:"none",
           }}>
             <div className="en-small fade-in" style={{
-              fontSize:10, letterSpacing:"0.38em",
+              fontSize:14, letterSpacing:"0.38em",
               color:"var(--gold-pale)", opacity:0.6,
               marginBottom:12,
             }}>THE LOREMENDER</div>
@@ -477,16 +394,26 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
               textShadow:"0 1px 6px rgba(0,0,0,0.8)",
               animationDelay:"240ms",
             }}>「{e.epitaph}」</div>
-            {displayedBody && (
+            {bodyLines.length > 0 && (
+              // 所有正文行一次性渲染（高度从第一帧就定死，遮罩不会跟着变高），
+              // 仅靠每行的 fade-up 入场动画 + 错开的 delay 做"逐行渐变上浮"，
+              // delay 均匀分布在 ENDING_BODY_REVEAL_MS 内，保证全部行按时显示完。
               <div style={{
                 marginTop:24,
                 fontSize:18, lineHeight:1.95,
                 color:"rgba(228,224,208,0.88)",
-                whiteSpace:"pre-line",
                 letterSpacing:"0.05em",
                 textAlign:"center",
                 textShadow:"0 1px 6px rgba(0,0,0,0.9)",
-              }}>{displayedBody}</div>
+              }}>
+                {bodyLines.map((line, idx) => (
+                  <div key={idx} className="fade-up" style={{
+                    animationDelay: `${bodyLines.length > 1
+                      ? Math.round(idx * (ENDING_BODY_REVEAL_MS - ENDING_LINE_ANIM_MS) / (bodyLines.length - 1))
+                      : 0}ms`,
+                  }}>{line}</div>
+                ))}
+              </div>
             )}
           </div>
 
@@ -504,7 +431,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
               letterSpacing:"0.25em", textIndent:"0.25em",
               textShadow:"0 0 16px rgba(0,0,0,0.95), 0 2px 4px rgba(0,0,0,0.9)",
               animation:"skipBlink 2.6s ease-in-out infinite",
-            }}>双击以跳过动画</div>
+            }}>{videoEnded ? "点击以进入结算" : "双击以跳过动画"}</div>
           </div>
         </div>
       )}
