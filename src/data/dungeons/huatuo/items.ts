@@ -36,7 +36,7 @@ export const ITEMS: Record<string, ItemDef> = {
   forbidden_record:    { id: "forbidden_record", name: "禁录", image: "/images/levels/1/chapters/ch4_beats/item_forbidden_record.webp", desc: "从歌页里单列出来的危险方细——毒药剂量、针刺深浅，传错一句就会害人，只能随歌页同行、不能入歌。" },
 
   // 典故信物：与华佗羁绊≥3、在结局达成时由华佗亲手授予，点亮《拾遗残卷》一处空白。
-  huatuo_manuscript:   { id: "huatuo_manuscript", name: "华佗手书残句", desc: "「没有不会断的路，只有不断修的人。」——华佗临别留给阿吉的一句话，终于被记了下来。这是《青囊残术》这卷典故的信物。" },
+  huatuo_manuscript:   { id: "huatuo_manuscript", name: "华佗手书残句", image: "/images/levels/1/items/item_huatuo_manuscript.webp", desc: "「没有不会断的路，只有不断修的人。」——华佗临别留给阿吉的一句话，终于被记了下来。这是《青囊残术》这卷典故的信物。" },
 };
 
 /** 探索旁白「获得：<名>」→ item id（名称取「获得：」后、「。」前，可用「、」分隔多件）。 */

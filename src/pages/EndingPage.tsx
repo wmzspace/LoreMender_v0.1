@@ -63,7 +63,7 @@ function TokenPanel({ state }: { state: GameState }) {
   return (
     <div style={{ margin: "0 18px 18px" }}>
       <PaperPanel style={{ padding: "16px 20px 20px" }}>
-        <GoldDivider label="典 故 信 物" labelStyle={{ fontSize: 16, opacity: 0.92 }} />
+        <GoldDivider label="典 故 信 物" labelStyle={{ fontSize: 20 }} />
         {obtained ? (
           <div style={{ textAlign: "center", marginTop: 12 }}>
             <div style={{
@@ -73,6 +73,15 @@ function TokenPanel({ state }: { state: GameState }) {
             }}>
               <span style={{ color: "#2c6657", fontSize: 13, letterSpacing: "0.06em" }}>✦ 已收得</span>
             </div>
+            {token.image && (
+              <div style={{
+                width: 96, height: 96, margin: "14px auto 0", borderRadius: 8,
+                overflow: "hidden", border: "1px solid rgba(44,102,87,0.4)",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+              }}>
+                <img src={token.image} alt={token.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+            )}
             <div className="title-han" style={{
               fontSize: 19, color: "var(--ink-deep)", marginTop: 14, letterSpacing: "0.08em",
             }}>{token.name}</div>
@@ -95,7 +104,7 @@ function TokenPanel({ state }: { state: GameState }) {
               <span style={{ color: "rgba(110,98,70,0.85)", fontSize: 13, letterSpacing: "0.06em" }}>○ 未收得</span>
             </div>
             <div style={{
-              fontSize: 13, lineHeight: 1.95, color: "rgba(70,62,38,0.66)",
+              fontSize: 13, lineHeight: 1.95, color: "rgba(70,62,38,0.8)",
               marginTop: 14, letterSpacing: "0.03em",
             }}>这一程，你与华佗的羁绊还不足以让他把那句话亲手交予你。<br/>多一些理解与守护（与华佗的羁绊达「相契」以上），典故信物便会留在你手中。</div>
           </div>
@@ -128,7 +137,7 @@ function ScorePanel({ state }: { state: GameState }) {
   return (
     <div ref={ref} style={{ margin: "0 18px 18px" }}>
       <PaperPanel style={{ padding: "16px 20px 22px" }}>
-        <GoldDivider label="一 卷 总 评" labelStyle={{ fontSize: 17, opacity: 0.92 }} />
+        <GoldDivider label="卷 总 评" labelStyle={{ fontSize: 21 }} />
 
         {/* 顶部：圆环（SVG内嵌文字）+ 等级/总分 */}
         <div style={{ display: "flex", alignItems: "center", gap: 18, margin: "14px 0 18px" }}>
@@ -163,12 +172,12 @@ function ScorePanel({ state }: { state: GameState }) {
               letterSpacing: "0.2em", textIndent: "0.2em",
               lineHeight: 1.2, marginBottom: 8,
             }}>{grade}</div>
-            <div style={{ fontSize: 13, color: "var(--ink)", letterSpacing: "0.04em", fontWeight: 500 }}>
+            <div style={{ fontSize: 15, color: "var(--ink)", letterSpacing: "0.04em", fontWeight: 500 }}>
               {total}
-              <span style={{ opacity: 0.52, fontSize: 10 }}> / {maxTotal} 分</span>
+              <span style={{ opacity: 0.65, fontSize: 12 }}> / {maxTotal} 分</span>
             </div>
             <div style={{
-              fontSize: 9.5, color: "rgba(40,28,12,0.6)",
+              fontSize: 12, color: "rgba(40,28,12,0.75)",
               letterSpacing: "0.22em", marginTop: 4,
             }}>玩法完成度</div>
           </div>
@@ -186,7 +195,7 @@ function ScorePanel({ state }: { state: GameState }) {
                   alignItems: "center", marginBottom: 6,
                 }}>
                   <span style={{
-                    fontSize: 11.5, color: "rgba(30,20,8,0.88)",
+                    fontSize: 13.5, color: "rgba(30,20,8,0.92)",
                     letterSpacing: "0.12em",
                     display: "flex", alignItems: "center", gap: 6,
                   }}>
@@ -196,12 +205,12 @@ function ScorePanel({ state }: { state: GameState }) {
                     }} />
                     {item.label}
                     {item.detail && (
-                      <span style={{ opacity: 0.6, fontSize: 10 }}>（{item.detail}）</span>
+                      <span style={{ opacity: 0.7, fontSize: 12 }}>（{item.detail}）</span>
                     )}
                   </span>
-                  <span style={{ fontSize: 11.5, color, flexShrink: 0, letterSpacing: "0.04em", fontWeight: 500 }}>
+                  <span style={{ fontSize: 13.5, color, flexShrink: 0, letterSpacing: "0.04em", fontWeight: 500 }}>
                     {item.score}
-                    <span style={{ opacity: 0.5, fontSize: 9 }}> / {item.max}</span>
+                    <span style={{ opacity: 0.62, fontSize: 11 }}> / {item.max}</span>
                   </span>
                 </div>
                 <div style={{
@@ -243,6 +252,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
   const [showVideo, setShowVideo] = useState(!!videoSrc);
   const [fadingOut, setFadingOut] = useState(false);
   const [manuscriptGrant, setManuscriptGrant] = useState<ItemDef | null>(null);
+  const [showScrollHint, setShowScrollHint] = useState(true);
   const [videoReady, setVideoReady] = useState(false);
   const lastTapRef = useRef(0);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -498,7 +508,11 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
           </div>
         </div>
       )}
-      <div className="page-scroll" style={{padding: 0}}>
+      <div
+        className="page-scroll"
+        style={{padding: 0}}
+        onScroll={(e) => setShowScrollHint(e.currentTarget.scrollTop < 40)}
+      >
         <div style={{position:"relative"}}>
 
           {/* ── 场景插图区 ── */}
@@ -532,19 +546,19 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
               {/* 印章 + 光晕 */}
               <div style={{position:"relative"}}>
                 <div style={{
-                  position:"absolute", inset: -20, borderRadius:"50%",
-                  background: e.rankColor, opacity: 0.42, filter:"blur(24px)",
+                  position:"absolute", inset: -24, borderRadius:"50%",
+                  background: e.rankColor, opacity: 0.42, filter:"blur(26px)",
                   animation: "glowPulse 3.5s ease-in-out infinite",
                 }}/>
                 <div style={{ position:"relative", animation: "sealStamp 700ms ease-out both" }}>
                   <SealTag size="lg" style={{
                     background: e.rankColor,
                     borderRadius: "50%",
-                    width: 90, height: 90,
+                    width: 116, height: 116,
                   }}>
                     <div style={{ textAlign:"center" }}>
-                      <div style={{ fontFamily:"var(--font-han)", fontSize: 10, opacity: 0.75, letterSpacing:"0.18em" }}>结 局</div>
-                      <div style={{ fontFamily:"var(--font-han)", fontSize: 12, opacity: 0.92, marginTop: 3, letterSpacing:"0.1em" }}>{e.rank}</div>
+                      <div style={{ fontFamily:"var(--font-han)", fontSize: 14, opacity: 0.82, letterSpacing:"0.18em" }}>结 局</div>
+                      <div style={{ fontFamily:"var(--font-han)", fontSize: 17, opacity: 0.96, marginTop: 4, letterSpacing:"0.1em" }}>{e.rank}</div>
                     </div>
                   </SealTag>
                 </div>
@@ -552,17 +566,18 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
 
               {/* 结局名 */}
               <div className="title-han" style={{
-                fontSize: 28, color:"var(--gold-pale)",
+                fontSize: 30, color:"var(--gold-pale)",
                 letterSpacing:"0.32em", textIndent:"0.32em",
                 textShadow: "0 0 22px rgba(236,220,166,0.38), 0 2px 8px rgba(0,0,0,0.7)",
               }}>{e.name}</div>
 
               {/* 墓志铭 */}
               <div style={{
-                fontSize: 13, color:"rgba(228,224,208,0.62)",
+                fontSize: 16, color:"rgba(228,224,208,0.85)",
                 fontStyle:"italic", letterSpacing:"0.1em",
-                maxWidth: 260, lineHeight: 1.7,
+                maxWidth: 320, lineHeight: 1.7,
                 marginTop: -4,
+                textShadow: "0 1px 8px rgba(0,0,0,0.7)",
               }}>「{e.epitaph}」</div>
             </div>
           </div>
@@ -571,9 +586,9 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
           <div className="content-wrap content-wrap--narrow">
             <div className="fade-up" style={{ margin: "26px 18px 0", animationDelay: "300ms" }}>
               <PaperPanel style={{padding:"18px 22px 22px"}}>
-                <GoldDivider label="余 音"/>
+                <GoldDivider label="余 音" labelStyle={{ fontSize: 20 }} />
                 <div style={{
-                  fontSize: 14, lineHeight: 2.05,
+                  fontSize: 16, lineHeight: 2.05,
                   color:"var(--ink-deep)",
                   whiteSpace: "pre-line",
                   letterSpacing: "0.05em",
@@ -583,7 +598,7 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
                 <div style={{
                   textAlign:"center",
                   fontFamily:"var(--font-han)",
-                  fontSize: 11, color:"rgba(70,62,38,0.6)",
+                  fontSize: 13, color:"rgba(70,62,38,0.75)",
                   letterSpacing:"0.42em", textIndent:"0.42em",
                   marginTop: 4,
                 }}>· 全 章 终 ·</div>
@@ -627,6 +642,15 @@ export function EndingPage({ state, setState, gotoPage }: EndingPageProps) {
           </div>
         </div>
       </div>
+
+      {!showVideo && showScrollHint && (
+        <div className="ending-scroll-hint" aria-hidden="true">
+          <span>下 滑 查 看 更 多</span>
+          <svg width="13" height="9" viewBox="0 0 13 9" fill="none">
+            <path d="M1 1.5 L6.5 7 L12 1.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      )}
 
       {!showVideo && manuscriptGrant && (
         <GameItemModal items={[manuscriptGrant]} onDismiss={() => setManuscriptGrant(null)} />

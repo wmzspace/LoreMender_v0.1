@@ -76,7 +76,10 @@ export function GalleryPage({ state, setState, gotoPage }: GalleryPageProps) {
       footer={<BottomNav active="gallery" onNav={gotoPage}/>}
     >
         <div className="grid-2">
-        {Object.values(ENDINGS).map((e, i) => {
+        {Object.values(ENDINGS)
+          .slice()
+          .sort((a, b) => Number(unlocked.includes(b.id)) - Number(unlocked.includes(a.id)))
+          .map((e, i) => {
           const has = unlocked.includes(e.id);
           return (
             <div key={e.id} className="fade-up"

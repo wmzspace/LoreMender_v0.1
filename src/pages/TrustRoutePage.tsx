@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { STORY, TRUST_OPTIONS } from "../data";
+import { STORY, TRUST_OPTIONS, searchPressure } from "../data";
 import type { Beat, GameState } from "../data/types";
 import { saveBeat, saveState } from "../lib/storage";
 import { matchIf } from "../lib/beats";
@@ -50,6 +50,13 @@ const ROUTE_IMAGE: Record<string, string> = {
   burn: "/images/levels/1/chapters/endings/ending_burn.webp",
 };
 
+// 手风琴收起态封面——专为本页准备的高清肖像（不影响对话框等其他场景仍用的小像）。
+const ROUTE_PORTRAIT: Record<string, string> = {
+  chenbo: "/images/levels/1/chapters/ch5_beats/trust_portrait_chenbo.webp",
+  wangji: "/images/levels/1/chapters/ch5_beats/trust_portrait_wangji.webp",
+  xuanyin: "/images/levels/1/chapters/ch5_beats/trust_portrait_xuanyin.webp",
+};
+
 // 选择前提示：依信任最高者 / 低完成度数量，给一句情感旁白（轻量倾向）
 function preChoiceHint(state: GameState): string | null {
   const lowGrades = Object.values(state.gameResults ?? {}).filter(r => r.best === "low").length;
@@ -70,8 +77,8 @@ function preChoiceHint(state: GameState): string | null {
   return null;
 }
 
-function TrustCard({
-  id, name, tag, portrait, desc, image, selected, onPick, zoomSide,
+function TrustAccordionItem({
+  id, name, tag, portrait, desc, image, selected, active, locked, lockedLabel, onPick, onHover, onLeave,
 }: {
   id: string;
   name: string;
@@ -80,40 +87,90 @@ function TrustCard({
   desc: string;
   image: string;
   selected: boolean;
+  active: boolean;
+  locked: boolean;
+  lockedLabel: string;
   onPick: () => void;
-  zoomSide: "left" | "right";
+  onHover: () => void;
+  onLeave: () => void;
 }) {
   return (
-    <button
+    <div
       key={id}
-      className={"trust-card press" + (selected ? " is-selected" : "")}
-      onClick={onPick}
+      className={"trust-acc-item" + (active ? " is-active" : "") + (selected ? " is-selected" : "") + (locked ? " is-locked" : "")}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      onFocus={onHover}
+      onBlur={onLeave}
+      onClick={() => { if (!locked) onPick(); }}
+      role="button"
+      aria-disabled={locked}
+      tabIndex={0}
     >
-      <div className="trust-card-frame">
-        {portrait
-          ? <img src={portrait} alt={name} className="trust-card-portrait" />
-          : <img src={image} alt={name} className="trust-card-portrait trust-card-portrait--wide" />}
-        {selected && <div className="trust-card-pick">已 选</div>}
-      </div>
-      <div className="trust-card-caption">
-        <strong>{name}</strong>
-        {tag && <span>{tag}</span>}
+      <img src={portrait ?? image} alt="" className="trust-acc-bg trust-acc-bg--portrait" />
+      <img src={image} alt="" className="trust-acc-bg trust-acc-bg--scene" />
+      <div className="trust-acc-scrim" />
+
+      <div className="trust-acc-spine">{name}</div>
+
+      <div className="trust-acc-detail">
+        <div className="trust-acc-detail-head">
+          <strong>{name}</strong>
+          {tag && <span>{tag}</span>}
+        </div>
+        <div className="trust-acc-detail-desc">{desc}</div>
       </div>
 
-      <div className={"trust-card-zoom trust-card-zoom--" + zoomSide}>
-        <img src={image} alt="" className="trust-card-zoom-img" />
-        <div className="trust-card-zoom-text">{desc}</div>
-      </div>
-    </button>
+      {locked
+        ? <div className="trust-acc-locked">{lockedLabel}</div>
+        : selected && <div className="trust-acc-pick">已 选</div>}
+    </div>
   );
+}
+
+function trustOf(state: GameState, id: string): number {
+  const trustField = `${id}_trust` as keyof GameState;
+  return Number(state[trustField] ?? 0);
+}
+
+// 追索压力达到 5：与 resolveEnding 的强制焚尽阈值一致——已经被围到这个地步，
+// 三个人都护不住这卷残术了，只剩焚毁这条路。
+function isPressureForced(state: GameState): boolean {
+  return searchPressure(state) >= 5;
+}
+
+// 选择门槛：陈伯/王济/玄音需要与其建立起码的信任(≥1)；焚毁则在「焚毁倾向足够坚定(≥2)」
+// 或「三人都没建立起信任、已无人可托」时开放——总要留一条路可走，不能四项全锁。
+// 追索压力≥5 时无视信任，强制只能选焚毁(与 endings.ts 的强制焚尽阈值保持一致)。
+// 门槛与 endings.ts 里「真结局」所需的信任(≥2)是两件事：这里只挡「完全没交情/没念头」，
+// 真假结局仍按 resolveEnding 的完整条件判定。
+function isEligible(state: GameState, id: string): boolean {
+  if (isPressureForced(state)) return id === BURN;
+  if (id === BURN) {
+    const noOneTrusted = ["chenbo", "wangji", "xuanyin"].every(p => trustOf(state, p) < 1);
+    return (state.burn_tendency || 0) >= 2 || noOneTrusted;
+  }
+  return trustOf(state, id) >= 1;
+}
+
+const LOCKED_LABEL: Record<string, string> = {
+  chenbo: "信任度不足", wangji: "信任度不足", xuanyin: "信任度不足", burn: "焚毁倾向不足",
+};
+
+function lockedLabelFor(state: GameState, id: string): string {
+  if (isPressureForced(state) && id !== BURN) return "追索压力过高";
+  return LOCKED_LABEL[id];
 }
 
 export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProps) {
   const [selected, setSelected] = useState<string | null>(state.finalChoice || null);
+  const [hovered, setHovered] = useState<string | null>(null);
   const hint = preChoiceHint(state);
+  // 手风琴：悬停优先展开；没有悬停时，已选中的那条默认展开。都没有时四条等宽。
+  const active = hovered ?? selected ?? null;
 
   const confirm = () => {
-    if (!selected) return;
+    if (!selected || !isEligible(state, selected)) return;
     const ns: GameState = {
       ...state,
       trustedPerson: selected === BURN ? null : selected,
@@ -129,18 +186,25 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
   return (
     <PageShell
       bg="night-deep-bg"
-      title="青 囊 归 处"
+      title=""
       onBack={() => gotoPage("story")}
+      backdrop={
+        <>
+          <img src="/images/levels/1/chapters/ch5_beats/scene_05_four_mentors.webp" alt="" className="trust-bg" />
+          <div className="trust-bg-scrim" />
+        </>
+      }
       footer={
-        <div style={{ padding: "12px 18px calc(16px + var(--safe-bottom))", background: "linear-gradient(180deg, transparent, rgba(7,11,14,0.96) 30%)" }}>
-          <button className="btn-primary press" data-sfx="confirm" disabled={!selected} onClick={confirm} style={{ width: "100%" }}>
+        <div className="trust-footer">
+          <button className="btn-primary press" data-sfx="confirm" disabled={!selected} onClick={confirm} style={{ width: "100%", maxWidth: 440, margin: "0 auto", display: "flex" }}>
             确认归处
           </button>
         </div>
       }
     >
+        <div className="trust-headline">你 将 把 青 囊 残 卷 托 付 给</div>
         <div className="trust-intro">
-          前四章所得道具、最佳成绩与信任，会影响后世怎样读到这卷残术。此刻不再考验手速，只考验托付——把鼠标停在每张脸上，再看一眼当时的承诺。
+          前四章的游玩会影响后世怎样读到这卷残术。把鼠标停在每张脸上，再看一眼当时的承诺。
         </div>
 
         {hint && (
@@ -150,30 +214,38 @@ export function TrustRoutePage({ state, setState, gotoPage }: TrustRoutePageProp
           </div>
         )}
 
-        <div className="trust-grid">
-          {TRUST_OPTIONS.map((c, i) => (
-            <TrustCard
+        <div className="trust-acc">
+          {TRUST_OPTIONS.map(c => (
+            <TrustAccordionItem
               key={c.id}
               id={c.id}
               name={c.name}
               tag={c.tag}
-              portrait={c.portrait}
+              portrait={ROUTE_PORTRAIT[c.id] ?? c.portrait}
               desc={ROUTE_DESC[c.id] ?? c.short ?? ""}
               image={ROUTE_IMAGE[c.id]}
               selected={selected === c.id}
+              active={active === c.id}
+              locked={!isEligible(state, c.id)}
+              lockedLabel={lockedLabelFor(state, c.id)}
               onPick={() => setSelected(c.id)}
-              zoomSide={i < 2 ? "left" : "right"}
+              onHover={() => setHovered(c.id)}
+              onLeave={() => setHovered(null)}
             />
           ))}
-          <TrustCard
+          <TrustAccordionItem
             id={BURN}
             name="焚毁残卷"
             tag="付之一炬"
             desc={ROUTE_DESC.burn}
             image={ROUTE_IMAGE.burn}
             selected={selected === BURN}
+            active={active === BURN}
+            locked={!isEligible(state, BURN)}
+            lockedLabel={LOCKED_LABEL[BURN]}
             onPick={() => setSelected(BURN)}
-            zoomSide="right"
+            onHover={() => setHovered(BURN)}
+            onLeave={() => setHovered(null)}
           />
         </div>
     </PageShell>

@@ -31,9 +31,6 @@ function IconAuto() {
 function IconLog() {
   return <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3.5 H13 M3 8 H13 M3 12.5 H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>;
 }
-function IconSkip() {
-  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3 L8 8 L3 13 Z M9 3 L14 8 L9 13 Z" fill="currentColor"/></svg>;
-}
 function IconMenu() {
   return <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4 H13 M3 8 H13 M3 12 H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>;
 }
@@ -126,7 +123,6 @@ export const DialogueBox = forwardRef<DialogueBoxHandle, DialogueBoxProps>(funct
       <div className="gd-ctrl">
         <button className={"gd-btn" + (autoOn ? " active" : "")} onClick={stop(onToggleAuto)} aria-pressed={autoOn} aria-label="自动播放" title="自动播放"><IconAuto /></button>
         <button className="gd-btn" onClick={stop(onOpenLog)} aria-label="历史记录" title="历史记录"><IconLog /></button>
-        <button className="gd-btn" onClick={stop(advance)} aria-label="快进" title="快进"><IconSkip /></button>
         {onMenu && <button className="gd-btn gd-btn--menu" onClick={stop(onMenu)} aria-label="副本进程" title="副本进程"><IconMenu /></button>}
       </div>
     </div>

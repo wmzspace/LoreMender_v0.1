@@ -10,7 +10,7 @@ import type { Clue, ItemDef } from "../data";
 import { buildAudioIndex } from "../data/dungeons/huatuo/audioIndex";
 import type { Beat, Choice, GameState } from "../data/types";
 import { dialogueAudioPath, exploreAudioPath, playDialogueAudio, playSfx, stopDialogueAudio } from "../lib/audio";
-import { loadBeat, saveBeat, saveState } from "../lib/storage";
+import { loadBeat, saveBeat, saveState, isDialogueHintSeen, markDialogueHintSeen } from "../lib/storage";
 import { useDevMode } from "../lib/devMode";
 import { matchIf } from "../lib/beats";
 import type { PageKey } from "../lib/routes";
@@ -134,7 +134,7 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
 
   // 进入本章硬阻塞:按 beats 顺序依次加载完该章会用到的所有插图,完成前展示"加载中"。
   // readyChapterRef 守卫同一章不重复阻塞(比如从小游戏返回时本组件会重挂载)。
-  const [chapterReady, setChapterReady] = useState(false);
+  const [, setChapterReady] = useState(false);
   const [loadProgress, setLoadProgress] = useState({ loaded: 0, total: 0 });
   const readyChapterRef = useRef<number | null>(null);
   useEffect(() => {
@@ -311,9 +311,21 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
     const newIds = ids.filter(id => !state.items.includes(id));
     const hadClues = state.searchedClues ?? [];
     const newClues = clueIds.filter(id => !hadClues.includes(id));
-    const base: GameState = (newIds.length || newClues.length)
+    let base: GameState = (newIds.length || newClues.length)
       ? { ...state, items: [...state.items, ...newIds], searchedClues: [...hadClues, ...newClues] }
       : state;
+    // 跳过/一键探索也要应用每个热点自带的数值变化(如「征药告示」推高追索压力)，
+    // 与逐个点开热点的效果一致，同样触发右上角数值卡片——否则跳过反而"漏掉"了代价。
+    // 已经手动看过的热点在那时就应用过一次了，这里跳过它们，避免重复叠加。
+    exploreScene.hotspots.forEach(h => {
+      if (h.set && !exploreVisited.includes(h.id)) base = applyChoiceSet(base, h.set);
+    });
+    const deltas = diffValues(
+      state as unknown as Record<string, unknown>,
+      base as unknown as Record<string, unknown>,
+      Date.now(),
+    );
+    if (deltas.length) onValueDeltas?.(deltas);
     setExploreVisited(exploreScene.hotspots.map(h => h.id));
     finishExplore(skipped, base);
   };
@@ -397,6 +409,16 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
   const canTapAdvance = exploreScene
     ? !!exploreOpen
     : !(isTransition || gameNode || (beat && "choices" in beat));
+
+  // 第一章第一句对白时提示一次操作方式：点哪继续、按钮在哪——只在真正的对白框上出现，且只提示一次。
+  // 用 ref 锁定"这次挂载是否该提示"，避免提示一出现就被自己标记为"已看过"而立刻消失——
+  // 它应该在玩家真正点开/翻过这第一句(beatIdx 变化)之后才自然收起。
+  const shouldShowHintRef = useRef(ch === 1 && beatIdx === 0 && !isDialogueHintSeen());
+  useEffect(() => {
+    if (shouldShowHintRef.current) markDialogueHintSeen();
+  }, []);
+  const showDialogueHint = shouldShowHintRef.current && beatIdx === 0 && !showTitleCard
+    && !exploreScene && canTapAdvance && !!beat && "line" in beat;
 
   const openHotspot = (id: string) => { setExploreOpen(id); setExploreSub(0); };
   const exploreNext = () => {
@@ -515,7 +537,9 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoplay, logOpen, typingDone, audioDone, beat, isTransition, gameNode, showTitleCard]);
 
-  if (!chapterReady) {
+  // 直接读 ref 而不是 chapterReady 状态：ch 变化后的第一次渲染里，状态还没来得及在 effect
+  // 里被拨回 false，会有一帧把"新章节但用旧/默认素材"的画面露出来。ref 没有这一帧的滞后。
+  if (readyChapterRef.current !== ch) {
     return (
       <div className="page chapter-loading-screen" style={{ position: "absolute", inset: 0 }}>
         <div className="chapter-loading-text">典 故 记 载 中<LoadingDots /></div>
@@ -564,25 +588,22 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
         }} />
       </div>
 
-      {/* ── 探索热点层:点击场景中的人与物 ── */}
+      {/* ── 探索热点层:点击场景中的人与物。已经看过的热点直接隐藏，不再占着画面。 ── */}
       {exploreScene && !exploreOpen && (
         <div className="explore-layer">
-          {exploreScene.hotspots.map(h => {
-            const done = exploreVisited.includes(h.id);
-            return (
-              <button
-                key={h.id}
-                data-sfx="nav"
-                className={"explore-hotspot" + (done ? " is-done" : "")}
-                style={{ left: `${h.x}%`, top: `${h.y}%` }}
-                onClick={() => openHotspot(h.id)}
-                aria-label={h.label}
-              >
-                <span className="explore-dot" />
-                <span className="explore-label">{done ? "✓ " : ""}{h.label}</span>
-              </button>
-            );
-          })}
+          {exploreScene.hotspots.filter(h => !exploreVisited.includes(h.id)).map(h => (
+            <button
+              key={h.id}
+              data-sfx="nav"
+              className="explore-hotspot"
+              style={{ left: `${h.x}%`, top: `${h.y}%` }}
+              onClick={() => openHotspot(h.id)}
+              aria-label={h.label}
+            >
+              <span className="explore-dot" />
+              <span className="explore-label">{h.label}</span>
+            </button>
+          ))}
         </div>
       )}
 
@@ -698,19 +719,26 @@ export function StoryPage({ state, setState, gotoPage, gotoEnding, onValueDeltas
               <ChoiceList choices={beat.choices} onChoose={handleChoice} />
             </div>
           ) : (
-            <DialogueBox
-              ref={dialogueRef}
-              speaker={speakerName}
-              portrait={speakerPortrait}
-              text={lineText}
-              isNarration={isNarration}
-              onNext={next}
-              autoOn={autoplay}
-              onToggleAuto={() => setAutoplay(a => !a)}
-              onOpenLog={() => setLogOpen(true)}
-              onMenu={() => gotoPage("map")}
-              onTypingDone={handleTypingDone}
-            />
+            <>
+              {showDialogueHint && (
+                <div className="dialogue-first-hint fade-in" style={{ pointerEvents: "none" }}>
+                  点击任意位置继续对话 · 右下角按钮可自动播放或查看历史
+                </div>
+              )}
+              <DialogueBox
+                ref={dialogueRef}
+                speaker={speakerName}
+                portrait={speakerPortrait}
+                text={lineText}
+                isNarration={isNarration}
+                onNext={next}
+                autoOn={autoplay}
+                onToggleAuto={() => setAutoplay(a => !a)}
+                onOpenLog={() => setLogOpen(true)}
+                onMenu={() => gotoPage("map")}
+                onTypingDone={handleTypingDone}
+              />
+            </>
           )}
         </div>
       </div>

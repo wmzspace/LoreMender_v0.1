@@ -11,6 +11,15 @@ export function markPrologueSeen(): void {
   try { localStorage.setItem(PROLOGUE_SEEN_KEY, "1"); } catch { /* 无痕模式忽略 */ }
 }
 
+// —— 对话操作提示是否已看过：进第一章第一句时提示一次"点击任意位置继续/右下角自动播放与历史"，看过不再提示 ——
+const DIALOGUE_HINT_SEEN_KEY = "loremender:dialogueHintSeen";
+export function isDialogueHintSeen(): boolean {
+  try { return localStorage.getItem(DIALOGUE_HINT_SEEN_KEY) === "1"; } catch { return false; }
+}
+export function markDialogueHintSeen(): void {
+  try { localStorage.setItem(DIALOGUE_HINT_SEEN_KEY, "1"); } catch { /* 无痕模式忽略 */ }
+}
+
 /**
  * 进度重置：删除本应用的本地存储（存档、章节进度、序幕标记等）。
  * 保留音量设置（loremender:huatuo:audio）与开发者模式开关，重置不影响这类设备级偏好。

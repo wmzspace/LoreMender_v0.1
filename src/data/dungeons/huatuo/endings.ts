@@ -84,7 +84,7 @@ function hasItem(state: GameState, item: string): boolean {
   return state.items.includes(item);
 }
 
-function searchPressure(state: GameState): number {
+export function searchPressure(state: GameState): number {
   // 注意：ch2 show_fragment、ch3 over_search、woodenBox 藏匿失败(boxCompartment=missed)
   // 以及各小游戏低完成度，都已在「游玩时」直接累加进 state.searchPressure，这里不可重复计入。
   // 仅补上「歌诀边传边改、且纠错不足」这一未在游玩时即时累加的来源。
@@ -102,14 +102,12 @@ export function resolveEnding(state: GameState): EndingId {
   const completeCaseRecord = isHigh(state, "case_triage") || hasItem(state, "case_record_full");
   const completeSongPage = isHigh(state, "song_formula") || hasItem(state, "xuanyin_song_page_complete");
   const hasForbiddenRecord = hasItem(state, "forbidden_record") || state.ch4 === "keep_forbidden_record";
-  const weakEvidenceCount = ["herb_memory", "case_triage", "song_formula"].filter(id => !isAtLeastMid(state, id)).length;
   const sp = searchPressure(state);
-  const burnLean = (state.burn_tendency || 0) >= 1;
 
-  // 3. 软化强制焚尽：主动焚毁 / 三路证据全无 / 被围（压力极高，或倾向焚毁且压力偏高）
+  // 3. 强制焚尽：主动焚毁 / 追索压力达到 5(被围，已无人可托)。低于 5 不再强制——
+  //    评估证据强弱、焚毁倾向都只影响"青囊归处"页面能不能选,不再绕过玩家的选择直接判定结局。
   if (state.finalChoice === "burn") return "burn_ending";
-  if (weakEvidenceCount >= 3) return "burn_ending";
-  if (sp >= 5 || (burnLean && sp >= 3)) return "burn_ending";
+  if (sp >= 5) return "burn_ending";
 
   // 1. 三线对称：真结局统一需要「信任≥2 + 该线质量物品完整 + 高完成≥2 + 对应倾向≥1 + 线路专属条件」
   //    注：信任为累加值(小游戏高分+1，再加章内 1~2 个共情对白)，故达标需「小游戏高分 + 至少一次共情」。

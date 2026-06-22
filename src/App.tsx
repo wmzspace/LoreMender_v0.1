@@ -22,12 +22,13 @@ const BOOT_EXIT_MS = 420;
 const SFX_SELECTOR = "[data-sfx], .press, .choice, .navitem, .btn-primary, .btn-ghost, .icon-btn";
 
 /** Pages that share the same chapter BGM — switching among them keeps the music playing. */
-const BGM_PAGES: PageKey[] = ["story", "minigame"];
+const BGM_PAGES: PageKey[] = ["story", "minigame", "trust"];
 
 /** 剧情外界面统一主题曲（封面/序幕/卷宗/设定/档案/图鉴/线索板/进程）。 */
 const MENU_THEME = "/audio/menu_theme.mp3";
-/** 自带音频/留白、不放主题曲的页面：结局(旁白配音)、信任抉择(留白)、典故卷宗(自行接管为第一章 BGM，避免与主题曲抢播)。 */
-const NO_THEME_PAGES: PageKey[] = ["ending", "trust", "chapters"];
+/** 自带音频/留白、不放主题曲的页面：结局(旁白配音)、典故卷宗(自行接管为第一章 BGM，避免与主题曲抢播)。
+ *  信任抉择(trust)沿用进入前的章节 BGM(此处即第五章)，不再单独留白。 */
+const NO_THEME_PAGES: PageKey[] = ["ending", "chapters"];
 
 /** 沉浸页:无 SideNav 概念(封面/结局/小游戏)。剧情页参与正常侧栏体系:默认收起=全屏 + 左上展开键,展开则显示侧栏。 */
 const IMMERSIVE_PAGES: PageKey[] = ["cover", "ending", "minigame"];
@@ -268,7 +269,9 @@ export default function App() {
                   </svg>
                 </button>
               )}
-              <div key={transKey} style={{position:"absolute", inset: 0, animation: "fadeIn 380ms ease both"}}>
+              {/* 进入 story 页不走这层淡入:它自己有"硬阻塞加载黑屏→章节标题卡"的内部过场，
+                  外层若再叠一次 0→1 的淡入，会在淡入过程中让上一页(如典故卷宗的章节插图)透出来。 */}
+              <div key={transKey} style={{position:"absolute", inset: 0, animation: page === "story" ? "none" : "fadeIn 380ms ease both"}}>
                 {pageEl}
               </div>
               {/* 数值变化提示:位于换页包裹层之外,不随 StoryPage 重挂载而被销毁 */}

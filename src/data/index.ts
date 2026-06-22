@@ -20,6 +20,7 @@ export {
   resolveEnding,
   getEndingBody,
   getEndingAudioId,
+  searchPressure,
 } from "./dungeons/huatuo";
 
 export {

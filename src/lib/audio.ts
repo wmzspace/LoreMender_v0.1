@@ -27,9 +27,9 @@ export type AudioSettings = Record<AudioChannel, ChannelSetting>;
 export const AUDIO_CHANNELS: AudioChannel[] = ["bgm", "dialogue", "sfx"];
 
 const DEFAULT_SETTINGS: AudioSettings = {
-  bgm: { volume: 0.35, muted: false },
-  dialogue: { volume: 1, muted: false },
-  sfx: { volume: 1, muted: false },
+  bgm: { volume: 0.15, muted: false },
+  dialogue: { volume: 0.85, muted: false },
+  sfx: { volume: 0.2, muted: false },
 };
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);

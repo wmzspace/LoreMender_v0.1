@@ -913,27 +913,27 @@ body {
 }
 
 .page-head-eyebrow {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.34em;
   color: var(--gold-pale);
-  opacity: 0.55;
-  margin-bottom: 3px;
+  opacity: 0.7;
+  margin-bottom: 4px;
 }
 
 .page-head-title {
-  font-size: 17px;
+  font-size: 21px;
   letter-spacing: 0.26em;
   text-indent: 0.26em;
   color: var(--gold-pale);
-  text-shadow: 0 0 12px rgba(236, 220, 166, 0.35);
+  text-shadow: 0 0 14px rgba(236, 220, 166, 0.5);
 }
 
 .page-head-sub {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.22em;
-  color: rgba(228, 224, 208, 0.62);
+  color: rgba(228, 224, 208, 0.78);
   font-family: var(--font-han);
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 .page-head-right {
@@ -1457,26 +1457,30 @@ body {
 /* ============================================================
    Scroll/divider deco
    ============================================================ */
+/* GoldDivider 目前只用在米色卷纸面板(PaperPanel)上，原来的浅金色在米色纸上几乎看不清，
+   改成深棕金(--gold-shadow)才有足够对比度。 */
 .gold-divider {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--gold-pale);
+  color: var(--gold-shadow);
 }
 
 .gold-divider::before,
 .gold-divider::after {
   content: "";
   flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold-pale), transparent);
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--gold-shadow), transparent);
+  opacity: 0.7;
 }
 
 .gold-divider .mark {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   transform: rotate(45deg);
-  background: var(--gold-pale);
+  background: var(--gold-shadow);
+  opacity: 0.8;
 }
 
 /* ============================================================
@@ -2069,6 +2073,17 @@ button:disabled,
   margin: 0 auto;
   padding: 0 clamp(22px, 5vw, 60px) clamp(40px, 9vh, 84px);
 }
+
+/* 卷名/标题/分隔线/简介/按钮依次淡入上浮，而不是整块一次性出现。 */
+.volume-content > * {
+  animation: fadeInUp 620ms cubic-bezier(.2, .8, .3, 1) both;
+}
+
+.volume-content > *:nth-child(1) { animation-delay: 0.05s; }
+.volume-content > *:nth-child(2) { animation-delay: 0.16s; }
+.volume-content > *:nth-child(3) { animation-delay: 0.28s; }
+.volume-content > *:nth-child(4) { animation-delay: 0.38s; }
+.volume-content > *:nth-child(5) { animation-delay: 0.5s; }
 
 .volume-eyebrow {
   font-family: var(--font-han);
@@ -3189,6 +3204,21 @@ button:disabled,
   color: rgba(228, 224, 208, 0.86);
 }
 
+/* 第一章第一句对白时的一次性操作提示，浮在对白框正上方。 */
+.dialogue-first-hint {
+  align-self: center;
+  margin-bottom: 10px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(5, 8, 11, 0.78);
+  border: 1px solid rgba(236, 220, 166, 0.4);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--gold-pale);
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
 .story-action-btns {
   display: flex;
   gap: 10px;
@@ -3309,6 +3339,42 @@ button:disabled,
 
 .ending-actions .btn-ghost:nth-last-child(-n+2) {
   /* 桌面端由 grid 自动排,移动端用 flex wrap 模拟 2 列 */
+}
+
+/* 结局页:底部居中的"下滑查看更多"提示，滚动一段距离后自动隐藏。
+   不管底下滚到深色背景还是米色卷纸，都要看得清——所以不靠文字阴影，给自己配一个不透明深底。 */
+.ending-scroll-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(22px + var(--safe-bottom));
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  background: rgba(5, 8, 11, 0.82);
+  border: 1px solid rgba(236, 220, 166, 0.4);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  font-family: var(--font-han);
+  font-size: 17px;
+  letter-spacing: 0.2em;
+  color: var(--gold-pale);
+  text-shadow: 0 0 14px rgba(236, 220, 166, 0.4);
+  animation: endingScrollHint 1.8s ease-in-out infinite;
+}
+
+.ending-scroll-hint svg {
+  width: 18px;
+  height: 12px;
+}
+
+@keyframes endingScrollHint {
+  0%, 100% { opacity: 0.65; transform: translateX(-50%) translateY(0); }
+  50% { opacity: 1; transform: translateX(-50%) translateY(7px); }
 }
 
 @media (min-width: 1024px) {
@@ -4877,17 +4943,42 @@ button:disabled,
    青囊归处 (TrustRoutePage) — 参考「曹府查案」病案卡的悬浮放大交互：
    平时只是一张人物小像，停留鼠标时浮出当时交托那一刻的插图与文字。
    ============================================================ */
+.trust-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  filter: saturate(0.92) brightness(0.8);
+}
+
+.trust-bg-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(5, 8, 11, 0.3), transparent 60%),
+    linear-gradient(180deg, rgba(6, 9, 12, 0.7) 0%, rgba(6, 9, 12, 0.82) 40%, rgba(5, 8, 11, 0.92) 100%);
+}
+
+.trust-footer {
+  padding: 12px 18px calc(16px + var(--safe-bottom));
+  background: linear-gradient(180deg, transparent, rgba(7, 11, 14, 0.96) 30%);
+}
+
 .trust-intro {
-  font-size: 14.5px;
+  font-size: 16px;
   line-height: 1.8;
-  color: rgba(228, 224, 208, 0.78);
+  color: rgba(228, 224, 208, 0.86);
   letter-spacing: 0.03em;
+  text-align: center;
   margin-bottom: 16px;
 }
 
 .trust-hint {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 9px;
   padding: 11px 14px;
   margin-bottom: 18px;
@@ -4895,6 +4986,7 @@ button:disabled,
   border-left: 3px solid var(--jade);
   border-radius: 3px;
   background: rgba(95, 168, 146, 0.07);
+  text-align: center;
 }
 
 .trust-hint-mark {
@@ -4914,84 +5006,162 @@ button:disabled,
   letter-spacing: 0.03em;
 }
 
-.trust-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  padding-bottom: 8px;
+.trust-headline {
+  font-family: var(--font-han);
+  font-size: 28px;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: var(--gold-pale);
+  text-shadow: 0 0 20px rgba(236, 220, 166, 0.55);
+  text-align: center;
+  margin-bottom: 12px;
 }
 
-@media (max-width: 720px) {
-  .trust-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.trust-card {
-  position: relative;
+/* 手风琴：常态四栏等宽，悬停/选中的一栏展开、其余让位收窄——
+   托付对象本就该「专注看一个、其余退到余光里」，比并排小卡片更贴合「抉择」的分量。 */
+.trust-acc {
   display: flex;
-  flex-direction: column;
-  gap: 9px;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  text-align: left;
-  color: var(--paper);
+  gap: 10px;
+  height: clamp(360px, 58vh, 560px);
 }
 
-.trust-card-frame {
+.trust-acc-item {
   position: relative;
-  border-radius: 10px;
+  flex: 1 1 0%;
+  min-width: clamp(64px, 8vw, 100px);
+  border-radius: 12px;
   overflow: hidden;
+  cursor: pointer;
   border: 1px solid rgba(205, 178, 119, 0.3);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
-  transition: border-color 0.32s cubic-bezier(.2,.8,.3,1), box-shadow 0.32s cubic-bezier(.2,.8,.3,1), transform 0.32s cubic-bezier(.2,.8,.3,1);
+  outline: none;
+  transition: flex-grow 0.5s cubic-bezier(.2,.8,.3,1), border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.trust-card:hover .trust-card-frame {
-  border-color: rgba(205, 178, 119, 0.6);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.6);
-  transform: translateY(-4px);
+.trust-acc-item.is-active {
+  flex-grow: 5;
+  border-color: rgba(205, 178, 119, 0.55);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.6);
 }
 
-.trust-card.is-selected .trust-card-frame {
+.trust-acc-item.is-selected {
   border-color: var(--jade);
-  box-shadow: 0 0 0 2px rgba(95, 168, 146, 0.35), 0 8px 22px rgba(0, 0, 0, 0.55);
-  transform: translateY(-2px);
+  box-shadow: 0 0 0 2px rgba(95, 168, 146, 0.35), 0 18px 44px rgba(0, 0, 0, 0.55);
 }
 
-.trust-card-portrait {
-  display: block;
+.trust-acc-bg {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  height: 100%;
   object-fit: cover;
   object-position: center top;
-  background: rgba(6, 10, 14, 0.92);
-  filter: brightness(0.88) saturate(0.94);
-  transition: transform 0.5s cubic-bezier(.2,.8,.3,1), filter 0.4s ease;
+  transition: opacity 0.5s ease, transform 8s linear;
 }
 
-.trust-card:hover .trust-card-portrait {
-  transform: scale(1.06);
-  filter: brightness(1) saturate(1);
+.trust-acc-bg--portrait {
+  opacity: 1;
+  transform: scale(1);
 }
 
-.trust-card-portrait--wide {
-  object-position: center 35%;
+.trust-acc-bg--scene {
+  opacity: 0;
+  object-position: center;
 }
 
-.trust-card-pick {
+.trust-acc-item.is-active .trust-acc-bg--portrait {
+  opacity: 0;
+}
+
+.trust-acc-item.is-active .trust-acc-bg--scene {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.trust-acc-scrim {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 3px 9px;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 8, 11, 0.1) 0%, rgba(5, 8, 11, 0.15) 55%, rgba(5, 8, 11, 0.92) 100%);
+}
+
+/* 竖排姓名：收起时唯一的辨识方式，展开时淡出让位给横排标题 */
+.trust-acc-spine {
+  position: absolute;
+  left: 14px;
+  top: 18px;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: var(--font-han);
+  font-size: 18px;
+  letter-spacing: 0.3em;
+  color: var(--gold-pale);
+  text-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+.trust-acc-item.is-active .trust-acc-spine {
+  opacity: 0;
+}
+
+.trust-acc-detail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 18px 20px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.trust-acc-item.is-active .trust-acc-detail {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.1s;
+}
+
+.trust-acc-detail-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+  white-space: nowrap;
+}
+
+.trust-acc-detail-head strong {
+  font-family: var(--font-han);
+  font-size: 20px;
+  letter-spacing: 0.14em;
+  color: var(--gold-pale);
+  text-shadow: 0 0 14px rgba(236, 220, 166, 0.4);
+}
+
+.trust-acc-detail-head span {
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  color: rgba(228, 224, 208, 0.65);
+}
+
+.trust-acc-detail-desc {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: rgba(228, 224, 208, 0.88);
+  letter-spacing: 0.02em;
+  max-width: 640px;
+}
+
+.trust-acc-pick {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 3px 10px;
   border-radius: 999px;
   font-size: 11px;
   letter-spacing: 0.14em;
   color: #0e1a16;
   background: var(--jade-pale);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  z-index: 1;
   animation: trustPickIn 0.28s cubic-bezier(.2,.8,.3,1) both;
 }
 
@@ -5000,99 +5170,57 @@ button:disabled,
   to { opacity: 1; transform: scale(1); }
 }
 
-.trust-card-caption {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+/* 未达门槛：仍可展开预览，但调暗、去色，且禁止点选——「看得到，托付不动」。 */
+.trust-acc-item.is-locked {
+  cursor: not-allowed;
 }
 
-.trust-card-caption strong {
-  font-family: var(--font-han);
-  font-size: 16px;
-  letter-spacing: 0.14em;
-  color: var(--gold-pale);
-  transition: color 0.25s ease, text-shadow 0.25s ease;
+.trust-acc-item.is-locked .trust-acc-bg {
+  filter: grayscale(0.6) brightness(0.55);
 }
 
-.trust-card:hover .trust-card-caption strong {
-  text-shadow: 0 0 14px rgba(236, 220, 166, 0.4);
+.trust-acc-item.is-locked .trust-acc-scrim {
+  background: linear-gradient(180deg, rgba(5, 8, 11, 0.35) 0%, rgba(5, 8, 11, 0.4) 55%, rgba(5, 8, 11, 0.94) 100%);
 }
 
-.trust-card-caption span {
+.trust-acc-locked {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 11px;
+  border-radius: 999px;
   font-size: 12px;
-  letter-spacing: 0.06em;
-  color: rgba(228, 224, 208, 0.55);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #fff3ee;
+  background: rgba(178, 58, 44, 0.88);
+  border: 1px solid rgba(255, 208, 192, 0.5);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+  z-index: 1;
 }
 
-/* 悬浮放大层：默认隐藏在卡片正下方，hover 时浮现交托插图 + 完整文字。
-   开向下方（而非上方）是为了避开 .page-shell-body 的纵向滚动容器在顶部裁切弹层。
-   显示有小延迟、收起无延迟（delay 只写在 :hover 规则里）——划过整排卡片时不会一路连续闪烁。 */
-.trust-card-zoom {
-  position: absolute;
-  top: calc(100% + 16px);
-  width: min(360px, 86vw);
-  padding: 12px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgba(20, 28, 34, 0.97), rgba(8, 12, 16, 0.98));
-  border: 1px solid var(--gold-pale);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-  opacity: 0;
-  transform: translateY(-8px) scale(0.95);
-  pointer-events: none;
-  z-index: 20;
-  transition: opacity 0.22s cubic-bezier(.2,.8,.3,1), transform 0.22s cubic-bezier(.2,.8,.3,1);
-}
-
-.trust-card-zoom::before {
-  content: "";
-  position: absolute;
-  top: -6px;
-  width: 11px;
-  height: 11px;
-  background: var(--gold-pale);
-  clip-path: polygon(50% 0, 0 100%, 100% 100%);
-}
-
-.trust-card-zoom--left {
-  left: 0;
-  transform-origin: top left;
-}
-
-.trust-card-zoom--left::before {
-  left: 28px;
-}
-
-.trust-card-zoom--right {
-  right: 0;
-  transform-origin: top right;
-}
-
-.trust-card-zoom--right::before {
-  right: 28px;
-}
-
-.trust-card:hover .trust-card-zoom,
-.trust-card:focus-visible .trust-card-zoom {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
-  transition-delay: 0.12s;
-}
-
-.trust-card-zoom-img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: 6px;
-  margin-bottom: 10px;
-}
-
-.trust-card-zoom-text {
-  font-size: 13px;
-  line-height: 1.75;
-  color: rgba(228, 224, 208, 0.85);
-  letter-spacing: 0.02em;
+@media (max-width: 720px) {
+  .trust-acc {
+    flex-direction: column;
+    height: auto;
+  }
+  .trust-acc-item {
+    min-width: 0;
+    min-height: 64px;
+    flex: 0 0 64px;
+  }
+  .trust-acc-item.is-active {
+    flex: 1 1 240px;
+  }
+  .trust-acc-spine {
+    writing-mode: horizontal-tb;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .trust-acc-item.is-active .trust-acc-spine {
+    transform: translateY(-50%);
+  }
 }
 
 /* ── 歌诀纠错全屏（玄音残纸贴图衬底，复用 .bamboo-fs/.bamboo-top/.bamboo-bottom 浮层） ── */

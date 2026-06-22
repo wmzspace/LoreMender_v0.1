@@ -11,7 +11,7 @@ export function GoldDivider({ label, labelStyle }: GoldDividerProps) {
       <span className="mark"></span>
       {label && <span style={{
         fontFamily: "var(--font-han)",
-        fontSize: 13, letterSpacing: "0.3em", textIndent: "0.3em",
+        fontSize: 16, letterSpacing: "0.3em", textIndent: "0.3em",
         ...labelStyle,
       }}>{label}</span>}
       <span className="mark"></span>
