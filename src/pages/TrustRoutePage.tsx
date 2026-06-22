@@ -47,7 +47,7 @@ const ROUTE_IMAGE: Record<string, string> = {
   chenbo: "/images/levels/1/chapters/ch2_beats/scene_09_prescription_handoff.webp",
   wangji: "/images/levels/1/chapters/ch3_beats/ch3_09_documents_handoff.webp",
   xuanyin: "/images/levels/1/chapters/ch4_beats/scene_09_song_page_handoff.webp",
-  burn: "/images/levels/1/chapters/endings/ending_burn.webp",
+  burn: "/images/levels/1/chapters/endings/7-burn-be.webp",
 };
 
 // 手风琴收起态封面——专为本页准备的高清肖像（不影响对话框等其他场景仍用的小像）。

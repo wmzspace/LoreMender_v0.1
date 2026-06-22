@@ -173,6 +173,9 @@ function CoverVideo() {
         opacity: showVideo ? 1 : 0,
         transition: "opacity 600ms ease",
         pointerEvents: "none",
+        // 独立 GPU 合成层:让视频走硬件解码/合成路径,不被卷进主线程逐帧重绘。
+        transform: "translateZ(0)",
+        willChange: "opacity",
       }}
     >
       <source src="/videos/cover.mp4" type="video/mp4" />
@@ -278,23 +281,28 @@ export function CoverPage({ onStart }: CoverPageProps) {
 
   return (
     <div className="page night-deep-bg">
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        backgroundImage: "url(/images/cover.jpg)",
-        backgroundSize: "cover",
-        backgroundPosition: "center top",
-        backgroundColor: "#06090b",
-      }} />
+      {/* 静态封面图 + 颗粒做成一个隔离的合成层(isolation:isolate):
+          grain 的 mix-blend-mode 只跟这张静止图混合并一次性合成,
+          不再把下面循环播放的 cover.mp4 卷进「逐帧整屏混合」——那正是封面视频卡顿的主因。 */}
+      <div style={{ position: "absolute", inset: 0, isolation: "isolate" }}>
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: "url(/images/cover.jpg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center top",
+          backgroundColor: "#06090b",
+        }} />
+        <div className="grain" />
+      </div>
       <CoverVideo />
+      {/* 遮罩 + 暗角放在视频之上,但都是廉价的 alpha 合成(无 mix-blend),不会拖慢逐帧播放。 */}
       <div style={{
         position: "absolute",
         inset: 0,
         pointerEvents: "none",
         background: "linear-gradient(180deg, rgba(5,8,11,0.25) 0%, transparent 22%, transparent 48%, rgba(5,8,11,0.55) 76%, rgba(5,3,2,0.97) 100%)",
       }} />
-
-      <div className="grain" />
       <div className="vignette" />
 
       {/* 点击封面漩涡进入游戏:范围贴合美术里漩涡的真实位置(见 usePortalRect),不再额外画圈示意。
