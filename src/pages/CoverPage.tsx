@@ -435,7 +435,7 @@ export function CoverPage({ onStart }: CoverPageProps) {
 
       {modal === "showcase" && (
         <CoverModal onClose={() => setModal(null)}>
-          <ShowcasePage embedded onBack={() => setModal(null)} onEnter={beginGame} />
+          <ShowcasePage embedded onBack={() => setModal(null)} />
         </CoverModal>
       )}
     </div>

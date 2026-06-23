@@ -159,7 +159,6 @@ export default function App() {
     case "showcase":
       pageEl = <ShowcasePage
         onBack={() => gotoPage("cover")}
-        onEnter={() => gotoPage("chapters")}
       />;
       break;
     case "world":
