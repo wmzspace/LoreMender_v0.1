@@ -21,55 +21,62 @@ const INK = "#0c1218";
 const INK_DEEP = "#0a1014";
 const PAPER = "rgba(228,224,208,";
 
-// ── 全部五章数据 ───────────────────────────────────────────────
+// ── 全部五章数据（与副本 chapters.ts / story.ts 对齐） ─────────────
+const HUATUO = "/images/levels/1/characters/huatuo_square.webp";
+const AJ = "/images/levels/1/characters/aj_square.webp";
+const CHENBO = "/images/levels/1/characters/chenbo_square.webp";
+const WANGJI = "/images/levels/1/characters/wangji_square.webp";
+const XUANYIN = "/images/levels/1/characters/xuanyin_square.webp";
+
 const ALL_CHAPTERS = [
   {
     num: 1, numCn: "第一章", id: "ch1",
-    title: "牢狱初醒",
-    desc: "阿吉醒来，拼合竹简，与华佗首次对话。",
-    preview: "建安十三年，许昌大牢。烛火摇曳中，阿吉从昏迷中醒来。面前是一位苍老的身影，正在拼合散落的竹简。师父的第一句话，将改变这一夜的走向……",
+    title: "许昌大牢",
+    desc: "牢中醒来，拼合青囊残页，受华佗将死之托离开大牢。",
+    preview: "建安十三年，许昌大牢。阿吉从草席旁醒来，面前是将死的华佗。他不要你死守一本书，而要你带着青囊残术走出牢门——以送药童的身份，赶在曹府点验木盒之前。",
     characters: [
-      { name: "华佗", portrait: "/images/levels/1/characters/huatuo_square.webp" },
-      { name: "阿吉", portrait: "/images/levels/1/characters/aj_square.webp" },
+      { name: "华佗", portrait: HUATUO },
+      { name: "阿吉", portrait: AJ },
     ],
   },
   {
     num: 2, numCn: "第二章", id: "ch2",
-    title: "三人之试",
-    desc: "走访三位候选人，通过对话识别各自真相。",
-    preview: "三个人，一本书，只有一次机会。王济眼神游移，陈伯鞋上沾满泥土，玄音道人衣袂飘飘。看人不能只看表面，而你必须做出判断……",
+    title: "许昌街市",
+    desc: "街市急症中查线索、配药救人，验证民间经验能否传续。",
+    preview: "天色刚亮，曹府征药的告示贴满街墙，药摊翻倒在泥水里。老药工陈伯识药多年却不识全字——他能救急，可经验若整理不成旁人能用的药签，传承仍会随人入土。",
     characters: [
-      { name: "王济", portrait: "/images/levels/1/characters/wangji_square.webp" },
-      { name: "陈伯", portrait: "/images/levels/1/characters/chenbo_square.webp" },
-      { name: "玄音道人", portrait: "/images/levels/1/characters/xuanyin_square.webp" },
+      { name: "陈伯", portrait: CHENBO },
+      { name: "阿吉", portrait: AJ },
     ],
   },
   {
     num: 3, numCn: "第三章", id: "ch3",
-    title: "曹府密谈",
-    desc: "曹操召见，博弈周旋，面对交书换命的诱饵。",
-    preview: "朱漆大堂，青铜灯树。魏王坐在上方，案上放着一卷竹简。「交出来，本王保你师徒平安。」权谋的压迫从四面合拢，你只能周旋……",
+    title: "曹府档案区",
+    desc: "潜入曹府，按病情而非身份重排病案，取得问诊录与文书。",
+    preview: "曹府朱门半开，药房小吏来回搬运药箱。幕僚王济通文书、懂归档，相信医术入库才能传远。可制度若无医德约束，保存也会变成另一种夺走——你必须给他一个比身份更硬的理由。",
     characters: [
-      { name: "曹操", portrait: "/images/levels/1/characters/caocao_square.webp" },
+      { name: "王济", portrait: WANGJI },
+      { name: "阿吉", portrait: AJ },
     ],
   },
   {
     num: 4, numCn: "第四章", id: "ch4",
-    title: "青囊抉择",
-    desc: "华佗囚室深夜，青囊残卷现世。",
-    preview: "夜色沉入许昌大牢，青囊残卷终于现世。救一人，救一术，还是救万民？你将面对最后的抉择，而此前积累的信任、线索与疑点，都会在此刻改变命运的方向……",
+    title: "民间乐坊",
+    desc: "追踪错误歌诀的传播链，分辨可入歌的常识与须禁传的危险。",
+    preview: "巷子里孩童拍手唱着轻快的曲子，词却让阿吉猛地停住——错误的救急歌诀正从乐坊传开。歌者玄音能把医理改成孩童也记得住的调子，可传得越快，错得越险。",
     characters: [
-      { name: "华佗", portrait: "/images/levels/1/characters/huatuo_square.webp" },
+      { name: "玄音", portrait: XUANYIN },
+      { name: "阿吉", portrait: AJ },
     ],
   },
   {
     num: 5, numCn: "第五章", id: "ch5",
-    title: "千年回响",
-    desc: "终章回响，理解修补的真正意义。",
-    preview: "书烧了，他死了，可是——无论你做了哪个选择，历史的长河中总有一道涟漪。此后千年，那道涟漪会以何种方式被人记住？",
+    title: "旧祠裁断",
+    desc: "把一路证据摆上案台，由过程与托付共同判定青囊归处。",
+    preview: "城外旧祠荒草没阶，墙上还留着华佗当年义诊贴方的痕迹。阿吉带着青囊残页、陈伯药签、曹府问诊录与玄音歌页推门而入。最后的裁断，由这一路的选择与托付共同写下。",
     characters: [
-      { name: "阿吉", portrait: "/images/levels/1/characters/aj_square.webp" },
-      { name: "华佗", portrait: "/images/levels/1/characters/huatuo_square.webp" },
+      { name: "阿吉", portrait: AJ },
+      { name: "华佗", portrait: HUATUO },
     ],
   },
 ];
