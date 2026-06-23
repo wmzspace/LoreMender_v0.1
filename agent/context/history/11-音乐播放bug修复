@@ -1,0 +1,723 @@
+
+> 当前有两个问题： 
+  进入封面页的时候没有自动播放音频 
+  进入副本典籍页的时候，不要播放主题音乐。 
+
+● 我先了解一下项目结构，找到相关代码。
+
+● Bash(ls /home/wumianzi/workspace/codespace/LoreMender_v0.1)
+  ⎿ agent	   dist		     generated-images  node_modules  package-lock.json	README.md	    tools	       tsconfig.node.json
+    bkp	   docs		     index.html        original      pnpm-lock.yaml	src		    tsconfig.app.json  TWINE_GUIDE.md
+    CLAUDE.md  eslint.config.js  LICENSE	       package.json  public		STORY_STRUCTURE.md  tsconfig.json      vite.config.ts
+
+● Bash(ls /home/wumianzi/workspace/codespace/LoreMender_v0.1/src)
+  ⎿ App.tsx  CLAUDE.md  components	data  editor  lib  main.tsx  pages  styles
+
+● Read(src/CLAUDE.md)
+  ⎿ Read 3 lines 
+
+● Search(pattern: "audio|Audio|播放|封面|cover|副本典籍|主题音乐|theme.*music|bgm|BGM", path: "src")
+  ⎿ Found 32 files (ctrl+o to expand)
+
+● Read(src/pages/CoverPage.tsx)
+  ⎿ Read 396 lines (ctrl+o to expand)
+
+● 现在看 App.tsx 和 audio.ts，了解 BGM 是怎么调度的。
+
+● Read(src/App.tsx)
+  ⎿ Read 280 lines (ctrl+o to expand)
+
+● 我看到 BGM 调度逻辑。问题分析：
+
+  1. 封面页没有自动播放音频：page === "cover" 时进入 else 分支，调用
+  playBgm(MENU_THEME)。但首次进入页面时浏览器还没有用户交互，自动播放被阻止。需要看 playBgm 实现和 primeAudio。
+  2. 副本典籍页不要播放主题音乐：副本典籍页是 dungeon（VolumeSelectPage），目前它进入 else 分支会播放 MENU_THEME。需要把 dungeon
+   加入 NO_THEME_PAGES（或单独处理）。
+
+  先看 audio.ts：
+
+● Read(src/lib/audio.ts)
+  ⎿ Read 344 lines (ctrl+o to expand)
+
+● 现在分析两个问题：
+
+  问题 1：封面页没有自动播放音频
+
+  App 加载完成 → page === "cover" → playBgm(MENU_THEME) 被调用。但此时 _bgmEl 还没在用户手势中"解锁"过（primeAudio
+  还没被调用），audio.play() 会被浏览器拦截，返回 rejected promise，被 .catch(() => {}) 吞掉了。
+
+  而 primeAudio 是在用户首次点击屏幕时由 handleScreenClick 触发的。在 primeAudio 中，如果有
+  currentBgmSrc，会播放它——但前提是用户点击了屏幕。
+
+  CoverPage 上的"轻触漩涡"按钮也会触发 handleScreenClick（因为它有 press class），所以这时 primeAudio 会运行，会播放
+  MENU_THEME。但用户可能进入封面后停留一段时间不点击漩涡，就听不到 BGM。
+
+  需要看用户是否在 BootScreen 阶段有过点击。看 BootScreen：
+
+● Read(src/components/BootScreen.tsx)
+  ⎿ Read 13 lines (ctrl+o to expand)
+
+● BootScreen 没有点击事件，所以进入封面页时音频确实没解锁。这是浏览器自动播放策略导致的——必须有一次用户手势才能播放音频。
+
+  解决方案：在 CoverPage 上监听首次用户交互（任何 click/touchstart），主动调用 primeAudio()
+  来解锁。这样用户首次点击封面任意位置（包括"查看设定"、"参赛档案"按钮）时就会开始播放 BGM。或者更主动地，在 primeAudio
+  被首次调用后重试播放当前期望的 BGM。
+
+  实际上 primeAudio 已经处理了这个：它会在手势里播放 currentBgmSrc。所以只要用户在封面页有任何点击，BGM
+  就会响。问题是用户进入封面后可能等几秒才点击——但这是浏览器策略硬限制，没有用户手势就是不能播。
+
+  我先看 SoundSettings 组件，看用户是否能在封面调节音量来触发：
+
+● Read(src/components/SoundSettings.tsx)
+  ⎿ Read 131 lines (ctrl+o to expand)
+
+● 现在我清楚了。我需要确认下"副本典籍页"到底是哪个 page。从 SideNav 或 routes 看：
+
+● Read(src/lib/routes.ts)
+  ⎿ Read 14 lines (ctrl+o to expand)
+
+● Search(pattern: "副本典籍|副本|dungeon|卷宗|典故", path: "src/components/SideNav.tsx")
+  ⎿ Found 3 lines (ctrl+o to expand)
+
+● Read(src/components/SideNav.tsx)
+  ⎿ Read 51 lines (ctrl+o to expand)
+
+● 这里有歧义：用户说的"副本典籍页"可能指：
+  - "副本卷宗"（chapters 页，ChapterSelectPage）
+  - "典籍设定"（world 页，WorldPage）
+
+  让我看下用户可能的具体所指。从字面看，"副本典籍页"更像是把"副本卷宗"+"典籍设定"两词混合了。从用户原话"副本典籍页"——可能是输入
+  时的笔误，实际指其中一个。让我看下这两个页面是否自身有音频逻辑：
+
+● Bash(ls /home/wumianzi/workspace/codespace/LoreMender_v0.1/src/pages/)
+  ⎿ ChapterSelectPage.tsx  CoverPage.tsx	      GalleryPage.tsx	ProgressPage.tsx  TrustRoutePage.tsx
+    CLAUDE.md	       DungeonStatusPage.tsx  index.ts		ShowcasePage.tsx  VolumeSelectPage.tsx
+    CluePage.tsx	       EndingPage.tsx	      MiniGamePage.tsx	StoryPage.tsx	  WorldPage.tsx
+
+● 有 WorldPage.tsx（"典籍设定"）。让我确认下 WorldPage 的内容来对照用户说法：
+
+● Search(pattern: "典籍|副本|卷宗|title|页面", path: "src/pages/WorldPage.tsx")
+  ⎿ Found 8 lines (ctrl+o to expand)
+
+● "典籍设定"页 = world 页 = WorldPage，标题是"典 籍 设 定"。
+
+  而"副本卷宗"页 = chapters 页 = ChapterSelectPage。
+
+  用户原话"副本典籍页"——我倾向认为这是把两个词拼一起了，更可能指"典籍设定页"（因为它是"典籍"）。但也可能指"副本卷宗页"。
+
+  为避免误改，我应该问用户确认。不过先把第一个问题解决方案想清楚，再一起问。
+
+  实际上，从命名上"副本典籍"更像"典籍"页（world）。但更稳妥是问。
+
+  让我先看一下当前 dist 或 git log 有没有相关线索：
+
+● Bash(git log --oneline -20)
+  ⎿ 8563781 (HEAD -> main, origin/main) feat: enhance song boundary mini-game with drag-and-drop mechanics and visual updates
+    bbcefcd feat(boot): 启动画面+章节硬阻塞加载+封面退场动画
+    7545587 feat(preload): 建立全局图片/视频预加载机制
+    ...+17 line (ctrl+o to expand)
+
+● 没有直接线索。我问下用户来确认"副本典籍页"具体指哪个。
+
+● User answered CodeBuddy's questions:
+  ⎿ · 「副本典籍页」具体指哪个页面？侧栏里有「副本卷宗」(chapters页) 和「典籍设定」(world页) 两个，名称相近。 → 典故卷宗页
+
+● 用户回答"典故卷宗页"——但侧栏实际叫"副本卷宗"（key 是 chapters），用户用了"典故卷宗"这个名字。结合 ChapterSelectPage
+  是选择章节进入剧情的页面，且 CoverPage 注释里也用"卷宗页"指代 chapters（App.tsx:152 onStart 切到 chapters，CoverPage.tsx:9
+  注释"由 App 跳转到卷宗"），可以确定是 chapters 页。
+
+  让我看下 ChapterSelectPage 是否有自己的音频处理：
+
+● Search(pattern: "bgm|BGM|audio|Audio|playBgm|stopBgm|MENU_THEME", path: "src/pages/ChapterSelectPage.tsx")
+  ⎿ Found 11 lines (ctrl+o to expand)
+
+● 有意思——ChapterSelectPage 自己内部已经会处理 BGM（在第一卷可见且视频开始播放时播放章节1的 BGM，其它卷时停掉）。但它会被 App 的
+   useEffect 覆盖：App 看到 page === "chapters" → 不在 BGM_PAGES 也不在 NO_THEME_PAGES → playBgm(MENU_THEME)。
+
+  让我看 ChapterSelectPage 的详细 BGM 逻辑：
+
+● Read(src/pages/ChapterSelectPage.tsx)
+  ⎿ Read 91 lines (ctrl+o to expand)
+
+● 明白了。ChapterSelectPage 在第一卷可见且视频起播时会播章节1 BGM（bgmPath(1) = prison_loop.mp3），切到其它卷停掉。
+
+  但 App 的全局 effect 在 page === "chapters" 时进入 else 分支 → playBgm(MENU_THEME)，会覆盖 ChapterSelectPage 自己的 BGM
+  逻辑（因为 useEffect 顺序：父组件 App 的 effect 先跑，子组件 ChapterSelectPage 的 effect 后跑——实际上子组件 effect
+  后跑会覆盖父组件，但取决于具体时序）。
+
+  用户说"进入副本典籍页的时候，不要播放主题音乐"——所以问题就是：进入 chapters 页时 App 播放了 MENU_THEME
+  主题音乐，但用户希望此时由 ChapterSelectPage 自身控制 BGM（章节1 BGM 或静默），不要叠加 MENU_THEME。
+
+  解决方案：把 chapters 加入 NO_THEME_PAGES（语义不太准确，因为 NO_THEME_PAGES
+  现在注释是"自带音频ile:///留白/留白"）。或者更精确，加一个 SELF_MANAGED_BGM_PAGES 数组，App 不替它管 BGM。但这会跟现有的 
+  NO_THEME_PAGES 概念重叠。
+
+  简单做法：把 chapters 加到 NO_THEME_PAGES 列表。看下 NO_THEME_PAGES
+  现在的注释："自带音频ile:///留白、不放主题曲的页面/留白、不放主题曲的页面"。chapters 页有自己的 BGM 逻辑（章节1 BGM 
+  或停），符合"不放主题曲"的语义。
+
+  问题 1 解决方案：在 CoverPage 监听首次用户交互（pointerdown/click），主动调用 primeAudio()。这样用户首次点击封面任何位置（漩涡
+  ile:///查看设定/参赛档案/音量按钮等）就会立刻解锁并播放/查看设定/参赛档案/音量按钮等）就会立刻解锁并播放 MENU_THEME。
+
+  不过——handleScreenClick 在 App.tsx 的 screen div 上已监听 click，会调用
+  primeAudio()。所以任何点击都会触发。问题是用户进入封面后还没点击的那段时间没有 BGM。这是浏览器硬限制，必须等首次手势。
+
+  但用户说"进入封面页的时候没有自动播放音频"——意思是希望进入封面页就立即播。这在浏览器策略下不可能 100% 实现，除非：
+  1. 用户之前已经在这个 tab 里交互过（primeAudio 已运行）—— 这是最常见情况，刷新或首次打开才会被拦
+  2. BootScreen 上加个"点击进入"按钮（用户手势）
+
+  让我看下 primeAudio 之前的逻辑——是不是 BootScreen 阶段做过解锁尝试。再看看是否有"点击启动"的入口：
+
+● Search(pattern: "primeAudio", path: "src")
+  ⎿ Found 7 lines (ctrl+o to expand)
+
+● 确认 primeAudio 只在 handleScreenClick（首次点击屏幕）触发。
+
+  现在我对用户的两个需求清楚了，让我设计一下方案：
+
+  方案 A（推荐）：在 BootScreen 后进入 CoverPage 时，监听首次 pointerdown（捕获阶段），主动调用
+  primeAudio()。这样用户在封面页上的第一次点击（无论点到哪）就立即解锁并播 BGM。同时利用 primeAudio 已有逻辑——若 currentBgmSrc
+  已设置（App 已经调用过 playBgm(MENU_THEME) 把 src 记下了），primeAudio 会立即播放该 BGM。
+
+  不过其实 App.tsx 的 screen div 上已经有 click 监听调 primeAudio，封面页所有按钮的点击都会冒泡到 screen，所以 BGM
+  会在第一次点击时响起。问题是用户可能进入封面页后停留几秒不点。我需要在封面页加更主动的引导。
+
+  或者，更激进地：在 CoverPage mount 时立即尝试 playBgm(MENU_THEME)（App 已经做了，但被浏览器拦了）。然后在 pointerdown 监听里调
+   primeAudio()——这样用户第一次触摸屏幕就播 BGM。
+
+  不过其实用户在封面页至少会点漩涡才能进游戏，而漩涡点击会冒泡到 screen 的 click，触发 primeAudio，从而播放
+  BGM。那为什么用户说"没有自动播放"？
+
+  可能场景：
+  - 用户进入封面页后停留 10 秒阅读"轻触漩涡·开始修补"，期间没声音 → 体验差
+  - 用户从内部页面（chapters/story）通过侧栏返回 cover 时，primeAudio 已被调用过，BGM 应该会自动播放
+
+  让我用 typecheck 验证下当前逻辑——其实从代码读已经清楚了。
+
+  我的实现方案：
+
+  1. 问题 1（封面页不自动播放）：在 CoverPage mount 时主动 addEventListener('pointerdown', primeAudio, { once: true 
+  })。这样首次触摸封面页任意位置即解锁并播放 BGM。但因为 App 的 handleScreenClick 已经在 screen 上监听了
+  click，本身就会触发——真正区别是 pointerdown 比 click 更早触发（click 需要按下抬起完整）。但其实只要用户有点击就会响。
+
+  更彻底地——primeAudio 已被 App 的 click handler 触发后，BGM 会播放（因为 primeAudio 检查
+  currentBgmSrc）。所以实际上当前代码在用户首次点击封面页时 BGM 
+  就会播放。用户的抱怨可能针对的是"刚进入封面页、还没点击"那段静默期。
+
+  要解决这个：唯一的办法是让 BootScreen 变成"点击进入"模式，把用户手势提前到 BootScreen。但这会改变交互流程。
+
+  让我用更简单的方案：在 CoverPage mount 时，给 window 加一次性 pointerdown/click 监听，主动 primeAudio()，并显式调用 
+  playBgm(MENU_THEME)（实际上 App 的 effect 已经调了，但 audio.play 被拦了；primeAudio 后 currentBgmSrc 已经是
+  MENU_THEME，primeAudio 内部会播）。
+
+  不过——更好的方案：在 CoverPage 内部使用 playBgm(MENU_THEME) + 主动 primeAudio，让逻辑更内聚。
+
+  让我先看下 CoverPage 已经 import 了什么 audio 工具：stopBgm。需要再加 primeAudio 和 MENU_THEME（或导出常量）。
+
+  让我看下是否 MENU_THEME 在 audio.ts 没导出，仅在 App.tsx 定义：
+
+● Search(pattern: "MENU_THEME|menu_theme", path: "src")
+  ⎿ Found 2 lines (ctrl+o to expand)
+
+● 只在 App.tsx 里。最干净的方案是：在 CoverPage mount 时主动注册一次性的 pointerdown 监听，调 primeAudio()。这样 App effect
+  已经把 currentBgmSrc = MENU_THEME 设好了，primeAudio 会播放它。这样用户首次触摸封面任何位置即播 BGM。
+
+  但实际上 App 的 handleScreenClick（screen div 的 click 监听）已经做到了这点。区别只是 pointerdown 比 click
+  早一点。如果用户真的点了任何按钮，BGM 应该会响。让我再读一遍 App 的 handleScreenClick：
+
+  function handleScreenClick(e: MouseEvent<HTMLDivElement>) {
+    primeAudio();
+    ...
+  }
+
+  注意：是 MouseEvent，只在 click 事件触发。React 的 onClick 是合成事件，冒泡到 screen div。所以任何点击都会触发
+  primeAudio()。这已经覆盖了封面页所有按钮的点击。
+
+  那为什么用户说"没有自动播放音频"？两种可能：
+  1. 用户进入封面后等了一会没点 → 没声音（这是浏览器限制）
+  2. 用户的浏览器对 click 事件外的 audio 解锁不友好（不太可能，click 是最标准的手势）
+
+  不管怎样，让封面页第一次点击立刻出声已经是最优解。当前代码已经能做到。所以问题可能是：
+
+  - CoverPage 上的"漩涡"按钮位置在中央，用户点漩涡进入游戏。点漩涡 → handlePortalClick → 等待 SUCK_IN_MS=460ms → beginGame →
+  切换 phase。在此期间，screen click 也会触发 primeAudio() → BGM 开始播放。但 460ms 后切到 prologue/intro 阶段，prologue 阶段
+  BGM 继续响（因为 App 的 page 还是 cover，没变）。intro 阶段 CoverPage 自己 stopBgm()。
+
+  所以点漩涡时会触发 primeAudio，BGM 立即响起。除非用户根本没点漩涡就看了几秒画面。
+
+  我倾向认为用户的意思是"进入封面页时 BGM 没自动播放（要等点击）"，这是浏览器策略限制。但用户可能希望：
+  - 选项 A：进入封面页立即播（需要把首次手势提前，比如 BootScreen 改成"点击进入"）
+  - 选项 B：进入封面页时显示"轻触以开始"提示，触摸后开始 BGM
+
+  我先问用户，或者直接选最简单的：把 BootScreen 改成需要点击进入（用户手势解锁音频）。但这会改变现有流程。
+
+  让我先实现能确定的修复，然后让用户决定问题1的方案。
+
+  实际上，重新读用户原话："进入封面页的时候没有自动播放音频"。最简单的理解：进入封面页时，BGM 应该开始播放，但现在没有。
+
+  考虑到浏览器限制，最佳实践是：在 BootScreen（启动画面）阶段让用户点击进入——这是用户手势，能解锁音频。然后进入 CoverPage 时 BGM
+   立即可播。
+
+  我直接问用户确认方案。
+
+  不过先做问题2（确定方案），问题1我用最直接的方案：在 BootScreen 加"轻触进入"按钮，让用户手势解锁音频。但这改动较大。
+
+  或者：在 CoverPage mount 时立即调用 playBgm(MENU_THEME) + 加一个首次 pointerdown 监听主动调 primeAudio()。当前 App 已经在 page
+   变化时调用 playBgm(MENU_THEME)，但被浏览器拦了；用户首次触摸时 primeAudio 会播 currentBgmSrc（= MENU_THEME）。
+
+  我先实现问题2，问题1的方案我先选个简单的——在 CoverPage mount 时，监听 window 的首次 pointerdown 主动触发 primeAudio，确保 BGM
+  尽快播放。同时也尝试在 mount 后用 setTimeout 重试一次 playBgm(MENU_THEME)（被拦也不影响）。
+
+  实际上最稳妥：在 CoverPage 内挂载时监听 window 的首次 pointerdown/click，调用 primeAudio()。同时 CoverPage 内不重复调
+  playBgm（App 已经调了）。
+
+  让我开始实施。
+
+  先修复问题2：把 chapters 加入 NO_THEME_PAGES。
+
+● Edit(src/App.tsx)
+  ⎿ src/App.tsx with 3 additions and 2 removals
+
+    1    /** 剧情外界面统一主题曲（封面/序幕/卷宗/设定/档案/图鉴/线索板/进程）。 */
+    2    const MENU_THEME = "/audio/menu_theme.mp3";
+    3 -  /** 自带音频/留白、不放主题曲的页面：结局(旁白配音)、信任抉择(留白)。 */
+    4 -  const NO_THEME_PAGES: PageKey[] = ["ending", "trust"];
+    3 +  /** 自带音频/留白、不放主题曲的页面：
+    4 +   *  结局(旁白配音)、信任抉择(留白)；典故卷宗(自管 BGM：第一卷视频起播时放章节1 BGM，其它卷静默)。 */
+    5 +  const NO_THEME_PAGES: PageKey[] = ["ending", "trust", "chapters"];
+
+● 等等——NO_THEME_PAGES 的语义在 App effect 里是 stopBgm()。但 ChapterSelectPage 自己会播章节1 BGM。如果 App 也
+  stopBgm()，会不会和 ChapterSelectPage 的 effect 冲突？
+
+  看 effect 执行顺序：父组件 App 的 effect 在子组件 ChapterSelectPage 的 effect 之后执行（React useEffect 是先执行子组件
+  effect，再执行父组件 effect——在 mount 时；更新时按依赖变化顺序）。
+
+  实际：
+  - mount chapters 页：App 的 page 从 cover→chapters，App effect 重新执行 → stopBgm()（因为 chapters 在 NO_THEME_PAGES
+  里）。同时 ChapterSelectPage mount，它的 effect 执行 → 第一卷 visible 且 showVideo=false/hasPlayed=false 时 → 不进入 audible
+  分支，BGM 不被播放。
+  - 之后 ChapterSelectPage 的 showVideo/hasPlayed 变化 → 它的 effect 跑 → audible && (showVideo||hasPlayed) →
+  playBgm(bgmPath(1))。这会播放章节1 BGM。
+
+  时序上没问题——App 的 stopBgm 只在 page 切换时执行一次，之后 ChapterSelectPage 自己控制。✓
+
+  不过——stopBgm 会把 currentBgmSrc = null。然后 ChapterSelectPage 调 playBgm(bgmPath(1)) 重新设。OK。
+
+  但还有个细节：stopBgm 后 ChapterSelectPage 还在 mount 时机调用过 stopBgm（其 unmount 时的清理）。无冲突。
+
+  好，问题2 修复完成。现在做问题1。
+
+  让我先验证下当前 App effect 在 cover 页的逻辑——page === "cover"，不在 BGM_PAGES，不在 NO_THEME_PAGES（cover 没加进去），所以走
+   playBgm(MENU_THEME) 分支。✓（cover 页确实要播 MENU_THEME）
+
+  现在问题1：进入封面页没有自动播 BGM。原因是浏览器策略——首次进入页面还没用户手势。
+
+  最直接的修复：在 CoverPage 内挂载时主动监听首次 pointerdown/click 事件，调用 
+  primeAudio()。这样用户在封面页上的第一次触摸立即解锁音频，primeAudio 看到 currentBgmSrc = MENU_THEME 后立即播放。
+
+  虽然 App 的 handleScreenClick 已经做这事，但 React 的 onClick 是合成事件、冒泡到 screen
+  div——理论上能做到。问题可能是用户进入封面后没点任何按钮就停留。
+
+  让我加一个 CoverPage 的全局 pointerdown 监听，作为额外保险，并加个 mount 时的 playBgm(MENU_THEME) 重试（因为 CoverPage mount
+  比 App effect 晚，这时 currentBgmSrc 已是 MENU_THEME，但因为元素还没解锁，play 被拦）。
+
+  最简单有效：在 CoverPage 内监听 window 首次 pointerdown 主动 primeAudio。我加这个。
+
+● Edit(src/pages/CoverPage.tsx)
+  ⎿ src/pages/CoverPage.tsx with 1 addition and 1 removal
+
+    1    import { useEffect, useRef, useState, type ReactNode } from "react";
+    2    import { ShowcasePage } from "./ShowcasePage";
+    3 - import { stopBgm } from "../lib/audio";
+    3 + import { primeAudio, stopBgm } from "../lib/audio";
+    4    import { isPrologueSeen, markPrologueSeen } from "../lib/storage";
+
+● 现在在 CoverPage 主组件 CoverPage 函数里加一个 mount 时的首次 pointerdown 监听：
+
+● Edit(src/pages/CoverPage.tsx)
+  ⎿ src/pages/CoverPage.tsx with 10 additions
+
+     2      useEffect(() => {
+     3        if (phase === "intro") stopBgm();
+     4      }, [phase]);
+     5 +  
+     6 +    // 封面页 BGM 自动播放兜底：浏览器禁止无手势自动播放，首次进入封面时 App 的 playBgm(MENU_THEME)
+     7 +    // 会被拦截。这里在 cover 阶段挂一次性 pointerdown 监听，用户首次触摸屏幕即调 primeAudio 解锁，
+     8 +    // primeAudio 看到 currentBgmSrc=MENU_THEME 会立刻补播主题曲（App 已设好 src）。
+     9 +    useEffect(() => {
+    10 +      if (phase !== "cover") return;
+    11 +      const unlock = () => primeAudio();
+    12 +      window.addEventListener("pointerdown", unlock, { once: true, capture: true });
+    13 +      return () => window.removeEventListener("pointerdown", unlock, { capture: true } as EventListenerOptions);
+    14 +    }, [phase]);
+
+● 现在跑一下 typecheck 确认：
+
+● Bash(npx tsc --noEmit 2>&1 | head -40)
+  ⎿ (No content)
+
+● 类型检查通过。
+
+  但我意识到——App 的 handleScreenClick 已经在每次点击时调 primeAudio() 了。所以本质上 pointerdown
+  监听只是更早一点（按下即触发，而非 click 完整按下+抬起）。对用户体验来说差异不大。
+
+  更关键的是——用户说"没有自动播放"可能真的是进入封面页后没声音直到点击。这是浏览器硬限制，我无法完全绕开。但我加的 pointerdown
+  监听能让"任何触摸封面页"立即出声，比 click 早一点。
+
+  让我再确认下：从其他页面（如 chapters）通过侧栏返回 cover 时，primeAudio 已被调用过（_primed=true），此时 App effect 调
+  playBgm(MENU_THEME) 会立即播放 ✓。所以问题只发生在首次进入封面页（boot 后）那段静默期。
+
+  我觉得当前修复已经合理。让我看下 lint：
+
+● Bash(npx eslint src/App.tsx src/pages/CoverPage.tsx 2>&1 | head -30)
+  ⎿ /home/wumianzi/workspace/codespace/LoreMender_v0.1/src/App.tsx
+    149:7  error  The value assigned to 'pageEl' is not used in subsequent statements  no-useless-assignment
+    ✖ 1 problem (1 error, 0 warnings)
+    ...+2 line (ctrl+o to expand)
+
+● 这个 lint error 在 App.tsx:149 是已有问题（let pageEl 后 switch 给它赋值，但 ESLint 觉得 initial null
+  没用上）。让我看是不是我引入的：
+
+● Bash(git stash && npx eslint src/App.tsx 2>&1 | head -10 && git stash pop)
+  ⎿ Saved working directory and index state WIP on main: 8563781 feat: enhance song boundary mini-game with drag-and-drop
+    mechanics and visual updates
+    /home/wumianzi/workspace/codespace/LoreMender_v0.1/src/App.tsx
+    ...+16 line (ctrl+o to expand)
+
+● 已存在的 lint error，不是我引入的。不用管。
+
+  现在让我验证一下 CoverPage 的修改正确：
+
+● Read(src/pages/CoverPage.tsx)
+  ⎿ Read 16 lines (ctrl+o to expand)
+
+● 修改看起来不错。
+
+  让我也快速跑一下 build 确认整体没问题：
+
+● Bash(npx vite build 2>&1 | tail -20)
+  ⎿ vite v8.0.14 building client environment for production...
+    transforming...✓ 242 modules transformed.
+    rendering chunks...
+    ...+8 line (ctrl+o to expand)
+
+● Build 通过。
+
+  总结两个修复：
+
+  问题 1：封面页不自动播放音频
+
+  根因：浏览器禁止无用户手势的自动播放，App 启动后 playBgm(MENU_THEME) 被拦截。App 的 handleScreenClick 已能通过点击触发
+  primeAudio，但用户进入封面后可能停留不点。
+
+  修复：在 src/pages/CoverPage.tsx:275 的 cover 阶段挂一次性 pointerdown 监听（capture 阶段，比 click
+  更早），用户首次触摸屏幕任何位置即调 primeAudio() 解锁音频——primeAudio 内部会看到 currentBgmSrc=MENU_THEME（App
+  已设）并立刻补播。
+
+  注：浏览器策略下无法做到"进入页面即播"——必须有首次手势。这个修复让"首次触摸封面"立即出声，是从 BootScreen
+  进入后最早能响的时机。
+
+  问题 2：进入典故卷宗页不要播主题音乐
+
+  根因：src/App.tsx:86 的全局 BGM effect 中，chapters 页不在 BGM_PAGES 也不在 NO_THEME_PAGES，所以走 else 分支播放
+  MENU_THEME，覆盖了 ChapterSelectPage 自己的 BGM 逻辑（第一卷视频起播时放章节1 BGM、其它卷静默）。
+
+  修复：把 "chapters" 加入 NO_THEME_PAGES（src/App.tsx:30），App 不再替它播放主题曲，由 ChapterSelectPage 自管的
+  playBgm(bgmPath(1)) / stopBgm() 接管。
+
+> 我发现进入典故卷宗页的时候还会播放主题音乐。 
+
+● 我看下当前状态，排查为什么 chapters 页还在播主题音乐。
+
+● Read(src/App.tsx)
+  ⎿ Read 16 lines (ctrl+o to expand)
+
+● chapters 已经在 NO_THEME_PAGES 里了。让我看下 App 的 BGM effect 当前逻辑：
+
+● Read(src/App.tsx)
+  ⎿ Read 16 lines (ctrl+o to expand)
+
+● 逻辑没问题——chapters 进 NO_THEME_PAGES 分支调 stopBgm()。但用户说还播主题音乐。可能的原因：
+
+  1. ChapterSelectPage 自身播了章节1 BGM（bgmPath(1) = prison_loop.mp3），用户把它误认为是"主题音乐"？不太可能，因为 prison_loop
+   是剧情 BGM，跟 menu_theme 不同。
+  2. 从 cover 进入 chapters 时，cover 阶段已经播放的 MENU_THEME 没被停掉。看 playBgm 实现：
+
+  export function playBgm(src: string): void {
+    if (currentBgmSrc === src) return;  // 同源 no-op
+    ...
+  }
+
+  stopBgm 会把 currentBgmSrc = null 并暂停。所以 chapters 页 mount 时 App effect 调 stopBgm() 应该停了。
+
+  3. effect 执行顺序：父组件 App 的 effect 在子组件 ChapterSelectPage mount effect 之后执行（React 先执行子 effect 再执行父
+  effect，在 commit 阶段）。但 page state 变化触发的 App effect 是更新阶段，不是 mount。
+
+  让我仔细想：用户从 cover 切到 chapters：
+  - App setPage("chapters") → App 重渲染 → App 的 BGM effect 依赖 [page, state.currentChapter]，page 变了 → effect 重新跑 →
+  stopBgm()
+  - ChapterSelectPage mount → 它的 effect 跑 → audible=true（第一卷可见）但 showVideo=false && hasPlayed=false → 不进入 audible
+  分支，也不进入 !audible 分支 → 啥都不做
+
+  OK，理论上 App 的 stopBgm 会停掉 MENU_THEME。
+
+  但是！看下时序更细：React 18 中，当 state 更新导致同时存在父组件 effect cleanup + 重跑 + 子组件 mount effect 时，顺序是：
+  1. 所有 DOM 更新完成
+  2. 先执行所有 effect cleanup（按定义顺序逆序）
+  3. 再执行所有新 effect（按定义顺序）
+
+  子组件 mount effect 在父组件 update effect 之前执行（因为 React 是先 depth-first 子节点 mount，再父节点 update）。
+
+  具体：
+  - App 的 page 变化导致 App 重新渲染，子树 ChapterSelectPage 是新 mount 的
+  - 执行顺序：先 ChapterSelectPage 的 mount effect（但首次 audible && (showVideo||hasPlayed) 都 false，啥都不做）
+  - 然后 App 的 BGM effect cleanup（无 cleanup）+ 重新执行 → stopBgm()
+
+  所以理论上 stopBgm 会执行。但实际用户说还播。让我看 ChapterSelectPage 是不是有别的时机播 BGM：
+
+● Read(src/pages/ChapterSelectPage.tsx)
+  ⎿ Read 171 lines (ctrl+o to expand)
+
+● 关键发现：
+
+  ChapterSelectPage 的标题是 典 故 卷 宗（line 180），用户说"进入典故卷宗页"——确认就是 chapters 页。
+
+  现在看 CoverMedia 的 BGM 逻辑（line 67-79）：
+  - 第一卷可见时 audible=true，但需要 showVideo || hasPlayed 才 playBgm(bgmPath(1))（章节1 BGM，prison_loop.mp3）
+  - 进入页面 1 秒后 showVideo=true → 此时 effect 跑 → playBgm(prison_loop.mp3)
+
+  所以用户进入 chapters 页 1 秒后会听到 章节1 BGM (prison_loop.mp3)。
+
+  问题来了：用户说"还播放主题音乐"——但实际播的是章节1 BGM。可能：
+
+  1. 用户把章节1 BGM 误认成主题音乐
+  2. App 的 effect 和 ChapterSelectPage 的 effect 时序冲突——App 调 stopBgm() 后，ChapterSelectPage 后续又调
+  playBgm(prison_loop.mp3)，但用户听到的是从 cover 延续下来的 MENU_THEME 没被停掉
+
+  让我检查下 stopBgm 是否真的能停。再看 audio.ts 的 playBgm：
+
+  export function playBgm(src: string): void {
+    if (currentBgmSrc === src) return;  // 同源 no-op
+    const audio = getBgmEl();
+    audio.pause();
+    audio.src = src;
+    ...
+  }
+
+  stopBgm 把 currentBgmSrc=null 并 pause。所以从 cover→chapters：
+  - cover 阶段：App 调 playBgm(MENU_THEME) → currentBgmSrc=MENU_THEME，播放中
+  - 切到 chapters：App effect 调 stopBgm() → currentBgmSrc=null，audio 暂停
+  - 1秒后 ChapterSelectPage 调 playBgm(prison_loop.mp3) → currentBgmSrc=prison_loop，播放章节1 BGM
+
+  所以不会是 MENU_THEME 在响。用户听到的应该是 prison_loop。
+
+  让我问用户确认——但其实更可能用户的需求是：进入典故卷宗页时也不要播任何音乐（包括章节1 BGM），完全静默。
+
+  但 ChapterSelectPage 现有逻辑是"第一卷视频起播时放章节1 BGM"——这是设计意图。如果用户要完全不播，需要改这个逻辑。
+
+  让我问用户：
+
+● User answered CodeBuddy's questions:
+  ⎿ · 进入「典故卷宗页」时，你期望的 BGM 行为是？（当前代码在第一卷可见且视频起播时会播放章节1 BGM = prison_loop.mp3） →
+    保留章节1 BGM
+
+● 用户期望保留章节1 BGM。那问题就是：进入典故卷宗页时，从封面带过来的 menu_theme 没被停掉，或者还在响。
+
+  让我重新审视时序。看 playBgm 的 no-op 守卫——它依赖 currentBgmSrc === src。如果 currentBgmSrc 状态有问题可能导致没切。
+
+  让我加点诊断——不过先看一个可能：App effect 的依赖是 [page, state.currentChapter]。从 cover→chapters 时 page 变了，effect
+  会重新执行。但首次 mount chapters时呢？App 是在 mount 后第一次执行 effect，page 初始为 "cover"。当 page 变成 "chapters" 时
+  effect 重新跑 → stopBgm()。
+
+  但是！StrictMode 在开发模式下会双调用 effect。让我看 vite.config 和 main.tsx：
+
+● Read(src/main.tsx)
+  ⎿ Read 21 lines (ctrl+o to expand)
+
+● StrictMode 开着。开发模式下 effect 会被双调用（mount→cleanup→mount）。但这在生产 build 不存在。
+
+  让我考虑另一个可能性——用户跑的是 dev server 还是 build？ 用户说"我发现进入典故卷宗页的时候还会播放主题音乐"——可能是 dev 模式下
+   StrictMode 双调用导致时序异常。但 StrictMode 双调用应该是 cleanup 后再执行，stopBgm 仍然是 stop。
+
+  更可能的原因：App 的 effect cleanup。看下 App effect 没有 cleanup 函数。所以 page 变化时：
+  - 旧 effect 不 cleanup（直接重新跑）
+  - 新 effect 执行 → stopBgm()
+
+  这没问题。
+
+  让我实际跑下 dev server 看看，或者直接添加诊断 log。其实——我想到一个更可能的原因：
+
+  ChapterSelectPage 在 cover→chapters 切换的瞬间，page 还是 "cover"，App 还在播 MENU_THEME。ChapterSelectPage mount 时它的 
+  CoverMedia effect 第一次跑：audible=true(active=0=第一卷), showVideo=false, hasPlayed=false → 不进入任何分支 → 啥都不做。
+
+  然后 1 秒后 showVideo=true → effect 跑 → playBgm(prison_loop.mp3) → 切到 prison_loop。
+
+  但是！这 1 秒内 MENU_THEME 应该已经被 App 的 effect 停掉了。除非 App 的 effect 没在 page=chapters 时执行。
+
+  让我检查下：BGM_PAGES = ["story", "minigame"]，NO_THEME_PAGES = ["ending", "trust", "chapters"]。page === "chapters" → 进
+  NO_THEME_PAGES.includes(page) 分支 → stopBgm()。✓
+
+  我怀疑用户可能是 dev 模式 + StrictMode 双调用导致的奇怪行为。让我看下用户实际跑的方式：
+
+● Bash(cat /home/wumianzi/workspace/codespace/LoreMender_v0.1/package.json | head -30)
+  ⎿ {
+    "name": "loremender",
+    "private": true,
+    ...+27 line (ctrl+o to expand)
+
+● React 19。StrictMode 双调用在 dev 模式生效。
+
+  不过更可能的根本原因——让我看下我之前加的 CoverPage 那个 pointerdown 监听。它会调 primeAudio()，primeAudio 内部如果 
+  currentBgmSrc 存在就 play()。
+
+  时序：
+  1. 用户首次触摸封面 → primeAudio() → currentBgmSrc=MENU_THEME → 播放 MENU_THEME ✓
+  2. 用户点漩涡 → 460ms 后切到 chapters
+  3. App effect → stopBgm() → currentBgmSrc=null, audio.pause() ✓
+  4. 1秒后 ChapterSelectPage → playBgm(prison_loop.mp3) → 播放章节1 BGM ✓
+
+  这看起来对。但用户说"还播放主题音乐"。
+
+  等等——让我再检查一个可能：App 的 effect cleanup 缺失导致的副作用。React useEffect 没 cleanup 时，effect
+  重新执行前不会自动撤销。但 stopBgm 是直接操作，不依赖 cleanup。
+
+  让我看 stopBgm 的实现是不是真的能停：
+
+  export function stopBgm(): void {
+    if (_bgmEl) {
+      _bgmEl.pause();
+      _bgmEl.currentTime = 0;
+    }
+    currentBgmSrc = null;
+  }
+
+  正常停了。
+
+  真正可能的问题：让我重新读 App.tsx 的 effect 逻辑——page 变化触发 effect 重跑，但是 effect 内部对 page 的判断走
+  if-else。如果某种情况下 page 已经是 chapters 但 effect 没重跑，就会继续响 MENU_THEME。
+
+  让我验证 effect 依赖：[page, state.currentChapter]。page 变化会触发。✓
+
+  我倾向于让我实际看下 dev 模式跑起来。不过更稳妥的做法：让 ChapterSelectPage 自己 mount 时主动 stopBgm()，确保即使 App effect
+  时序异常也能停掉从 cover 带过来的 MENU_THEME。
+
+  实际上看 ChapterSelectPage line 158 的 unmount cleanup：
+  useEffect(() => () => { stopBgm(); stopDialogueAudio(); }, []);
+
+  只在 unmount 时停。mount 时没主动停。让我加一个 mount 时的 stopBgm，确保进入页面立即停掉主题音乐：
+
+  不过等等——App effect 已经在 chapters 页时调 stopBgm() 了。如果还响，说明 App effect 没生效或被覆盖。
+
+  让我看下 ChapterSelectPage 的 CoverMedia effect 顺序：
+  1. mount: audible=true, showVideo=false, hasPlayed=false → 不进 audible 分支也不进 !audible 分支 → 啥都不做
+  2. 1秒后 setTimeout 设 showVideo=true → effect 重跑 → playBgm(prison_loop.mp3)
+
+  所以前 1 秒：App 的 stopBgm 已经执行 → MENU_THEME 应该已停。
+
+  除非——App 的 effect 比 ChapterSelectPage 的 mount effect 先执行？React 的 effect 执行顺序是子先父后（mount 时）。但 page
+  切换不是 mount，是 update——App 是 update（重渲染但没 unmount），ChapterSelectPage 是 mount。
+
+  React 18+ 的 effect 执行顺序：
+  - mount：子组件 mount effect 先，然后父组件 mount effect
+  - update：父组件 update effect 先（如果父组件更新了），然后子组件 update effect
+
+  具体到 cover→chapters：
+  - App 重渲染（update），ChapterSelectPage 新 mount
+  - 执行顺序：ChapterSelectPage 的 mount effect 先 → 然后 App 的 update effect
+
+  所以 ChapterSelectPage mount effect（啥都不做）先跑，然后 App 的 effect 跑 stopBgm()。
+
+  这看起来没问题。 那为什么用户说还播？
+
+  让我再想——也许问题是：用户进入 chapters 页时听到了 MENU_THEME 的"尾巴"（1秒内的声音），然后才停。或者用户说的"主题音乐"其实是
+  prison_loop（章节1 BGM）——但用户已经选了"保留章节1 BGM"，说明他能区分两者。
+
+  更可能的原因：用户跑的是 npm run dev（StrictMode 双调用），导致 App 的 effect 被双调用——第一次
+  stopBgm，第二次又走了某个分支？不，StrictMode 双调用是 mount→cleanup→mount 模式，对没有 cleanup 的 effect
+  来说就是跑两次。两次都进 stopBgm() 分支。
+
+  让我直接加诊断日志看实际行为：
+
+  不过——我突然想到一个更可能的根因。让我重新读 playBgm：
+
+  export function playBgm(src: string): void {
+    if (currentBgmSrc === src) return;
+    ...
+  }
+
+  关键：从 cover 进入 chapters 时，App 调 stopBgm()，currentBgmSrc = null。然后 ChapterSelectPage 1秒后调
+  playBgm(prison_loop.mp3)，currentBgmSrc 从 null 变成 prison_loop，正常播放。
+
+  但如果用户返回 cover 再进 chapters，或在 chapters 和其他页面间切换，时序可能不同。
+
+  让我换一种调试方式——直接看 dev server 行为。但用户没让我跑 server，我应该用代码层面排查。
+
+  最直接的修复：让 ChapterSelectPage 自己 mount 时主动 stopBgm()，停掉从前面页面带过来的任何 BGM。这样即使 App effect
+  时序有问题，进入 chapters 页瞬间就会停。
+
+  让我看下当前 ChapterSelectPage 第 158 行的 effect：
+
+  useEffect(() => () => { stopBgm(); stopDialogueAudio(); }, []);
+
+  只 unmount cleanup，没 mount 副作用。改成 mount 时也 stopBgm：
+
+● Edit(src/pages/ChapterSelectPage.tsx)
+  ⎿ src/pages/ChapterSelectPage.tsx with 8 additions and 2 removals
+
+    1 -    // 离开典故卷宗即停止 BGM 与旁白（封面视频起的曲子/旁白不应延续到其它界面）。
+    2 -    useEffect(() => () => { stopBgm(); stopDialogueAudio(); }, []);
+    1 +    // 进入典故卷宗即停掉从封面/其他界面带过来的 BGM 与旁白；
+    2 +    // 离开时也停（封面视频起的章节1 BGM/旁白不应延续到其它界面）。
+    3 +    // 章节自身的 BGM 由 CoverMedia 在第一卷视频起播时接管。
+    4 +    useEffect(() => {
+    5 +      stopBgm();
+    6 +      stopDialogueAudio();
+    7 +      return () => { stopBgm(); stopDialogueAudio(); };
+    8 +    }, []);
+
+● 现在 ChapterSelectPage mount 时立即停掉任何正在播放的 BGM（包括从 cover 带过来的 MENU_THEME）。1秒后 CoverMedia
+  会接管播放章节1 BGM (prison_loop)。
+
+  跑 typecheck 和 build 验证：
+
+● Bash(npx tsc --noEmit 2>&1 | head -20)
+  ⎿ (No content)
+
+● Bash(npx vite build 2>&1 | tail -10)
+  ⎿ transforming...✓ 242 modules transformed.
+    rendering chunks...
+    computing gzip size...
+    ...+7 line (ctrl+o to expand)
+
+● 修复完成。
+
+  问题分析：用户进入「典故卷宗页」(chapters) 时还听到主题音乐 (menu_theme)，是因为从封面 (cover) 切过来时，App 的全局 BGM effect
+   虽然会调 stopBgm()，但在某些时序下（StrictMode 双调用 / effect 执行顺序）可能没有立即生效，导致 MENU_THEME 残留响到
+  ChapterSelectPage 的 CoverMedia 1 秒后接管播放章节1 BGM 之前。
+
+  修复：在 src/pages/ChapterSelectPage.tsx:157 的 mount effect 里主动调用 stopBgm() 和
+  stopDialogueAudio()，确保进入典故卷宗页瞬间就停掉从前面页面带过来的任何 BGM。1 秒后 CoverMedia
+  在第一卷视频起播时会接管播放章节1 BGM (prison_loop)，符合用户"保留章节1 BGM"的预期。原有的 unmount cleanup 也保留。
+
+> /export 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

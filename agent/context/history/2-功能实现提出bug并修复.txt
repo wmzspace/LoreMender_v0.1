@@ -1,0 +1,51 @@
+> 似乎重新进度并没有完全重置到开头 
+
+● Read(src/pages/ProgressPage.tsx)
+  ⎿ Read 21 lines (ctrl+o to expand)
+
+● Search(pattern: "loadBeat|saveBeat", path: "src/pages/StoryPage.tsx")
+  ⎿ Found 3 lines (ctrl+o to expand)
+
+● Search(pattern: "loadBeat|saveBeat|BEAT_KEY", path: "src/lib/storage.ts")
+  ⎿ Found 5 lines (ctrl+o to expand)
+
+● Read(src/lib/storage.ts)
+  ⎿ Read 21 lines (ctrl+o to expand)
+
+● 找到原因了。重置进度只重置了 GameState（saveState），但没有清除 BEAT_KEY（loremender:huatuo:beat:v4）保存的 beat 进度。StoryPage
+  初始化时通过 loadBeat(ch) 恢复 beatIdx，重置后 currentChapter 变回1，但 beat 进度还指向旧的章节和位置，所以 loadBeat(1)
+  返回0（因为保存的章节不是1），这看起来好像回到了开头——但如果重置时当前已经在ch1，loadBeat(1) 会返回旧的 beatIdx，导致直接跳到中间。
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 1 addition and 1 removal
+
+    1 - import { defaultState, saveState } from "../lib/storage";
+    1 + import { defaultState, saveBeat, saveState } from "../lib/storage";
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 1 addition
+
+    1        const ns = { ...defaultState(), unlockedEndings: state.unlockedEndings };
+    2        setState(ns);
+    3        saveState(ns);
+    4 +      saveBeat(1, 0);
+    5        setConfirmReset(false);
+    6        gotoPage("story");
+
+● Bash(npx tsc --noEmit 2>&1)
+  ⎿ ⠙
+
+● 已修复。问题是重置进度时只重置了 GameState，但没有清除 localStorage 中保存的 beat 进度（loremender:huatuo:beat:v4）。StoryPage
+  初始化时通过 loadBeat(ch) 恢复 beatIdx，旧进度仍指向中间位置，导致看起来没有回到开头。
+
+  现在重置时额外调用 saveBeat(1, 0) 将 beat 进度也重置到第一章第0条。
+
+> 提交并推送 
+
+● Bash(git add -A && git commit -m "修复进度重置未清除beat进度的问题重…Beat(1,0)，确保StoryPage的beatIdx也回到第一章开头" && git push)
+  ⎿ [main f50e0f6] 修复进度重置未清除beat进度的问题
+    1 file changed, 2 insertions(+), 1 deletion(-)
+    Enumerating objects: 9, done.
+    ...+13 line (ctrl+o to expand)
+
+● 已推送，commit f50e0f6。

@@ -1,0 +1,258 @@
+> 实现进度重置和开发者跳过小游戏的功能
+
+● 我需要完成剩余的两个功能请求：ProgressPage 重置按钮 和 MiniGamePage 一键完成按钮。让我先读取这两个文件的当前状态。
+
+● Read(src/pages/ProgressPage.tsx)
+  ⎿ Read 510 lines (ctrl+o to expand)
+
+● Read(src/pages/MiniGamePage.tsx)
+  ⎿ Read 946 lines (ctrl+o to expand)
+
+● 现在我还需要检查状态管理代码，以理解如何正确实现重置功能。
+
+● 现在我清楚了。让我创建任务并实现这两个功能。
+
+● TaskCreate
+  ⎿ Task #21 created successfully: Add progress reset button to ProgressPage
+
+● TaskCreate
+  ⎿ Task #22 created successfully: Add one-click finish button on MiniGamePage
+
+● TaskUpdate
+  ⎿ Updated task #21 status
+
+● 现在我来在 ProgressPage 上实现重置按钮。我需要从 storage 中导入 defaultState 和 saveState，并添加一个带有确认提示的重置按钮。
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 1 addition
+
+    1    import { useState } from "react";
+    2    import type { GameState } from "../data/types";
+    3    import type { PageKey } from "../lib/routes";
+    4 +  import { defaultState, saveState } from "../lib/storage";
+    5    import { Topbar, BottomNav } from "../components";
+    6    import { Particles } from "../components/art";
+
+● 现在更新组件 props 以包含 setState 并添加重置按钮：
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 1 addition
+
+    1    interface ProgressPageProps {
+    2      state: GameState;
+    3 +    setState: (s: GameState) => void;
+    4      gotoPage: (p: PageKey) => void;
+    5    }
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 14 additions and 1 removal
+
+     1 - export function ProgressPage({ state, gotoPage }: ProgressPageProps) {
+     1 + export function ProgressPage({ state, setState, gotoPage }: ProgressPageProps) {
+     2      const cur = state.currentChapter || 1;
+     3      const [expanded, setExpanded] = useState<number>(cur);
+     4 +    const [confirmReset, setConfirmReset] = useState(false);
+     5 
+     6      const toggle = (num: number) => setExpanded(prev => (prev === num ? -1 : num));
+     7 +  
+     8 +    const handleReset = () => {
+     9 +      if (!confirmReset) {
+    10 +        setConfirmReset(true);
+    11 +        return;
+    12 +      }
+    13 +      const ns = { ...defaultState(), unlockedEndings: state.unlockedEndings };
+    14 +      setState(ns);
+    15 +      saveState(ns);
+    16 +      setConfirmReset(false);
+    17 +      gotoPage("story");
+    18 +    };
+
+● 现在，在页脚区域（引语 div 之后）添加重置按钮 UI：
+
+● Edit(src/pages/ProgressPage.tsx)
+  ⎿ src/pages/ProgressPage.tsx with 31 additions
+
+    21                </div>
+    22              </div>
+    23            </div>
+    24 +  
+    25 +          <div style={{ marginTop: 14, textAlign: "center" }}>
+    26 +            <button
+    27 +              onClick={handleReset}
+    28 +              style={{
+    29 +                background: confirmReset ? "rgba(180,60,44,0.15)" : "none",
+    30 +                border: `1px solid ${confirmReset ? "rgba(180,60,44,0.6)" : "rgba(228,224,208,0.22)"}`,
+    31 +                borderRadius: 3,
+    32 +                padding: "8px 18px",
+    33 +                cursor: "pointer",
+    34 +                color: confirmReset ? "rgba(225,110,90,0.9)" : `${PAPER}0.45)`,
+    35 +                fontSize: 11,
+    36 +                letterSpacing: "0.16em",
+    37 +                fontFamily: "inherit",
+    38 +                transition: "all 0.2s",
+    39 +              }}
+    40 +            >
+    41 +              {confirmReset ? "确 认 重 置 ？（再次点击确认）" : "重 置 进 度"}
+    42 +            </button>
+    43 +            {confirmReset && (
+    44 +              <button
+    45 +                onClick={() => setConfirmReset(false)}
+    46 +                style={{
+    47 +                  background: "none", border: "1px solid rgba(228,224,208,0.15)",
+    48 +                  borderRadius: 3, padding: "6px 14px", cursor: "pointer",
+    49 +                  color: `${PAPER}0.38)`, fontSize: 10, letterSpacing: "0.12em",
+    50 +                  fontFamily: "inherit", marginLeft: 10, transition: "all 0.2s",
+    51 +                }}
+    52 +              >取 消</button>
+    53 +            )}
+    54 +          </div>
+
+● 现在我需要更新 App.tsx，将 setState 传递给 ProgressPage。让我查找一下。
+
+● Search(pattern: "ProgressPage")
+  ⎿ Found 13 lines (ctrl+o to expand)
+
+● Read(src/App.tsx)
+  ⎿ Read 16 lines (ctrl+o to expand)
+
+● Edit(src/App.tsx)
+  ⎿ src/App.tsx with 1 addition and 1 removal
+
+    1 - pageEl = <ProgressPage state={state} gotoPage={gotoPage}/>;
+    1 + pageEl = <ProgressPage state={state} setState={setState} gotoPage={gotoPage}/>;
+
+● TaskUpdate
+  ⎿ Updated task #21 status
+
+● TaskUpdate
+  ⎿ Updated task #22 status
+
+● 现在正在实现一键完成按钮。我需要在 MiniGamePage 上添加一个开发/测试
+  UI，它会显示3个等级按钮（高/中/低），以便在没有完成游戏时立即完成当前游戏。
+
+● Edit(src/pages/MiniGamePage.tsx)
+  ⎿ src/pages/MiniGamePage.tsx with 1 addition
+
+    1    const locked = game.requiredItem && !state.items.includes(game.requiredItem);
+    2 +    const gameCompleted = state.gameResults[game.id]?.completed;
+    3 
+    4      let body: React.ReactNode;
+
+● 现在，我将在 Shell 组件内部，游戏内容下方，添加开发跳过 UI。我将把它添加到渲染返回中：
+
+● Edit(src/pages/MiniGamePage.tsx)
+  ⎿ src/pages/MiniGamePage.tsx with 27 additions
+
+    11          )}
+    12        >
+    13          {body}
+    14 +        {!locked && !gameCompleted && (
+    15 +          <div style={{
+    16 +            marginTop: 20, padding: "10px 0",
+    17 +            borderTop: "1px solid rgba(228,224,208,0.12)",
+    18 +            textAlign: "center",
+    19 +          }}>
+    20 +            <div style={{
+    21 +              fontSize: 9, color: "rgba(228,224,208,0.3)",
+    22 +              letterSpacing: "0.2em", marginBottom: 8,
+    23 +            }}>开 发 者 跳 过</div>
+    24 +            <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+    25 +              {(["high", "mid", "low"] as GameResultRank[]).map(r => (
+    26 +                <button
+    27 +                  key={r}
+    28 +                  className="btn-ghost press"
+    29 +                  onClick={() => finish(r)}
+    30 +                  style={{
+    31 +                    minWidth: 56, padding: "6px 14px",
+    32 +                    fontSize: 11, letterSpacing: "0.12em",
+    33 +                    borderColor: `${RANK_COLOR[r]}40`,
+    34 +                    color: RANK_COLOR[r],
+    35 +                  }}
+    36 +                >{RANK_LABEL[r]}</button>
+    37 +              ))}
+    38 +            </div>
+    39 +          </div>
+    40 +        )}
+    41        </Shell>
+    42      );
+
+● 现在让我来验证这两个文件是否能通过类型检查：
+
+● Bash(npx tsc --noEmit 2>&1)
+  ⎿ ⠙
+
+● 类型检查通过。让我现在运行构建：
+
+● Bash(npx vite build 2>&1)
+  ⎿ vite v8.0.16 building client environment for production...
+    transforming (87) node_modules/.pnpm/d3-selection@3.0.0/node_modules/d3-selection/src/index.js
+transforming (179)
+    node_modules/.pnpm/d3-selection@3.0.0/node_modules/d3-selection/src/window.js
+✓ 230 modules transformed.
+    ...+9 line (ctrl+o to expand)
+
+● 构建成功。
+
+● TaskUpdate
+  ⎿ Updated task #22 status
+
+● 两项功能都已完成并构建成功：
+
+  1. ProgressPage 重置按钮 (src/pages/ProgressPage.tsx) — 在页面底部引语下方添加了"重 置 进 度"按钮。点击后按钮变为红色确认状态"确 认
+  重 置？"，再次点击才会真正重置（保留 unlockedEndings），旁边有"取 消"按钮。已在 App.tsx 中传入 setState。
+  2. MiniGamePage 开发者跳过按钮 (src/pages/MiniGamePage.tsx) — 当游戏未锁定且未完成时，在游戏内容下方显示三个等级按钮（高/中/低），点
+  击即可立即以所选等级完成当前小游戏，跳过实际游戏过程。按钮使用对应等级的颜色（青/金/灰），标记为"开 发 者 跳 过"。
+
+  TypeScript 类型检查和 Vite 构建均通过。
+
+> 我现在点击“进入此卷后直接黑屏了”Uncaught ReferenceError: Cannot access 'beats' before initialization 
+  at StoryPage (StoryPage.tsx:143:7) 
+
+● 让我检查 StoryPage.tsx 中出现问题的代码，特别是第143行附近。
+
+● Read(src/pages/StoryPage.tsx)
+  ⎿ Read 61 lines (ctrl+o to expand)
+
+● 问题很明显：useEffect 在第139行引用了 beats，但 beats 是在第150行才通过 useMemo 定义的。这造成了"在初始化前无法访问"的错误——useEffect
+   在 useMemo 之前使用了 beats。
+
+● Edit(src/pages/StoryPage.tsx)
+  ⎿ src/pages/StoryPage.tsx with 7 additions and 6 removals
+
+     1    const [toast, setToast] = useState("");
+     2 
+     3 +    const rawBeats = chapter?.beats ?? [];
+     4 +    const beats = useMemo(
+     5 +      () => flattenBeats(rawBeats, state),
+     6 +      // eslint-disable-next-line react-hooks/exhaustive-deps
+     7 +      [rawBeats, state.ch2, state.ch3, state.ch4, state.boxCompartment, state.medical_skill, state.classifyRetry]
+     8 +    );
+     9 +  
+    10      // beats 变化后，确保 beatIdx 不越界
+    11      useEffect(() => {
+    12        if (beatIdx >= beats.length && beats.length > 0) {
+
+    ...
+
+    11        saveBeat(ch, beatIdx);
+    12      }, [ch, beatIdx]);
+    13 
+    14 -    const rawBeats = chapter?.beats ?? [];
+    15 -    const beats = useMemo(
+    16 -      () => flattenBeats(rawBeats, state),
+    17 -      // eslint-disable-next-line react-hooks/exhaustive-deps
+    18 -      [rawBeats, state.ch2, state.ch3, state.ch4, state.boxCompartment, state.medical_skill, state.classifyRetry]
+    19 -    );
+    14      const beat = beats[beatIdx];
+
+● Bash(npx tsc --noEmit 2>&1 && npx vite build 2>&1)
+  ⎿ ⠙vite v8.0.16 building client environment for production...
+    transforming (36) src/pages/EndingPage.tsx
+transforming (69)
+    node_modules/.pnpm/zustand@4.5.7_@types+react@19.2.17_react@19.2.7/node_modules/zustand/esm/shallow.mjs
+transforming (68)
+    ...+10 line (ctrl+o to expand)
+
+● 已修复。原因是 useEffect 引用了 beats 变量，但 beats 的 useMemo 定义在其下方，导致 "Cannot access before initialization" 错误。现在将
+   beats 的 useMemo 定义移到了 useEffect 之前，类型检查和构建均通过。
+

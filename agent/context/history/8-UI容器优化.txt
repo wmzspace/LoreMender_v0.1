@@ -1,0 +1,88 @@
+> 当前的文本对话框中，有时候文本会超出对话框。 
+
+● Read(src/components/DialogueBox.tsx)
+  ⎿ Read 73 lines (ctrl+o to expand)
+
+● 问题在于逐字显示层用了 position: absolute; inset: 0，它被约束在透明占位层的高度内。但当逐字文本末尾有 ▾ 指示符时，可能会撑出容器。更
+  根本的问题是：逐字文本和透明文本的换行点可能不完全一致（因为逐字文本截断位置不同），导致绝对定位层的文字溢出。
+
+  最可靠的修复：去掉绝对定位叠加方案，改用 overflow: hidden + 容器固定高度的方式，或者更简单——直接用 min-height 而非绝对定位。
+
+● Edit(src/components/DialogueBox.tsx)
+  ⎿ src/components/DialogueBox.tsx with 19 additions and 6 removals
+
+    13      const [shown, setShown] = useState("");
+    14      const [done, setDone] = useState(false);
+    15      const intervalRef = useRef<number>(0);
+    16 +    const measureRef = useRef<HTMLDivElement>(null);
+    17 +    const [minH, setMinH] = useState<number | undefined>(undefined);
+    18 
+    19      useEffect(() => {
+    20        setShown("");
+
+    ...
+
+    29        return () => window.clearInterval(intervalRef.current);
+    30      }, [text]);
+    31 
+    32 +    // 测量完整文本高度，锁定 min-height 防止逐字动画高度跳变
+    33 +    useEffect(() => {
+    34 +      if (measureRef.current) {
+    35 +        const h = measureRef.current.getBoundingClientRect().height;
+    36 +        if (h > 0) setMinH(h);
+    37 +      }
+    38 +    }, [text]);
+    39 +  
+    40      const onClick = () => {
+    41        if (!done) {
+    42 -        // 动画进行中：清除 interval，直接显示完整文本
+    42          window.clearInterval(intervalRef.current);
+    43          setShown(text);
+    44          setDone(true);
+    45          return;
+    46        }
+    47 -      // 动画已完成：前进
+    47        if (onNext) onNext();
+    48        else onTap?.();
+    49      };
+
+    ...
+
+    52        <div className="dialogue" data-sfx="tap" onClick={onClick} style={{ cursor: "pointer" }}>
+    53          {speaker && !isNarration && <div className="dialogue-name">{speaker}</div>}
+    54          <div className="dialogue-text" style={{ position: "relative" }}>
+    55 -          {/* 透明完整文本：撑开容器到最终高度，防止逐字动画时高度跳变 */}
+    56 -          <div aria-hidden="true" style={{ ...textStyle, visibility: "hidden" }}>{text}</div>
+    57 -          {/* 逐字显示文本：绝对定位覆盖在透明文本上方 */}
+    58 -          <div style={{ ...textStyle, position: "absolute", inset: 0 }}>
+    55 +          {/* 隐藏完整文本：只用于测量高度，测量后移除 */}
+    56 +          {!minH && (
+    57 +            <div ref={measureRef} aria-hidden="true" style={{ ...textStyle, visibility: "hidden" }}>{text}</div>
+    58 +          )}
+    59 +          {/* 逐字显示文本，min-height 锁定最终高度 */}
+    60 +          <div style={{
+    61 +            ...textStyle,
+    62 +            minHeight: minH !== undefined ? minH : undefined,
+    63 +          }}>
+    64              {shown}
+    65              {done && (
+    66                <span style={{
+
+● Bash(npx tsc --noEmit 2>&1 && npx vite build 2>&1)
+  ⎿ ⠙vite v8.0.16 building client environment for production...
+    transforming (24) src/components/art/index.ts
+transforming (65) src/editor/storyToFlow.ts
+transforming (85)
+    node_modules/.pnpm/d3-drag@3.0.0/node_modules/d3-drag/src/index.js
+transforming (86)
+    ...+14 line (ctrl+o to expand)
+
+● 构建通过。新方案：
+
+  1. 首帧渲染一个 visibility: hidden 的完整文本占位，测量其 getBoundingClientRect().height
+  2. 测量完成后移除占位，改用 minHeight 锁定到最终高度
+  3. 逐字文本正常流式布局（无绝对定位），不会再溢出对话框
+
+  这样既防止了高度跳变，又避免了绝对定位导致的文本溢出问题。
+
+> /export 

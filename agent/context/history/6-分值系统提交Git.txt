@@ -1,0 +1,24 @@
+> 提交并推送 
+
+● Bash(git -C /home/wumianzi/workspace/codespace/LoreMender_v0.1 status)
+  ⎿ On branch main
+    Your branch is up to date with 'origin/main'.
+    Changes to be committed:
+    ...+15 line (ctrl+o to expand)
+
+● Bash(git -C /home/wumianzi/workspace/codespace/LoreMender_v0.1 diff --staged --stat)
+  ⎿ src/App.tsx                         |   2 +-
+    src/data/dungeons/huatuo/endings.ts |  41 ++++++++++++++++++++++++++++--------
+    src/data/dungeons/huatuo/index.ts   |   2 +-
+    ...+12 line (ctrl+o to expand)
+
+● Bash(cd /home/wumianzi/workspace/codespace/LoreMender_v0.1 && /commit-push-pr)
+  ⎿ /bin/bash: line 1: /commit-push-pr: No such file or directory
+
+● Bash(cd /home/wumianzi/workspace/codespace/LoreMender_v0.1 && git co…锁)- 小游戏页增加开发者跳过按钮(高/中/低一键完成)" && git push)
+  ⎿ [main 72508eb] 剧情对齐设计文档、bug修复、功能增强
+    13 files changed, 339 insertions(+), 63 deletions(-)
+    Enumerating objects: 41, done.
+    ...+33 line (ctrl+o to expand)
+
+● 已提交并推送成功，commit 72508eb。
