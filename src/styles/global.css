@@ -5326,15 +5326,15 @@ button:disabled,
 /* 待判残句池：贴图顶部已写好参考字样的卷条所在区域 */
 .song-pool {
   position: absolute;
-  left: 21%;
-  right: 21%;
+  left: 12%;
+  right: 12%;
   top: 14%;
   height: 38%;
   display: flex;
-  flex-wrap: wrap;
-  align-content: center;
+  flex-wrap: nowrap;
+  align-items: center;
   justify-content: center;
-  gap: 2.2cqw 1.4cqw;
+  gap: 0 0.9cqw;
   padding: 1cqh 1cqw;
 }
 
@@ -5432,7 +5432,8 @@ button:disabled,
 
 .song-slip-img {
   display: block;
-  height: 29cqh;
+  /* 待判池为单行排布：常规横屏取 29cqh 保持原尺寸，屏幕很窄时以 25cqw 兜底等比缩小，确保 8 句始终不换行 */
+  height: min(29cqh, 25cqw);
   width: auto;
   border-radius: 3px;
   pointer-events: none;
