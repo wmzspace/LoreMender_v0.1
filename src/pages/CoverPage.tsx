@@ -424,7 +424,7 @@ export function CoverPage({ onStart }: CoverPageProps) {
               }} />
               {MAIN_STORY_PARAS.map((p, i) => (
                 <p key={i} style={{
-                  fontSize: 16, lineHeight: 2, margin: "0 0 16px",
+                  fontSize: 18, lineHeight: 2, margin: "0 0 18px",
                   color: "rgba(232,228,214,0.9)", letterSpacing: "0.02em", textIndent: 0,
                 }}>{p}</p>
               ))}
