@@ -2,7 +2,7 @@
 
 **The Lore Mender: The Qingnang Fragment**
 
-> 一个面向手机端的小程序式轻量互动剧情游戏原型 · MVP  
+> 一个面向 PC 网页端的轻量互动剧情游戏原型 · MVP  
 > 穿越典故，修补遗憾
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -12,7 +12,7 @@
 
 ## 📖 项目简介
 
-**典故修补者**是一个移动端 H5 互动叙事游戏原型，主题为东方典故修补。
+**典故修补者**是一个 PC 网页端互动叙事游戏原型，主题为东方典故修补。
 
 你是"典故修补者"，能进入被遗忘的典故世界，附身关键人物。你不能随意改写生死，只能在有限身份和有限时间内，修补那些被历史掩埋的遗憾。
 
@@ -139,7 +139,7 @@ npm run build
 npm run preview
 ```
 
-桌面浏览器会显示居中的手机壳预览 (390×844);移动端访问时占满全屏。
+桌面浏览器访问 `http://localhost:5173` 即可全屏体验。
 
 ### 部署
 
@@ -160,8 +160,8 @@ npm run preview
 
 ### 交互设计
 
-- **移动优先**：所有交互按触屏设计，不依赖 hover
-- **单手操作**：关键按钮高度 ≥48px，底部操作区考虑 safe-area-inset-bottom
+- **桌面优先**：交互按键鼠设计，可使用 hover 等桌面端交互
+- **清晰可点**：关键按钮高度 ≥48px，便于鼠标点击
 - **轻量反馈**：文字 toast + 剧情分支，**无数值系统**（无好感度/金币/等级/装备）
 - **多样化版式**：对话选择 / 人物卡片 / 线索板 / 时间线 / 结局插图 / Bottom Sheet
 
@@ -183,18 +183,6 @@ npm run preview
 - 状态:`useState<GameState>` + 自动 `saveState()` 同步到 `localStorage`
 - 类型:`src/data/types.ts` 集中定义 `GameState` / `Beat` / `Choice` 等,各页面通过 `in` 类型守卫窄化 `Beat`
 - 资源:全部 SVG 内联,无图片依赖;字体来自 Google Fonts
-
-### 迁移到微信小程序
-
-1. **页面结构**：`pages/*.tsx` → `pages/*/*.wxml` + `.wxss` + `.js`
-2. **状态管理**：`useState` → `Page({ data, setData })`
-3. **localStorage**：`loadState/saveState` → `wx.getStorageSync` / `wx.setStorageSync`
-4. **路由**：`gotoPage` → `wx.navigateTo` / `wx.redirectTo` / `wx.switchTab`
-5. **样式**：保留 CSS 变量，px → rpx (1px ≈ 2rpx)
-6. **SVG**：小程序对 SVG 支持有限，建议导出为 PNG/WebP 放入 `assets/`
-7. **字体**：云字体或图片标题（ZCOOL XiaoWei / Ma Shan Zheng）
-
-详细步骤见 [小程序迁移指南](docs/miniprogram.md)（TODO）
 
 ---
 
@@ -369,7 +357,6 @@ git push origin feature/your-feature
 - [ ] 动画细节（纸页展开、印章盖落、线索连线）
 - [ ] 存档系统（多档位 + 云存档）
 - [ ] 成就系统
-- [ ] 微信小程序版本
 - [ ] 国际化（英文版）
 
 ---
