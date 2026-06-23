@@ -26,10 +26,15 @@ export {
 export {
   LEVEL_ASSET_PLANS,
   AI_WORKFLOW_RECORDS,
+  TEAM_NAME,
+  TEAM_MEMBERS,
+  AI_PIPELINE_INTRO,
+  AI_PIPELINE,
 } from "./competition";
 export type {
   AssetStatus,
   LevelAssetPlan,
   AiWorkflowRecord,
+  AiPipelineStep,
 } from "./competition";
 export type { ItemDef } from "./dungeons/huatuo";

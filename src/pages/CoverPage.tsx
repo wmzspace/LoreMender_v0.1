@@ -52,6 +52,14 @@ const PROLOGUE_LINES = [
   "唯有集齐所有信物、令《拾遗残卷》重新被填满，那道归途才会重新敞开——他才能穿越回自己的时代。第一道裂隙，停在了建安十三年的许昌。",
 ];
 
+/** 《典故修补者》主线设定（未看完序幕时，「查看设定」以文字弹层呈现）。 */
+const MAIN_STORY_PARAS = [
+  "主角是文化博物馆数字修复组的一名年轻研究员。某个深夜，他在库房中发现了一卷没有编号、无法考证来源的古卷——《拾遗残卷》。",
+  "当他触碰残卷时，博物馆中的古物被逐一点亮，一道通往历史的裂隙开启。主角由此成为「典故修补者」，被送往一个个历史节点，见到那些被写进史书、却仍留下遗憾的人物。",
+  "他的任务不是改写历史，而是理解遗憾、修补缺口。每一卷故事中，主角都需要与历史人物相遇，通过对话、选择与解谜取得他们的信任，帮助他们完成未竟之愿，并获得代表这段典故的信物。",
+  "当某一卷的信物收集完成，将开启下一段典故。待所有信物寻回后，散落在历史典故里的万般遗憾皆能圆满消弭，他才能挣脱旧梦，重返现世人间。",
+];
+
 /**
  * 序幕场景：文化博物馆库房。
  * 先黑屏过场序列（序幕标题卡 → 拾遗工作室署名卡），再进底部对话框逐句旁白
@@ -238,7 +246,7 @@ export function CoverPage({ onStart }: CoverPageProps) {
   // 流程：cover(封面) → [首次] prologue(序幕对白) → intro(开场动画) → onStart(卷宗页)
   //       序幕只首次自动播一次；「查看设定」可重看序幕（看完返回封面）。
   const [phase, setPhase] = useState<"cover" | "prologue" | "prologue-replay" | "intro">("cover");
-  const [modal, setModal] = useState<null | "showcase">(null);
+  const [modal, setModal] = useState<null | "showcase" | "setting">(null);
   // 退场分两步:先关掉常驻的 keyframe 动画(is-stopping),等这一帧真正画出来后,
   // 再加上目标 transform/opacity(is-sucked)触发 transition——
   // 同一帧内"关动画 + 改目标值"浏览器会直接跳过渡,不会播,所以必须隔一帧。
@@ -261,8 +269,11 @@ export function CoverPage({ onStart }: CoverPageProps) {
     window.setTimeout(beginGame, SUCK_IN_MS);
   };
 
-  // 查看设定：重看序幕，看完返回封面（不进入游戏）
-  const replayPrologue = () => { setModal(null); setPhase("prologue-replay"); };
+  // 查看设定：未看完序幕 → 显示主线设定文字弹层；已看完 → 重看序幕（看完返回封面，不进入游戏）
+  const viewSetting = () => {
+    if (isPrologueSeen()) { setModal(null); setPhase("prologue-replay"); }
+    else setModal("setting");
+  };
 
   // 开场动画阶段停掉主题曲，让 start.mp4 自身音频清晰播放；动画结束进卷宗页后 App 会续播主题曲。
   useEffect(() => {
@@ -387,14 +398,44 @@ export function CoverPage({ onStart }: CoverPageProps) {
           animationDelay: "200ms",
           pointerEvents: "auto",
         }}>
-          <button className="btn-ghost press" onClick={replayPrologue}>查看设定</button>
+          <button className="btn-ghost press" onClick={viewSetting}>查看设定</button>
           <button className="btn-ghost press" onClick={() => setModal("showcase")}>参赛档案</button>
         </div>
       </div>
 
+      {modal === "setting" && (
+        <CoverModal onClose={() => setModal(null)}>
+          <div style={{
+            height: "100%", overflowY: "auto",
+            padding: "clamp(28px, 6vh, 56px) clamp(24px, 6vw, 64px)",
+          }}>
+            <div style={{ width: "100%", maxWidth: 660, margin: "0 auto" }}>
+              <div style={{
+                fontFamily: "var(--font-han)", fontSize: 12.5, letterSpacing: "0.34em",
+                textIndent: "0.34em", color: "var(--gold-pale)", textAlign: "center", marginBottom: 8,
+              }}>MAIN STORY</div>
+              <h2 style={{
+                fontFamily: "var(--font-han)", fontSize: 26, letterSpacing: "0.12em",
+                textAlign: "center", color: "var(--gold)", margin: "0 0 8px",
+              }}>《典故修补者》· 主线设定</h2>
+              <div style={{
+                width: 48, height: 1, margin: "0 auto 22px",
+                background: "linear-gradient(90deg, transparent, rgba(205,178,119,0.7), transparent)",
+              }} />
+              {MAIN_STORY_PARAS.map((p, i) => (
+                <p key={i} style={{
+                  fontSize: 16, lineHeight: 2, margin: "0 0 16px",
+                  color: "rgba(232,228,214,0.9)", letterSpacing: "0.02em", textIndent: 0,
+                }}>{p}</p>
+              ))}
+            </div>
+          </div>
+        </CoverModal>
+      )}
+
       {modal === "showcase" && (
         <CoverModal onClose={() => setModal(null)}>
-          <ShowcasePage onBack={() => setModal(null)} onEnter={beginGame} />
+          <ShowcasePage embedded onBack={() => setModal(null)} onEnter={beginGame} />
         </CoverModal>
       )}
     </div>

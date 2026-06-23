@@ -20,6 +20,41 @@ export interface AiWorkflowRecord {
   evidence: string;
 }
 
+export interface AiPipelineStep {
+  index: string;
+  title: string;
+  detail: string;
+}
+
+/** 参赛队伍。 */
+export const TEAM_NAME = "拾遗小分队";
+export const TEAM_MEMBERS = ["吴勉孜", "谭阳芊", "宋其燃"];
+
+/** AI 使用说明：全程以 CodeBuddy 为核心，串联四大创作环节。 */
+export const AI_PIPELINE_INTRO = "全程以 CodeBuddy 为核心 AI 工具，串联各创作环节：";
+export const AI_PIPELINE: AiPipelineStep[] = [
+  {
+    index: "①",
+    title: "世界观与剧情",
+    detail: "CodeBuddy 将华佗典故扩写为五章可玩剧情、七条结局分支与评分逻辑。",
+  },
+  {
+    index: "②",
+    title: "游戏原画",
+    detail: "CodeBuddy 写美术提示词并驱动 ChatGPT 出图，生成 130+ 张分镜插画压成 WebP；结局视频由 Gemini 生成。",
+  },
+  {
+    index: "③",
+    title: "游戏安全体系",
+    detail: "CodeBuddy 生成存档数据交互校验层，载入时对状态字段做类型校验。",
+  },
+  {
+    index: "④",
+    title: "声音表演",
+    detail: "CodeBuddy 编排配音与配乐，对白由 TTS 批量生成、循环 BGM 由 Gemini 按章节情绪产出并自动映射播放。",
+  },
+];
+
 export const LEVEL_ASSET_PLANS: LevelAssetPlan[] = [
   {
     chapter: 1,
