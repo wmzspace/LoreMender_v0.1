@@ -399,7 +399,7 @@ export function CoverPage({ onStart }: CoverPageProps) {
           pointerEvents: "auto",
         }}>
           <button className="btn-ghost press" onClick={viewSetting}>查看设定</button>
-          <button className="btn-ghost press" onClick={() => setModal("showcase")}>参赛档案</button>
+          <button className="btn-ghost press" onClick={() => setModal("showcase")}>制作档案</button>
         </div>
       </div>
 

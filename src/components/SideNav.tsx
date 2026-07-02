@@ -41,7 +41,7 @@ export function SideNav({ active, open, onNav, onCollapse, onMouseEnter, onMouse
       icon: <BookIcon />,
     },
     {
-      key: "showcase", label: "参赛档案",
+      key: "showcase", label: "制作档案",
       icon: <ArchiveIcon />,
     },
   ];

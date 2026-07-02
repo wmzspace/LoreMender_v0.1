@@ -14,12 +14,12 @@ interface ShowcasePageProps {
 
 export function ShowcasePage({ onBack, embedded }: ShowcasePageProps) {
   return (
-    <PageShell eyebrow="AI CAN DO IT" title="参 赛 档 案" onBack={onBack} bg={embedded ? "" : "night-bg"}>
+    <PageShell eyebrow="AI CAN DO IT" title="制 作 档 案" onBack={onBack} bg={embedded ? "" : "night-bg"}>
       <div style={{
         textAlign: "center", maxWidth: 520, margin: "0 auto 10px",
         fontSize: 14, lineHeight: 1.75, opacity: 0.8,
         color: "rgba(228,224,208,0.88)", letterSpacing: "0.05em",
-      }}>腾讯云黑客松游戏开发挑战赛 · 电子科技大学</div>
+      }}>制作人员名单</div>
 
       <div style={{
         textAlign: "center", marginBottom: 18,

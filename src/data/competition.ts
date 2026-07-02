@@ -26,9 +26,9 @@ export interface AiPipelineStep {
   detail: string;
 }
 
-/** 参赛队伍。 */
+/** 制作人员。 */
 export const TEAM_NAME = "拾遗小分队";
-export const TEAM_MEMBERS = ["吴勉孜", "谭阳芊", "宋其燃"];
+export const TEAM_MEMBERS = ["吴勉孜", "谭阳芊", "宋其燃", "李欣怡"];
 
 /** AI 使用说明：全程以 CodeBuddy 为核心，串联四大创作环节。 */
 export const AI_PIPELINE_INTRO = "全程以 CodeBuddy 为核心 AI 工具，串联各创作环节：";
